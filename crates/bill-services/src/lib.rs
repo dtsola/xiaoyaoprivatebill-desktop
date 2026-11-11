@@ -2,6 +2,7 @@
 
 pub mod analysis;
 pub mod category;
+pub mod charts;
 pub mod dataset;
 pub mod files;
 pub mod insights;
