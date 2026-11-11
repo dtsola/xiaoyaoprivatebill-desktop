@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use std::sync::RwLock;
 
 use bill_core::{DataPaths, Dataset};
-use bill_services::analysis::{yearly_analysis, YearlyQuery};
+use bill_services::analysis::{monthly_analysis, yearly_analysis, MonthlyQuery, YearlyQuery};
 use bill_services::dataset::{demo_dataset, load_dataset};
 use bill_services::files::{clear_data, delete_file, import_paths, list_files};
 use bill_services::transactions::{list_transactions, TransactionQuery};
@@ -94,6 +94,7 @@ pub fn handle(runtime: &Runtime, req: &ApiRequest) -> Result<Value, String> {
             "years": runtime.dataset().available_years()
         })),
         ("GET", "/yearly_analysis") => Ok(handle_yearly(runtime, &req.query)),
+        ("GET", "/monthly_analysis") => Ok(handle_monthly(runtime, &req.query)),
         ("GET", "/transactions") => Ok(handle_transactions(runtime, &req.query)),
         ("GET", "/available_dates") => Ok(handle_available_dates(runtime)),
         ("GET", "/categories") => Ok(handle_categories(runtime)),
@@ -131,6 +132,27 @@ fn handle_yearly(runtime: &Runtime, query: &std::collections::BTreeMap<String, S
             year,
             min_amount,
             max_amount,
+        },
+    );
+    json!({ "success": true, "data": data })
+}
+
+fn handle_monthly(runtime: &Runtime, query: &std::collections::BTreeMap<String, String>) -> Value {
+    let number = |key: &str| query.get(key).and_then(|value| value.parse::<f64>().ok());
+    let (Some(year), Some(month)) = (number("year"), number("month")) else {
+        return json!({
+            "success": false,
+            "error": "获取月度分析失败: 缺少年份或月份"
+        });
+    };
+
+    let data = monthly_analysis(
+        &runtime.dataset(),
+        &MonthlyQuery {
+            year: year as i32,
+            month: month as u32,
+            min_amount: number("min_amount"),
+            max_amount: number("max_amount"),
         },
     );
     json!({ "success": true, "data": data })

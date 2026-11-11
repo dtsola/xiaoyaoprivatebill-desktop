@@ -104,3 +104,24 @@ fn categories_are_sorted_unique() {
     assert_eq!(response["success"], true);
     assert_eq!(response["categories"], json!(["交通", "工资", "餐饮"]));
 }
+
+#[test]
+fn monthly_analysis_requires_year_and_month() {
+    let (_dir, runtime) = runtime();
+    let missing = call(&runtime, "/monthly_analysis", json!({}));
+    assert_eq!(missing["success"], false);
+
+    let ok = call(
+        &runtime,
+        "/monthly_analysis",
+        json!({"year": "2024", "month": "1"}),
+    );
+    assert_eq!(ok["success"], true);
+    assert_eq!(
+        ok["data"]["daily_data"]["expense"]["dates"]
+            .as_array()
+            .expect("日期")
+            .len(),
+        31
+    );
+}

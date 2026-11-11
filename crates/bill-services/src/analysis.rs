@@ -211,3 +211,121 @@ fn count_comparison(current: usize, last: usize, has_last: bool) -> Value {
     };
     json!({ "change": change, "rate": rate })
 }
+
+/// 月度分析查询参数。
+#[derive(Debug, Clone, Copy)]
+pub struct MonthlyQuery {
+    /// 年份。
+    pub year: i32,
+    /// 月份 1–12。
+    pub month: u32,
+    /// 金额下限（含），0 视为未设置。
+    pub min_amount: Option<f64>,
+    /// 金额上限（不含）。
+    pub max_amount: Option<f64>,
+}
+
+/// 计算月度分析结果。
+pub fn monthly_analysis(dataset: &Dataset, query: &MonthlyQuery) -> Value {
+    let current: Vec<&Transaction> = dataset
+        .transactions
+        .iter()
+        .filter(|row| row.time.year() == query.year && row.time.month() == query.month)
+        .collect();
+    let (last_year, last_month) = if query.month > 1 {
+        (query.year, query.month - 1)
+    } else {
+        (query.year - 1, 12)
+    };
+    let last: Vec<&Transaction> = dataset
+        .transactions
+        .iter()
+        .filter(|row| row.time.year() == last_year && row.time.month() == last_month)
+        .collect();
+
+    let filters = YearlyQuery {
+        year: None,
+        min_amount: query.min_amount,
+        max_amount: query.max_amount,
+    };
+    let current = apply_amount_filters(current, &filters);
+    let last = apply_amount_filters(last, &filters);
+
+    let current_expense = split(&current, "支出");
+    let current_income = split(&current, "收入");
+    let total_expense = sum(&current_expense);
+    let total_income = sum(&current_income);
+    let balance = total_income - total_expense;
+    let last_expense = sum(&split(&last, "支出"));
+    let last_income = sum(&split(&last, "收入"));
+    let last_balance = last_income - last_expense;
+
+    let days = days_in_month(query.year, query.month);
+    let dates: Vec<String> = (1..=days)
+        .map(|day| format!("{}-{:02}-{day:02}", query.year, query.month))
+        .collect();
+    let daily_expenses = daily_sums(&current_expense, &dates);
+    let daily_incomes = daily_sums(&current_income, &dates);
+
+    let expense_categories = category_sums(&current_expense);
+    let income_categories = category_sums(&current_income);
+
+    json!({
+        "stats": {
+            "balance": balance,
+            "total_expense": total_expense,
+            "total_income": total_income,
+            "expense_count": current_expense.len(),
+            "income_count": current_income.len(),
+            "comparisons": {
+                "balance": month_comparison(balance - last_balance, last_balance),
+                "expense": month_comparison(total_expense - last_expense, last_expense),
+                "income": month_comparison(total_income - last_income, last_income),
+            }
+        },
+        "daily_data": {
+            "expense": { "dates": dates, "amounts": daily_expenses },
+            "income": { "dates": dates, "amounts": daily_incomes },
+        },
+        "categories": {
+            "expense": { "names": names(&expense_categories), "amounts": amounts(&expense_categories) },
+            "income": { "names": names(&income_categories), "amounts": amounts(&income_categories) },
+        },
+        "categories_source": {
+            "expense": source_records(&current_expense),
+            "income": source_records(&current_income),
+        }
+    })
+}
+
+fn daily_sums(rows: &[&Transaction], dates: &[String]) -> Vec<f64> {
+    let keyed: BTreeMap<&str, f64> = rows.iter().fold(BTreeMap::new(), |mut acc, row| {
+        *acc.entry(row.date.as_str()).or_insert(0.0) += row.amount;
+        acc
+    });
+    dates
+        .iter()
+        .map(|date| *keyed.get(date.as_str()).unwrap_or(&0.0))
+        .collect()
+}
+
+fn days_in_month(year: i32, month: u32) -> u32 {
+    let (next_year, next_month) = if month == 12 {
+        (year + 1, 1)
+    } else {
+        (year, month + 1)
+    };
+    let first_next =
+        chrono::NaiveDate::from_ymd_opt(next_year, next_month, 1).expect("下月一日合法");
+    let first = chrono::NaiveDate::from_ymd_opt(year, month, 1).expect("本月一日合法");
+    (first_next - first).num_days() as u32
+}
+
+fn month_comparison(change: f64, base: f64) -> Value {
+    let rate = if base != 0.0 {
+        json!((change / base.abs()) * 100.0)
+    } else {
+        json!(Value::Null)
+    };
+    json!({ "change": change, "rate": rate })
+}
