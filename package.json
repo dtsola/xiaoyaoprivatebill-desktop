@@ -12,7 +12,9 @@
     "frontend:build": "npm --prefix frontend run build",
     "test:unit": "npm --prefix frontend run test",
     "test:e2e": "playwright test",
-    "test": "npm run test:unit && npm run test:e2e"
+    "test": "npm run test:unit && npm run test:e2e",
+    "check:baseline": "node scripts/check-frontend-baseline.mjs",
+    "test:scripts": "node --test scripts/*.test.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.0",
