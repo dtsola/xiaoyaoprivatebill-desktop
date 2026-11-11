@@ -84,7 +84,7 @@ bill-core ← bill-parsers ← bill-services ← bill-api ← bill-mcp
 ### 1.4 与 Web 版的关系
 
 - Web 版是**行为基准**，不是要修改的代码库。
-- 前端从 Web 版复制并打 tag `web-baseline`，只允许改 8 个文件。
+- 前端从 Web 版复制并打 tag `web-baseline`，允许改 8 个适配文件；图标迁移（Font Awesome → Lucide）额外放行 9 个页面/公共组件。
 - 后端 100% Rust 重写；Python 仅用于开发期生成 golden，不进入产物。
 - Web 版冻结，仅修复安全问题；新功能只进桌面版。
 
@@ -175,7 +175,7 @@ pub fn yearly_analysis(dataset: &Dataset, year: i32) -> Result<Value, ApiError> 
   8. `frontend/src/views/Home.vue`（隐私文案两处 + 首页自适应布局，见技术方案 03 §11.8）
 - 8 个之外，其余 9 个页面、3 个公共组件、4 个 Pinia store、`main.css` 保持冻结。
 - 基线脚本 `scripts/check-frontend-baseline.mjs` 额外放行四类非页面源码：`frontend/public/vendor/`（离线图标）、`vitest.config.js` / `*.test.js`（测试）、`package.json`（测试依赖）、`frontend/public/images/logo_128.png` 与 `frontend/public/favicon.png`（品牌资源）。
-- 不新增前端依赖（`@tauri-apps/api`、dialog、opener 除外）。
+- 不新增前端依赖（`@tauri-apps/api`、dialog、opener、`lucide-vue-next` 除外）。
 - 新增样式写在对应 `<style scoped>` 内，不改全局主题。
 - 视觉与 Web 版保持一致；不擅自重设计。
 
@@ -242,7 +242,7 @@ Co-Authored-By: Claude Code <noreply@anthropic.com>
 | 契约测试 | 27 个接口外层与错误形状 | 全部接口 |
 | golden 对账 | Python 期望 JSON vs Rust 输出 | 27 接口 100%，容差 1e-6 |
 | MCP 契约 | 14 工具、鉴权、写护栏、审计 | 全部工具 |
-| 前端基线 | diff 仅 7 文件 | 100% |
+| 前端基线 | diff 仅允许清单内的文件 | 100% |
 | 手工验收 | 安装、托盘、导入、演示 | 每个里程碑 |
 
 ### 5.2 命令
@@ -312,7 +312,7 @@ macOS 通过 GitHub Actions 分架构构建：
 ### 6.4 发布检查
 
 - golden 27 接口全绿。
-- 前端 diff 仅 7 文件。
+- 前端 diff 仅允许清单内的文件。
 - 断网启动零外部请求。
 - MCP 默认关闭；开启后鉴权生效。
 - Windows/macOS 干净环境安装可启动。
@@ -424,7 +424,7 @@ macOS 通过 GitHub Actions 分架构构建：
 
 **前端**：
 
-- 是否超出 7 文件边界。
+- 是否超出允许文件边界。
 - 是否引入新依赖或改动全局样式。
 - 断网时是否仍可完整使用。
 - 外链是否走系统浏览器。
@@ -473,7 +473,7 @@ node scripts/check-frontend-baseline.mjs
 - 27 个接口 = 18 在用 + 9 兼容。
 - 14 个 MCP 工具 = 10 读 + 4 写。
 - 61 个任务；14–24 人日；日历 14–22 个工作日。
-- 前端 8 个文件可改；10 个路由（9 个 Web 基线页 + 1 个 AI Agent 接入页）；演示数据 7,396 条。
+- 前端 8 个适配文件 + 9 个图标迁移文件可改；10 个路由（9 个 Web 基线页 + 1 个 AI Agent 接入页）；演示数据 7,396 条。
 - 不得写成「13 个工具」「前端零改动」「30/90 分钟自动清理」「Docker/Nginx 部署」。
 
 ---
@@ -498,7 +498,7 @@ node scripts/check-frontend-baseline.mjs
 
 **背景**: 9 个页面与视觉已经稳定，重写成本高且容易引入回归。
 
-**决策**: 复制 Web 版 `frontend/` 作为冻结基线，只允许改 8 个文件。
+**决策**: 复制 Web 版 `frontend/` 作为冻结基线，只允许改 8 个适配文件；图标迁移作为独立例外记录在基线脚本中。
 
 **影响**: 联调返工可控；用 `check-frontend-baseline.mjs` 做 CI 门禁。
 
