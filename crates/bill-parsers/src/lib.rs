@@ -1,6 +1,6 @@
-//! 账单解析器。
-//!
-//! P0 阶段只建立 crate 骨架；P1 实现支付宝 CSV、微信 CSV/XLSX。
+//! 账单解析器：支付宝 CSV、微信 CSV/XLSX。
 
-/// P0 占位：确认 crate 可编译。
-pub fn placeholder() {}
+pub mod alipay;
+pub mod error;
+
+pub use error::ParseError;

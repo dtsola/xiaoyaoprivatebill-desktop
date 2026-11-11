@@ -334,6 +334,7 @@ dependencies = [
  "encoding_rs",
  "fancy-regex",
  "regex",
+ "thiserror 2.0.21",
  "unicode-normalization",
 ]
 
