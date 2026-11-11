@@ -24,6 +24,14 @@ test('离线图标、测试配置与测试文件不算越界', () => {
   assert.equal(isAllowed('frontend/src/api/client.test.js'), true)
 })
 
+test('品牌资源替换不算越界', () => {
+  assert.equal(isAllowed('frontend/public/images/logo_128.png'), true)
+  assert.equal(isAllowed('frontend/public/favicon.png'), true)
+  assert.deepEqual(violations(['frontend/public/images/logo_512.png']), [
+    'frontend/public/images/logo_512.png'
+  ])
+})
+
 test('非前端路径一律通过', () => {
   assert.deepEqual(violations(['crates/bill-api/src/lib.rs', 'docs/开发进度.md']), [])
 })

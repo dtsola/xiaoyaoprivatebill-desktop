@@ -286,7 +286,25 @@ export function installTauriMock() {
     last_error: null
   })
 
+  let maximized = false
+  window.__TAURI_TEST_INVOKES = []
+
   const invoke = async (cmd, args) => {
+    window.__TAURI_TEST_INVOKES.push(cmd)
+    if (cmd === 'plugin:window|is_maximized') return maximized
+    if (cmd === 'plugin:window|toggle_maximize') {
+      maximized = !maximized
+      return null
+    }
+    if (
+      cmd === 'plugin:window|minimize' ||
+      cmd === 'plugin:window|maximize' ||
+      cmd === 'plugin:window|unmaximize' ||
+      cmd === 'plugin:window|close' ||
+      cmd === 'plugin:window|start_dragging'
+    ) {
+      return null
+    }
     if (cmd === 'desktop_settings') {
       return {
         close_to_tray: closeToTray,

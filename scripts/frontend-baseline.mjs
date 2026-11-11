@@ -18,7 +18,10 @@ export const ALLOWED_PREFIXES = ['frontend/public/vendor/']
 export const ALLOWED_EXACT = new Set([
   'frontend/package.json',
   'frontend/package-lock.json',
-  'frontend/vitest.config.js'
+  'frontend/vitest.config.js',
+  // 品牌资源：桌面版统一使用新 LOGO（图标由 docs/产品文档/logos 生成）
+  'frontend/public/images/logo_128.png',
+  'frontend/public/favicon.png'
 ])
 
 export function isAllowed(path) {

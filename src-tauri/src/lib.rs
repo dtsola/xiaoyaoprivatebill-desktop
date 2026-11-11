@@ -55,6 +55,10 @@ pub fn run() {
 
             // 首帧后再显示，避免白屏。
             if let Some(window) = app.get_webview_window("main") {
+                // Windows 去掉原生标题栏，改由前端 AppLayout 渲染拖拽区与窗口按钮；
+                // macOS 走 titleBarStyle: Overlay，保留原生红绿灯。
+                #[cfg(target_os = "windows")]
+                let _ = window.set_decorations(false);
                 let _ = window.show();
             }
             Ok(())
