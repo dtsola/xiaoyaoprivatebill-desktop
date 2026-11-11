@@ -174,7 +174,7 @@ pub fn yearly_analysis(dataset: &Dataset, year: i32) -> Result<Value, ApiError> 
   7. `frontend/vite.config.js`
   8. `frontend/src/views/Home.vue`（仅隐私文案两处，见技术方案 03 §11.8）
 - 8 个之外，其余 9 个页面、3 个公共组件、4 个 Pinia store、`main.css` 保持冻结。
-- 基线脚本 `scripts/check-frontend-baseline.mjs` 额外放行三类非页面源码：`frontend/public/vendor/`（离线图标）、`vitest.config.js` / `*.test.js`（测试）、`package.json`（测试依赖）。
+- 基线脚本 `scripts/check-frontend-baseline.mjs` 额外放行四类非页面源码：`frontend/public/vendor/`（离线图标）、`vitest.config.js` / `*.test.js`（测试）、`package.json`（测试依赖）、`frontend/public/images/logo_128.png` 与 `frontend/public/favicon.png`（品牌资源）。
 - 不新增前端依赖（`@tauri-apps/api`、dialog、opener 除外）。
 - 新增样式写在对应 `<style scoped>` 内，不改全局主题。
 - 视觉与 Web 版保持一致；不擅自重设计。
