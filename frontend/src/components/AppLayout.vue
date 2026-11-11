@@ -48,8 +48,8 @@
             :title="collapsed ? '展开侧边栏' : '收起侧边栏'"
             @click="toggleSidebar"
           >
-            <PanelLeftOpen v-if="collapsed" :size="16" />
-            <PanelLeftClose v-else :size="16" />
+            <ChevronRight v-if="collapsed" :size="15" />
+            <ChevronLeft v-else :size="15" />
           </button>
         </div>
         <nav class="nav-menu">
@@ -155,6 +155,8 @@ import {
   Bot,
   CalendarDays,
   ChartLine,
+  ChevronLeft,
+  ChevronRight,
   CircleUserRound,
   Clock,
   Coffee,
@@ -165,8 +167,6 @@ import {
   Lightbulb,
   List,
   Minus,
-  PanelLeftClose,
-  PanelLeftOpen,
   Receipt,
   Settings,
   Square,
@@ -431,6 +431,8 @@ onMounted(async () => {
 }
 
 .logo {
+  overflow: hidden;
+  white-space: nowrap;
   font-family: var(--font-family-display);
   height: var(--header-height);
   display: flex;
@@ -444,6 +446,7 @@ onMounted(async () => {
 
 .logo-icon {
   /* 头部圆形头像：44px 与 20px 字号的「小遥账单」视觉重量更匹配 */
+  transition: width 0.22s ease, height 0.22s ease, margin-right 0.22s ease;
   width: 44px;
   height: 44px;
   margin-right: 12px;
@@ -503,7 +506,7 @@ onMounted(async () => {
   display: none;
 }
 
-.sidebar-collapsed .nav-icon {
+.sidebar-collapsed .nav-item .nav-icon {
   margin-right: 0;
 }
 
@@ -532,6 +535,8 @@ onMounted(async () => {
 }
 
 .nav-item {
+  white-space: nowrap;
+  overflow: hidden;
   padding: 12px 20px;
   margin: 4px 8px;
   display: flex;

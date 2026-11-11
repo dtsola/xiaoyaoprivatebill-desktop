@@ -24,6 +24,23 @@ test('侧边栏可收起为图标栏，并记住状态', async ({ page }) => {
   await expect(page.locator('.logo span')).toBeHidden()
   // 底部筛选菜单同步收成图标按钮
   expect(await widthOf(page, '.floating-menu')).toBe(64)
+
+  // 图标在 64px 栏内水平居中
+  const centers = await page.evaluate(() => {
+    const center = (selector) => {
+      const box = document.querySelector(selector).getBoundingClientRect()
+      return Math.round(box.x + box.width / 2)
+    }
+    return {
+      sidebar: center('.sidebar'),
+      nav: center('.nav-item .nav-icon'),
+      active: center('.nav-item.active .nav-icon'),
+      toggle: center('.sidebar-toggle')
+    }
+  })
+  expect(centers.nav).toBe(centers.sidebar)
+  expect(centers.active).toBe(centers.sidebar)
+  expect(centers.toggle).toBe(centers.sidebar)
   await expect(page.locator('.floating-menu .filter-btn span').first()).toBeHidden()
   expect(await page.evaluate(() => localStorage.getItem('xiaoyaobill.sidebar'))).toBe(
     'collapsed'
