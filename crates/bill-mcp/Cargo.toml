@@ -1,0 +1,22 @@
+[package]
+name = "bill-mcp"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+bill-core = { path = "../bill-core" }
+bill-services = { path = "../bill-services" }
+bill-api = { path = "../bill-api" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+axum = "0.8"
+rmcp = { version = "3.9", default-features = false, features = [
+    "server",
+    "macros",
+    "transport-streamable-http-server",
+] }
+tokio = { version = "1", features = ["net", "rt-multi-thread", "macros"] }
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }

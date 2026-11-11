@@ -1,0 +1,21 @@
+{
+  "name": "xiaoyaoprivatebill-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "小遥账单桌面版",
+  "type": "module",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "frontend:dev": "npm --prefix frontend run dev",
+    "frontend:build": "npm --prefix frontend run build",
+    "test:unit": "npm --prefix frontend run test",
+    "test:e2e": "playwright test",
+    "test": "npm run test:unit && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.0",
+    "@tauri-apps/cli": "^2"
+  }
+}

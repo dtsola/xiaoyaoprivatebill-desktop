@@ -1,0 +1,15 @@
+[workspace]
+resolver = "2"
+members = [
+    "src-tauri",
+    "crates/bill-core",
+    "crates/bill-parsers",
+    "crates/bill-services",
+    "crates/bill-api",
+    "crates/bill-mcp",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
