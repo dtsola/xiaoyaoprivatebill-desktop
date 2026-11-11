@@ -402,6 +402,12 @@ onMounted(async () => {
 .icon-settings { color: #8E8E93; }
 .icon-author { color: #FF2D55; }
 
+/* 页面头部是全局 sticky(top:0)，滚动容器换了以后需要抵消内容区 20px 内边距，
+   否则滚动时标题栏与页面头部之间会露出 20px 间隙。 */
+.content :deep(.page-header) {
+  top: -20px;
+}
+
 .content {
   flex: 1;
   min-width: 0;

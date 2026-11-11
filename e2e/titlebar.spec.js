@@ -93,3 +93,20 @@ test('侧边栏为浅灰底色，选中项用白色胶囊区分', async ({ page 
     .evaluate((el) => getComputedStyle(el).backgroundColor)
   expect(activeBg).toBe('rgb(255, 255, 255)')
 })
+
+test('滚动时页面头部紧贴标题栏，不出现间隙', async ({ page }) => {
+  await page.goto('/#/settings')
+
+  await page.locator('.content').evaluate((el) => {
+    el.scrollTop = 400
+  })
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const content = document.querySelector('.content').getBoundingClientRect()
+        const header = document.querySelector('.page-header').getBoundingClientRect()
+        return Math.round(header.top - content.top)
+      })
+    )
+    .toBe(0)
+})
