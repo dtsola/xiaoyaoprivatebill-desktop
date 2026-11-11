@@ -1,12 +1,15 @@
 <template>
   <div class="settings-page">
-    <!-- 页面标题 -->
+    <!-- 页面标题：设置页只做文件与桌面管理；/agent 复用本页渲染 MCP 区块 -->
     <div class="page-header">
-      <h1 class="page-title">文件管理</h1>
+      <h1 class="page-title">{{ agentOnly ? 'AI Agent 接入' : '文件管理' }}</h1>
+      <p v-if="agentOnly" class="page-subtitle">
+        通过 MCP 服务让 Claude Code、Cursor 等 Agent 读取本机账单数据；默认关闭，仅监听 127.0.0.1。
+      </p>
     </div>
 
     <!-- 双栏布局：支付宝和微信 -->
-    <div class="split-layout">
+    <div v-if="!agentOnly" class="split-layout">
       <!-- 左侧：支付宝专区 -->
       <div class="provider-column alipay-column">
         <h2 class="column-header">
@@ -127,7 +130,7 @@
     </div>
 
     <!-- 删除区域 -->
-    <div class="delete-section">
+    <div v-if="!agentOnly" class="delete-section">
       <h2 class="section-title">数据管理</h2>
       <div class="delete-area">
         <button class="delete-all-btn" @click="handleClearAllData">
@@ -139,7 +142,7 @@
     </div>
 
     <!-- 桌面设置 -->
-    <div class="desktop-section">
+    <div v-if="!agentOnly" class="desktop-section">
       <h2 class="section-title">桌面</h2>
       <div class="desktop-card">
         <div class="desktop-row">
@@ -171,8 +174,7 @@
     </div>
 
     <!-- MCP 服务 -->
-    <div class="mcp-section">
-      <h2 class="section-title">MCP 服务（AI Agent 接入）</h2>
+    <div v-if="agentOnly" class="mcp-section">
       <div class="mcp-card">
         <div class="mcp-row">
           <span class="mcp-label">状态</span>
@@ -213,6 +215,11 @@ import { useSessionStore } from '@/stores/session'
 import { useUiStore } from '@/stores/ui'
 import api from '@/api/client'
 
+const props = defineProps({
+  // /agent 路由复用本组件，只渲染 MCP 区块
+  agentOnly: { type: Boolean, default: false }
+})
+
 const sessionStore = useSessionStore()
 const uiStore = useUiStore()
 
@@ -252,11 +259,13 @@ let unlistenMcp = null
 const totalFileCount = computed(() => alipayFiles.value.length + wechatFiles.value.length)
 
 onMounted(async () => {
-  await loadFiles()
-  await listenDragDrop()
+  if (!props.agentOnly) {
+    await loadFiles()
+    await listenDragDrop()
+    await loadDesktop()
+    await loadStorage()
+  }
   await loadMcp()
-  await loadDesktop()
-  await loadStorage()
   unlistenMcp = await listen('desktop://mcp-status', async (event) => {
     mcp.value = { ...mcp.value, ...event.payload, token: '' }
     if (event.payload?.running) {
@@ -546,6 +555,12 @@ async function handleClearAllData() {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+}
+
+.page-subtitle {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--secondary-text);
 }
 
 .page-title {

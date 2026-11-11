@@ -37,6 +37,12 @@ const routes = [
     component: () => import('@/views/Transactions.vue')
   },
   {
+    path: '/agent',
+    name: 'agent',
+    component: () => import('@/views/Settings.vue'),
+    props: { agentOnly: true }
+  },
+  {
     path: '/settings',
     name: 'settings',
     component: () => import('@/views/Settings.vue')

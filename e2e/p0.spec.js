@@ -50,7 +50,7 @@ test('不加载 CDN：Font Awesome 必须本地化', async ({ page }) => {
   expect(iconContent).not.toBe('none')
 })
 
-test('9 个页面可切换且无未捕获异常', async ({ page }) => {
+test('10 个页面可切换且无未捕获异常', async ({ page }) => {
   const pageErrors = []
   page.on('pageerror', (error) => pageErrors.push(error.message))
 
@@ -62,6 +62,7 @@ test('9 个页面可切换且无未捕获异常', async ({ page }) => {
     ['/#/time', '.page-title'],
     ['/#/insights', '.page-title'],
     ['/#/transactions', '.page-title'],
+    ['/#/agent', '.page-title'],
     ['/#/settings', '.page-title'],
     ['/#/about-author', '.author-title']
   ]

@@ -69,6 +69,10 @@
           <i class="fas fa-receipt icon-transactions"></i>
           <span>交易记录</span>
         </router-link>
+        <router-link to="/agent" class="nav-item" :class="{ active: $route.path === '/agent' }">
+          <i class="fas fa-robot icon-agent"></i>
+          <span>AI Agent 接入</span>
+        </router-link>
         <router-link to="/settings" class="nav-item" :class="{ active: $route.path === '/settings' }">
           <i class="fas fa-cog icon-settings"></i>
           <span>设置</span>
@@ -383,6 +387,7 @@ onMounted(async () => {
 .icon-time { color: #AF52DE; }
 .icon-insights { color: #FFCC00; }
 .icon-transactions { color: #30B0C7; }
+.icon-agent { color: #0A84FF; }
 .icon-settings { color: #8E8E93; }
 .icon-author { color: #FF2D55; }
 
