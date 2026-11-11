@@ -859,8 +859,8 @@ async function handleClearAllData() {
 }
 
 .section-title {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-medium);
   color: var(--text-color);
   margin: 0 0 16px 0;
 }

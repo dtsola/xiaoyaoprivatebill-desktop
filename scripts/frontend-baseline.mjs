@@ -21,7 +21,9 @@ export const ALLOWED_FILES = new Set([
   'frontend/src/views/Transactions.vue',
   'frontend/src/components/common/Toast.vue',
   'frontend/src/components/common/Modal.vue',
-  'frontend/src/components/common/StatCard.vue'
+  'frontend/src/components/common/StatCard.vue',
+  // 全局字号标尺对齐 xiaoyaotime（仅 :root token、body 与 h1–h4）
+  'frontend/src/assets/styles/main.css'
 ])
 
 export const ALLOWED_PREFIXES = ['frontend/public/vendor/']

@@ -21,6 +21,7 @@ test('越界的页面组件被拦截', () => {
 test('图标迁移涉及的页面与公共组件放行', () => {
   assert.equal(isAllowed('frontend/src/views/Yearly.vue'), true)
   assert.equal(isAllowed('frontend/src/components/common/Toast.vue'), true)
+  assert.equal(isAllowed('frontend/src/assets/styles/main.css'), true)
 })
 
 test('离线图标、测试配置与测试文件不算越界', () => {

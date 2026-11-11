@@ -22,6 +22,18 @@
     --warning-color: #FF9500;
     /* Apple 橙色 */
 
+    /* 字号与字重标尺：对齐 xiaoyaotime（11 / 13 / 14 / 16 / 20 / 28 / 36） */
+    --font-size-xs: 11px;
+    --font-size-sm: 13px;
+    --font-size-md: 14px;
+    --font-size-lg: 16px;
+    --font-size-xl: 20px;
+    --font-size-2xl: 28px;
+    --font-size-3xl: 36px;
+    --font-weight-regular: 450;
+    --font-weight-medium: 550;
+    --font-weight-semibold: 650;
+
     /* 添加 Apple Design 字体变量 */
     --font-family-display: -apple-system, 'SF Pro Display', 'SF Pro Icons', 'Helvetica Neue', Arial, sans-serif;
     --font-family-text: -apple-system, 'SF Pro Text', 'SF Pro Icons', 'Helvetica Neue', Arial, sans-serif;
@@ -80,8 +92,9 @@ body {
     font-family: var(--font-family-text);
     background-color: var(--bg-color);
     color: var(--text-color);
+    font-size: var(--font-size-md);
     line-height: 1.47059;
-    font-weight: 400;
+    font-weight: var(--font-weight-regular);
     letter-spacing: -0.022em;
 }
 
@@ -89,19 +102,31 @@ body {
 h1,
 .page-title {
     font-family: var(--font-family-display);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     letter-spacing: -0.025em;
-    font-size: 28px;
+    font-size: var(--font-size-2xl);
     color: var(--text-color);
     margin: 0;
 }
 
-/* 副标题样式 */
+/* 副标题样式：字号按 token 标尺逐级递减 */
+h2 {
+    font-size: var(--font-size-xl);
+}
+
+h3 {
+    font-size: var(--font-size-lg);
+}
+
+h4 {
+    font-size: var(--font-size-md);
+}
+
 h2,
 h3,
 h4 {
     font-family: var(--font-family-display);
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
     letter-spacing: -0.022em;
 }
 
