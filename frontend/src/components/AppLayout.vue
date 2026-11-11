@@ -498,17 +498,48 @@ onMounted(async () => {
 }
 
 /* 全局加载状态 */
+/* 加载态改成内容区顶部的一条进度条：不遮挡页面、不盖住侧边栏与窗口按钮 */
 .global-loader {
   position: fixed;
+  top: 36px;
+  left: var(--sidebar-width);
+  right: 0;
+  height: 3px;
+  overflow: hidden;
+  pointer-events: none;
+  background: transparent;
+  z-index: 1500;
+}
+
+.global-loader .loader-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.global-loader .spinner {
+  position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
+  width: 35%;
+  height: 100%;
+  border: none;
+  border-radius: 0;
+  background: linear-gradient(90deg, rgba(0, 122, 255, 0), #007aff, rgba(0, 122, 255, 0));
+  animation: loader-slide 1.1s ease-in-out infinite;
+}
+
+.global-loader .loader-text {
+  display: none;
+}
+
+@keyframes loader-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(390%);
+  }
 }
 
 .loader-content {
