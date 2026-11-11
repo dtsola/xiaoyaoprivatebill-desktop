@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "name": "available_years_demo",
+      "method": "GET",
+      "endpoint": "/available_years",
+      "dataset": "demo",
+      "expected": "available_years.json"
+    }
+  ]
+}

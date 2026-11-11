@@ -149,3 +149,43 @@ fn clear_returns_message() {
     assert_eq!(response["success"], true);
     assert_eq!(response["message"], "数据已清除");
 }
+
+#[test]
+fn upload_refreshes_available_years() {
+    let env = setup();
+    let _ = handle(
+        &env.runtime,
+        &request(
+            "POST",
+            "/upload",
+            json!({ "paths": [env.source_file.to_string_lossy()] }),
+        ),
+    )
+    .expect("上传");
+
+    let response = handle(
+        &env.runtime,
+        &request("GET", "/available_years", json!(null)),
+    )
+    .expect("处理成功");
+    assert_eq!(response["years"], json!([2024]));
+}
+
+#[test]
+fn demo_session_loads_demo_dataset() {
+    let dir = tempfile::tempdir().expect("数据目录");
+    let paths = DataPaths::new(dir.path().to_path_buf());
+    paths.ensure_layout().expect("布局");
+    fs::write(
+        paths.session_file(),
+        br#"{"schema_version":1,"is_demo":true}"#,
+    )
+    .expect("写会话");
+
+    let runtime = Runtime::new(paths);
+    assert_eq!(runtime.dataset().transactions.len(), 7396);
+    assert_eq!(
+        runtime.dataset().available_years(),
+        vec![2024, 2023, 2022, 2021]
+    );
+}

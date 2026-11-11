@@ -3,8 +3,10 @@
 //! P1 只覆盖文件管理与 `/available_years`；P2 补齐其余接口。
 
 use std::path::PathBuf;
+use std::sync::RwLock;
 
-use bill_core::DataPaths;
+use bill_core::{DataPaths, Dataset};
+use bill_services::dataset::{demo_dataset, load_dataset};
 use bill_services::files::{clear_data, delete_file, import_paths, list_files};
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -21,18 +23,63 @@ pub struct ApiRequest {
     pub body: Value,
 }
 
-/// 运行时状态。
+/// 运行时状态：数据目录 + 内存数据集。
 #[derive(Debug)]
 pub struct Runtime {
     /// 数据目录布局。
     pub paths: DataPaths,
+    dataset: RwLock<Dataset>,
 }
 
 impl Runtime {
     /// 以数据目录构造运行时。
+    ///
+    /// `session.json` 声明演示模式时加载内嵌演示数据，否则扫描 `bills/`。
     pub fn new(paths: DataPaths) -> Self {
-        Self { paths }
+        let dataset = load_initial(&paths);
+        Self {
+            paths,
+            dataset: RwLock::new(dataset),
+        }
     }
+
+    /// 直接指定数据集（测试与后续导入重建使用）。
+    pub fn with_dataset(paths: DataPaths, dataset: Dataset) -> Self {
+        Self {
+            paths,
+            dataset: RwLock::new(dataset),
+        }
+    }
+
+    /// 当前数据集快照。
+    pub fn dataset(&self) -> Dataset {
+        self.dataset
+            .read()
+            .map(|guard| guard.clone())
+            .unwrap_or_default()
+    }
+
+    /// 写操作后重建数据集。
+    pub fn refresh(&self) {
+        if let Ok(mut guard) = self.dataset.write() {
+            *guard = load_initial(&self.paths);
+        }
+    }
+}
+
+fn load_initial(paths: &DataPaths) -> Dataset {
+    if is_demo_session(paths) {
+        return demo_dataset().unwrap_or_default();
+    }
+    load_dataset(&paths.bills_dir()).unwrap_or_default()
+}
+
+fn is_demo_session(paths: &DataPaths) -> bool {
+    std::fs::read(paths.session_file())
+        .ok()
+        .and_then(|bytes| serde_json::from_slice::<serde_json::Value>(&bytes).ok())
+        .and_then(|value| value.get("is_demo").and_then(serde_json::Value::as_bool))
+        .unwrap_or(false)
 }
 
 /// 处理一个 API 请求。
@@ -40,10 +87,9 @@ impl Runtime {
 /// 业务失败以 `{ success: false, error }` 返回；传输级错误才返回 `Err`。
 pub fn handle(runtime: &Runtime, req: &ApiRequest) -> Result<Value, String> {
     match (req.method.as_str(), req.path.as_str()) {
-        // P0 临时桩：返回固定年份；P2 接入真实 Dataset。
         ("GET", "/available_years") => Ok(json!({
             "success": true,
-            "years": [2024]
+            "years": runtime.dataset().available_years()
         })),
         ("GET", "/files") => Ok(handle_list(runtime)),
         ("POST", "/upload") => Ok(handle_upload(runtime, &req.body)),
@@ -93,12 +139,15 @@ fn handle_upload(runtime: &Runtime, body: &Value) -> Value {
         .collect();
 
     match import_paths(&runtime.paths, &sources) {
-        Ok(names) => json!({
+        Ok(names) => {
+            runtime.refresh();
+            json!({
             "success": true,
             "filename": names.first().cloned().unwrap_or_default(),
-            "filenames": names,
-            "message": "文件上传成功"
-        }),
+                "filenames": names,
+                "message": "文件上传成功"
+            })
+        }
         Err(error) => json!({ "success": false, "error": error.to_string() }),
     }
 }
@@ -106,14 +155,20 @@ fn handle_upload(runtime: &Runtime, body: &Value) -> Value {
 fn handle_delete(runtime: &Runtime, raw_name: &str) -> Value {
     let name = percent_decode(raw_name);
     match delete_file(&runtime.paths, &name) {
-        Ok(()) => json!({ "success": true }),
+        Ok(()) => {
+            runtime.refresh();
+            json!({ "success": true })
+        }
         Err(error) => json!({ "success": false, "error": error.to_string() }),
     }
 }
 
 fn handle_clear(runtime: &Runtime) -> Value {
     match clear_data(&runtime.paths) {
-        Ok(_) => json!({ "success": true, "message": "数据已清除" }),
+        Ok(_) => {
+            runtime.refresh();
+            json!({ "success": true, "message": "数据已清除" })
+        }
         Err(error) => json!({ "success": false, "error": error.to_string() }),
     }
 }
@@ -163,7 +218,7 @@ mod tests {
     }
 
     #[test]
-    fn available_years_returns_success() {
+    fn available_years_is_empty_without_data() {
         let (_dir, runtime) = runtime();
         let req: ApiRequest = serde_json::from_value(json!({
             "method": "GET",
@@ -172,7 +227,7 @@ mod tests {
         .expect("构造请求");
 
         let result = handle(&runtime, &req).expect("处理成功");
-        assert_eq!(result, json!({"success": true, "years": [2024]}));
+        assert_eq!(result, json!({"success": true, "years": []}));
     }
 
     #[test]
