@@ -185,6 +185,17 @@ impl BillMcp {
     ) -> Result<CallToolResult, ErrorData> {
         Self::json(write::restore_bill(&self.runtime, &params))
     }
+
+    #[tool(
+        description = "清空全部账单（必须先快照，需 confirm=true）",
+        annotations(title = "清空账单", destructive_hint = true)
+    )]
+    async fn clear_data(
+        &self,
+        Parameters(params): Parameters<write::ClearParams>,
+    ) -> Result<CallToolResult, ErrorData> {
+        Self::json(write::clear_data(&self.runtime, &params))
+    }
 }
 
 #[tool_handler]

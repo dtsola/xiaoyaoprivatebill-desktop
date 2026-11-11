@@ -5,8 +5,8 @@ use std::sync::Arc;
 use bill_api::Runtime;
 use bill_core::{DataPaths, Dataset, Session};
 use bill_mcp::write::{
-    delete_bill, import_bill, restore_bill, DeleteParams, ImportParams, RestoreParams,
-    DEMO_WRITE_ERROR,
+    clear_data, delete_bill, import_bill, restore_bill, ClearParams, DeleteParams, ImportParams,
+    RestoreParams, DEMO_WRITE_ERROR,
 };
 use serde_json::json;
 
@@ -263,4 +263,69 @@ fn demo_mode_rejects_delete_and_restore() {
         },
     );
     assert_eq!(restored["error"], json!(DEMO_WRITE_ERROR));
+}
+
+#[test]
+fn clear_requires_confirm() {
+    let env = setup();
+    let response = clear_data(&env.runtime, &ClearParams { confirm: false });
+    assert_eq!(response["success"], json!(false));
+    assert!(
+        response["error"]
+            .as_str()
+            .expect("错误")
+            .contains("confirm"),
+        "错误信息: {}",
+        response["error"]
+    );
+}
+
+#[test]
+fn clear_snapshots_before_removing() {
+    let env = setup();
+    write_bill(&env, "a.csv");
+    write_bill(&env, "b.csv");
+
+    let response = clear_data(&env.runtime, &ClearParams { confirm: true });
+    assert_eq!(response["ok"], json!(true));
+    assert_eq!(response["removed_count"], json!(2));
+    let snapshot_id = response["snapshot_id"].as_str().expect("snapshot_id");
+    assert!(!snapshot_id.is_empty());
+
+    assert!(!env.runtime.paths.bills_dir().join("a.csv").exists());
+    assert!(!env.runtime.paths.bills_dir().join("b.csv").exists());
+    let snapshot_dir = env.runtime.paths.snapshots_dir().join(snapshot_id);
+    assert!(snapshot_dir.join("files").join("a.csv").exists());
+    assert!(snapshot_dir.join("files").join("b.csv").exists());
+
+    let lines = audit_lines(&env);
+    assert_eq!(lines[0]["actor"]["tool"], json!("clear_data"));
+    assert_eq!(lines[1]["target"]["snapshot_id"], json!(snapshot_id));
+}
+
+#[test]
+fn clear_on_empty_dataset_still_snapshots() {
+    let env = setup();
+    let response = clear_data(&env.runtime, &ClearParams { confirm: true });
+
+    assert_eq!(response["ok"], json!(true));
+    assert_eq!(response["removed_count"], json!(0));
+    assert!(env
+        .runtime
+        .paths
+        .snapshots_dir()
+        .join(response["snapshot_id"].as_str().expect("id"))
+        .join("manifest.json")
+        .exists());
+}
+
+#[test]
+fn demo_mode_rejects_clear() {
+    let env = setup();
+    write_bill(&env, "a.csv");
+    Session::enter_demo(&env.runtime.paths).expect("进入演示");
+
+    let response = clear_data(&env.runtime, &ClearParams { confirm: true });
+    assert_eq!(response["error"], json!(DEMO_WRITE_ERROR));
+    assert!(env.runtime.paths.bills_dir().join("a.csv").exists());
 }

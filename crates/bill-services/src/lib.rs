@@ -6,6 +6,7 @@ pub mod charts;
 pub mod dataset;
 pub mod files;
 pub mod insights;
+pub mod snapshot;
 pub mod transactions;
 
 pub use dataset::{demo_dataset, load_dataset, ServiceError};

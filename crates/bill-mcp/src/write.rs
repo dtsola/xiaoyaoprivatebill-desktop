@@ -186,3 +186,82 @@ pub fn restore_bill(runtime: &Runtime, params: &RestoreParams) -> Value {
         }
     }
 }
+
+/// 清空参数。
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ClearParams {
+    /// 必须为 `true`，用于防止误调用。
+    pub confirm: bool,
+}
+
+/// 清空全部账单：先快照，快照失败则拒绝清空。
+pub fn clear_data(runtime: &Runtime, params: &ClearParams) -> Value {
+    if !params.confirm {
+        return json!({ "success": false, "error": "必须传入 confirm=true 才会清空" });
+    }
+    if Session::load(&runtime.paths).is_demo {
+        return json!({ "success": false, "error": DEMO_WRITE_ERROR });
+    }
+
+    let before = bill_services::files::list_files(&runtime.paths)
+        .map(|files| files.len())
+        .unwrap_or_default();
+    let _ = audit::record(
+        &runtime.paths,
+        "clear_data",
+        "intent",
+        "ok",
+        json!({ "before": { "file_count": before } }),
+        None,
+    );
+
+    let (snapshot_id, _) = match bill_services::snapshot::create_snapshot(&runtime.paths) {
+        Ok(snapshot) => snapshot,
+        Err(error) => {
+            let message = error.to_string();
+            let _ = audit::record(
+                &runtime.paths,
+                "clear_data",
+                "result",
+                "err",
+                json!({ "before": { "file_count": before } }),
+                Some(&message),
+            );
+            return json!({ "ok": false, "error": message });
+        }
+    };
+
+    match bill_services::files::clear_data(&runtime.paths) {
+        Ok(removed_count) => {
+            runtime.refresh();
+            let _ = audit::record(
+                &runtime.paths,
+                "clear_data",
+                "result",
+                "ok",
+                json!({
+                    "snapshot_id": snapshot_id,
+                    "removed_count": removed_count,
+                }),
+                None,
+            );
+            json!({
+                "ok": true,
+                "snapshot_id": snapshot_id,
+                "removed_count": removed_count,
+            })
+        }
+        Err(error) => {
+            let message = error.to_string();
+            let _ = audit::record(
+                &runtime.paths,
+                "clear_data",
+                "result",
+                "err",
+                json!({ "snapshot_id": snapshot_id }),
+                Some(&message),
+            );
+            json!({ "ok": false, "error": message, "snapshot_id": snapshot_id })
+        }
+    }
+}
