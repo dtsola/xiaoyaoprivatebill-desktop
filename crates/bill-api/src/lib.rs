@@ -7,8 +7,8 @@ use std::sync::RwLock;
 
 use bill_core::{DataPaths, Dataset};
 use bill_services::analysis::{
-    daily_data, monthly_analysis, overview_data, summary, time_analysis, top_transactions,
-    yearly_analysis, MonthlyQuery, YearlyQuery,
+    daily_data, filtered_monthly_analysis, monthly_analysis, monthly_data, overview_data, summary,
+    time_analysis, top_transactions, yearly_analysis, yearly_data, MonthlyQuery, YearlyQuery,
 };
 use bill_services::category::{
     category_analysis, category_available_dates, category_detail, category_expenses, category_trend,
@@ -113,6 +113,30 @@ pub fn handle(runtime: &Runtime, req: &ApiRequest) -> Result<Value, String> {
         })),
         ("GET", "/yearly_analysis") => Ok(handle_yearly(runtime, &req.query)),
         ("GET", "/monthly_analysis") => Ok(handle_monthly(runtime, &req.query)),
+        ("GET", "/yearly_data") => Ok({
+            let year = req
+                .query
+                .get("year")
+                .and_then(|value| value.parse::<i32>().ok());
+            let filter = req.query.get("filter").map(String::as_str).unwrap_or("all");
+            yearly_data(&runtime.dataset(), year, filter)
+        }),
+        ("GET", "/monthly_data") => Ok({
+            let year = req
+                .query
+                .get("year")
+                .and_then(|value| value.parse::<i32>().ok());
+            let month = req
+                .query
+                .get("month")
+                .and_then(|value| value.parse::<u32>().ok());
+            let filter = req.query.get("filter").map(String::as_str).unwrap_or("all");
+            monthly_data(&runtime.dataset(), year, month, filter)
+        }),
+        ("GET", "/filtered_monthly_analysis") => Ok({
+            let filter = req.query.get("filter").map(String::as_str).unwrap_or("all");
+            filtered_monthly_analysis(&runtime.dataset(), filter)
+        }),
         ("GET", "/overview_data") => Ok({
             let year = req
                 .query

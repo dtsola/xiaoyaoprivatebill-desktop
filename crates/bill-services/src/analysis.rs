@@ -143,7 +143,8 @@ fn split<'a>(rows: &[&'a Transaction], direction: &str) -> Vec<&'a Transaction> 
 }
 
 fn sum(rows: &[&Transaction]) -> f64 {
-    rows.iter().map(|row| row.amount).sum()
+    // 显式以 +0.0 起算：Rust 的 f64 `Sum` 用 -0.0 作空集初值。
+    rows.iter().fold(0.0, |acc, row| acc + row.amount)
 }
 
 fn monthly_sums(rows: &[&Transaction], months: &[String]) -> Vec<f64> {
@@ -670,4 +671,430 @@ fn category_totals(rows: &[&Transaction]) -> Vec<(String, f64)> {
         .into_iter()
         .map(|(name, total)| (name, round2(total)))
         .collect()
+}
+
+// ============ P2b：兼容接口（裸对象） ============
+
+/// 基础统计，对应 Web 版 `calculate_monthly_stats`。
+#[derive(Debug, Default, Clone, Copy)]
+struct Stats {
+    balance: f64,
+    total_expense: f64,
+    total_income: f64,
+    expense_count: usize,
+    income_count: usize,
+    total_count: usize,
+    active_days: usize,
+    avg_transaction: f64,
+    avg_daily_expense: f64,
+    expense_ratio: f64,
+    empty: bool,
+}
+
+impl Stats {
+    /// 输出与 Python 一致的整数/浮点混用：空聚合在某些字段上是 `int 0`。
+    fn as_json(&self) -> Value {
+        if self.empty {
+            return json!({
+                "balance": 0,
+                "total_expense": 0,
+                "total_income": 0,
+                "expense_count": 0,
+                "income_count": 0,
+                "total_count": 0,
+                "active_days": 0,
+                "avg_transaction": 0,
+                "avg_daily_expense": 0,
+                "expense_ratio": 0,
+            });
+        }
+        json!({
+            "balance": self.balance,
+            "total_expense": if self.expense_count == 0 { json!(0) } else { json!(self.total_expense) },
+            "total_income": if self.income_count == 0 { json!(0) } else { json!(self.total_income) },
+            "expense_count": self.expense_count,
+            "income_count": self.income_count,
+            "total_count": self.total_count,
+            "active_days": self.active_days,
+            "avg_transaction": if self.expense_count == 0 { json!(0) } else { json!(self.avg_transaction) },
+            "avg_daily_expense": self.avg_daily_expense,
+            "expense_ratio": if self.total_income > 0.0 { json!(self.expense_ratio) } else { json!(0) },
+        })
+    }
+}
+
+fn calc_stats(rows: &[&Transaction]) -> Stats {
+    if rows.is_empty() {
+        return Stats {
+            empty: true,
+            ..Stats::default()
+        };
+    }
+
+    let expense: Vec<&Transaction> = rows
+        .iter()
+        .copied()
+        .filter(|row| row.direction == "支出" && !row.is_refund)
+        .collect();
+    let income: Vec<&Transaction> = rows
+        .iter()
+        .copied()
+        .filter(|row| row.direction == "收入" && !row.is_refund)
+        .collect();
+    let total_expense = sum(&expense);
+    let total_income = sum(&income);
+    let active_days = rows
+        .iter()
+        .map(|row| row.date.as_str())
+        .collect::<BTreeSet<_>>()
+        .len();
+
+    Stats {
+        balance: total_income - total_expense,
+        total_expense,
+        total_income,
+        expense_count: expense.len(),
+        income_count: income.len(),
+        total_count: expense.len() + income.len(),
+        active_days,
+        avg_transaction: if expense.is_empty() {
+            0.0
+        } else {
+            round2(total_expense / expense.len() as f64)
+        },
+        avg_daily_expense: round2(total_expense / active_days.max(1) as f64),
+        expense_ratio: if total_income > 0.0 {
+            round2(total_expense / total_income * 100.0)
+        } else {
+            0.0
+        },
+        empty: false,
+    }
+}
+
+fn year_rows<'a>(dataset: &'a Dataset, year: i32, filter_type: &str) -> Vec<&'a Transaction> {
+    dataset
+        .transactions
+        .iter()
+        .filter(|row| row.time.year() == year)
+        .filter(|row| match filter_type {
+            // 与 Web 版一致：large 为 >=1000，small 为 <1000。
+            "large" => row.amount >= 1000.0,
+            "small" => row.amount < 1000.0,
+            _ => true,
+        })
+        .collect()
+}
+
+fn change_rate(current: f64, previous: f64) -> Value {
+    if previous == 0.0 {
+        if current == 0.0 {
+            return json!(0);
+        }
+        return Value::Null;
+    }
+    if current == 0.0 {
+        return json!(-100);
+    }
+    json!(round2((current - previous) / previous.abs() * 100.0))
+}
+
+/// 年度数据（兼容接口，裸对象）。
+pub fn yearly_data(dataset: &Dataset, year: Option<i32>, filter_type: &str) -> Value {
+    let available_years = dataset.available_years();
+    let Some(default_year) = available_years.first().copied() else {
+        return json!({ "error": "没有可用的账单数据" });
+    };
+    let year = year.unwrap_or(default_year);
+
+    let current = year_rows(dataset, year, filter_type);
+    let last = year_rows(dataset, year - 1, filter_type);
+    let current_stats = calc_stats(&current);
+    let mut stats = current_stats.as_json();
+
+    let keys = [
+        "balance_change",
+        "expense_change",
+        "income_change",
+        "transaction_change",
+        "balance_change_rate",
+        "expense_change_rate",
+        "income_change_rate",
+        "transaction_change_rate",
+    ];
+    if let Some(object) = stats.as_object_mut() {
+        if last.is_empty() {
+            for key in keys {
+                object.insert(key.to_owned(), Value::Null);
+            }
+        } else {
+            let last_stats = calc_stats(&last);
+            object.insert(
+                "balance_change".into(),
+                json!(current_stats.balance - last_stats.balance),
+            );
+            object.insert(
+                "expense_change".into(),
+                json!(current_stats.total_expense - last_stats.total_expense),
+            );
+            object.insert(
+                "income_change".into(),
+                json!(current_stats.total_income - last_stats.total_income),
+            );
+            object.insert(
+                "transaction_change".into(),
+                json!(current_stats.total_count as i64 - last_stats.total_count as i64),
+            );
+            object.insert(
+                "balance_change_rate".into(),
+                change_rate(current_stats.balance, last_stats.balance),
+            );
+            object.insert(
+                "expense_change_rate".into(),
+                change_rate(current_stats.total_expense, last_stats.total_expense),
+            );
+            object.insert(
+                "income_change_rate".into(),
+                change_rate(current_stats.total_income, last_stats.total_income),
+            );
+            object.insert(
+                "transaction_change_rate".into(),
+                change_rate(
+                    current_stats.total_count as f64,
+                    last_stats.total_count as f64,
+                ),
+            );
+        }
+    }
+
+    let months: Vec<&str> = current
+        .iter()
+        .map(|row| row.month.as_str())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect();
+
+    let mut expenses = Vec::new();
+    let mut incomes = Vec::new();
+    for month in &months {
+        let month_rows: Vec<&Transaction> = current
+            .iter()
+            .copied()
+            .filter(|row| row.month == *month)
+            .collect();
+        let month_expense: Vec<&Transaction> = month_rows
+            .iter()
+            .copied()
+            .filter(|row| row.direction == "支出" && !row.is_refund)
+            .collect();
+        let month_income: Vec<&Transaction> = month_rows
+            .iter()
+            .copied()
+            .filter(|row| row.direction == "收入" && !row.is_refund)
+            .collect();
+        expenses.push(round2(sum(&month_expense)));
+        incomes.push(round2(sum(&month_income)));
+    }
+
+    let expense_rows: Vec<&Transaction> = current
+        .iter()
+        .copied()
+        .filter(|row| row.direction == "支出" && !row.is_refund)
+        .collect();
+    let mut categories = category_totals(&expense_rows);
+    categories.sort_by(|left, right| right.1.total_cmp(&left.1).then(left.0.cmp(&right.0)));
+
+    json!({
+        "yearly_stats": stats,
+        "months": months,
+        "expenses": expenses,
+        "incomes": incomes,
+        "categories": categories.iter().map(|(name, _)| name.clone()).collect::<Vec<_>>(),
+        "amounts_by_category": categories.iter().map(|(_, amount)| *amount).collect::<Vec<_>>(),
+        "available_years": available_years,
+        "current_year": year,
+    })
+}
+
+fn parse_month(month: &str) -> (i32, u32) {
+    let mut parts = month.split('-');
+    let year = parts
+        .next()
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(0);
+    let number = parts
+        .next()
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(1);
+    (year, number)
+}
+
+/// 月度数据（兼容接口，带 `success` 外层）。
+pub fn monthly_data(
+    dataset: &Dataset,
+    year: Option<i32>,
+    month: Option<u32>,
+    filter_type: &str,
+) -> Value {
+    let Some(latest) = dataset
+        .transactions
+        .iter()
+        .map(|row| row.month.as_str())
+        .max()
+    else {
+        return json!({ "success": false, "error": "没有可用的账单数据" });
+    };
+    let (default_year, default_month) = parse_month(latest);
+    let year = year.unwrap_or(default_year);
+    let month = month.unwrap_or(default_month);
+
+    let current_month = format!("{year}-{month:02}");
+    let (last_year, last_month) = if month > 1 {
+        (year, month - 1)
+    } else {
+        (year - 1, 12)
+    };
+    let last_month = format!("{last_year}-{last_month:02}");
+
+    let filter = |row: &&Transaction| match filter_type {
+        "large" => row.amount >= 1000.0,
+        "small" => row.amount < 1000.0,
+        _ => true,
+    };
+    let current: Vec<&Transaction> = dataset
+        .transactions
+        .iter()
+        .filter(|row| row.month == current_month)
+        .filter(filter)
+        .collect();
+    let last: Vec<&Transaction> = dataset
+        .transactions
+        .iter()
+        .filter(|row| row.month == last_month)
+        .filter(filter)
+        .collect();
+
+    let current_stats = calc_stats(&current);
+    let mut data = current_stats.as_json();
+
+    if !last.is_empty() {
+        let last_stats = calc_stats(&last);
+        let comparison = |current: f64, previous: f64| {
+            let diff = current - previous;
+            // 上期为 0 时 Python 显式返回整数 0。
+            let rate = if previous != 0.0 {
+                json!(diff / previous.abs() * 100.0)
+            } else {
+                json!(0)
+            };
+            json!({ "diff": diff, "rate": rate })
+        };
+        if let Some(object) = data.as_object_mut() {
+            object.insert(
+                "comparisons".into(),
+                json!({
+                    "total_expense": comparison(current_stats.total_expense, last_stats.total_expense),
+                    "total_income": comparison(current_stats.total_income, last_stats.total_income),
+                    "balance": comparison(current_stats.balance, last_stats.balance),
+                }),
+            );
+        }
+    }
+
+    json!({ "success": true, "data": data })
+}
+
+/// 过滤后的月度分析（兼容接口，裸对象）。
+pub fn filtered_monthly_analysis(dataset: &Dataset, filter_type: &str) -> Value {
+    let rows: Vec<&Transaction> = dataset
+        .transactions
+        .iter()
+        .filter(|row| row.direction == "支出" && !row.is_refund && row.amount > 0.0)
+        .filter(|row| match filter_type {
+            // 注意：此处 large 为 >1000、small 为 <=1000，与年度/月度不同。
+            "large" => row.amount > 1000.0,
+            "small" => row.amount <= 1000.0,
+            _ => true,
+        })
+        .collect();
+
+    let months: Vec<&str> = rows
+        .iter()
+        .map(|row| row.month.as_str())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect();
+
+    let mut totals = Vec::new();
+    let mut counts = Vec::new();
+    let mut daily_averages = Vec::new();
+    let mut mom_rates = Vec::new();
+    let mut moving_averages = Vec::new();
+
+    for (index, month) in months.iter().enumerate() {
+        let month_rows: Vec<&Transaction> = rows
+            .iter()
+            .copied()
+            .filter(|row| row.month == *month)
+            .collect();
+        let total = round2(sum(&month_rows));
+        let active_days = month_rows
+            .iter()
+            .map(|row| row.date.as_str())
+            .collect::<BTreeSet<_>>()
+            .len();
+
+        totals.push(total);
+        counts.push(month_rows.len());
+        daily_averages.push(round2(total / active_days.max(1) as f64));
+
+        if index == 0 {
+            mom_rates.push(0.0);
+        } else {
+            let previous = totals[index - 1];
+            mom_rates.push(if previous != 0.0 {
+                round2((total / previous - 1.0) * 100.0)
+            } else {
+                0.0
+            });
+        }
+
+        let start = index.saturating_sub(2);
+        let window = &totals[start..=index];
+        let average = window.iter().sum::<f64>() / window.len() as f64;
+        moving_averages.push(round2(average));
+    }
+
+    let categories: Vec<&str> = rows
+        .iter()
+        .map(|row| row.category.as_str())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect();
+
+    let category_expenses: Vec<Vec<f64>> = months
+        .iter()
+        .map(|month| {
+            categories
+                .iter()
+                .map(|category| {
+                    rows.iter()
+                        .filter(|row| row.month == *month && row.category == *category)
+                        .map(|row| row.amount)
+                        .sum::<f64>()
+                })
+                .collect()
+        })
+        .collect();
+
+    json!({
+        "months": months,
+        "total_expenses": totals,
+        "transaction_counts": counts,
+        "daily_averages": daily_averages,
+        "mom_rates": mom_rates,
+        "moving_averages": moving_averages,
+        "categories": categories,
+        "category_expenses": category_expenses,
+    })
 }
