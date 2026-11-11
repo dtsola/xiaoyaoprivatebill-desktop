@@ -1,4 +1,5 @@
 <template>
+  <div class="app-shell">
   <!-- 自定义标题栏：Windows 无边框后由它提供拖拽区与窗口按钮；macOS 只留红绿灯位 -->
   <div
     class="titlebar"
@@ -88,6 +89,7 @@
     <main class="content">
       <router-view />
     </main>
+  </div>
   </div>
 
   <!-- 筛选菜单 (独立于侧边栏) -->
@@ -249,12 +251,18 @@ onMounted(async () => {
 
 <style scoped>
 /* 完全复制老前端的样式 */
-/* 自定义标题栏：固定在最顶部，整条可拖拽 */
+/* 应用外壳：固定视口高度，滚动只发生在内容区，滚动条不会顶到标题栏 */
+.app-shell {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 自定义标题栏：整条可拖拽 */
 .titlebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  position: relative;
+  flex: none;
   height: 34px;
   z-index: 3000;
   display: flex;
@@ -306,16 +314,17 @@ onMounted(async () => {
 }
 
 .app-container {
+  flex: 1;
+  min-height: 0;
   display: flex;
-  min-height: 100vh;
 }
 
 .sidebar {
-  position: fixed;
-  left: 0;
-  top: 34px;
-  bottom: 0;
+  /* 覆盖 main.css 的 fixed 定位，交给外壳 flex 布局 */
+  position: relative;
+  flex: 0 0 var(--sidebar-width);
   width: var(--sidebar-width);
+  height: 100%;
   /* 比卡片白底略灰，避免整块侧栏发白 */
   background: #F2F2F4;
   border-right: 1px solid var(--border-color);
@@ -395,16 +404,10 @@ onMounted(async () => {
 
 .content {
   flex: 1;
-  margin-left: var(--sidebar-width);
-  /* 顶部让出固定的自定义标题栏 */
-  padding: 54px 20px 20px;
+  min-width: 0;
+  padding: 20px;
   background: var(--bg-color);
-  min-height: calc(100vh - 34px);
-}
-
-/* 演示横幅已经在标题栏下方，主内容不再重复让位 */
-.demo-banner + .app-container .content {
-  padding-top: 20px;
+  overflow-y: auto;
 }
 
 /* 演示模式横幅 */
@@ -416,10 +419,9 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #FFE0B2;
-  position: sticky;
-  top: 34px;
+  position: relative;
+  flex: none;
   z-index: 1001;
-  margin-top: 34px;
 }
 
 .demo-content {
@@ -532,7 +534,6 @@ onMounted(async () => {
 /* 响应式调整 */
 @media (max-width: 768px) {
   .content {
-    margin-left: 0;
     padding: 16px;
   }
 

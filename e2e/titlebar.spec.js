@@ -26,11 +26,13 @@ test('自定义标题栏隐藏原生 title，并提供拖拽区与窗口按钮',
   // 主内容与侧边栏都让位到标题栏下方
   const sidebar = await page.locator('.sidebar').boundingBox()
   expect(sidebar.y).toBeGreaterThanOrEqual(34)
-  // 主内容用 54px 顶部内边距让位（标题栏 34px + 原有 20px）
-  const contentPaddingTop = await page
-    .locator('.content')
-    .evaluate((el) => getComputedStyle(el).paddingTop)
-  expect(contentPaddingTop).toBe('54px')
+  // 滚动只发生在内容区：窗口本身不滚动，滚动条不会顶到标题栏
+  const scroll = await page.evaluate(() => ({
+    windowScroll: document.scrollingElement.scrollHeight - window.innerHeight,
+    contentOverflow: getComputedStyle(document.querySelector('.content')).overflowY
+  }))
+  expect(scroll.windowScroll).toBeLessThanOrEqual(1)
+  expect(scroll.contentOverflow).toBe('auto')
 
   expect(errors, `控制台错误: ${errors.join(' | ')}`).toEqual([])
 })

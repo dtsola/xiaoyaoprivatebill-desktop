@@ -1,7 +1,7 @@
 <template>
   <div class="settings-page">
     <!-- 页面标题：设置页只做文件与桌面管理；/agent 复用本页渲染 MCP 区块 -->
-    <div class="page-header">
+    <div class="page-header" :class="{ 'page-header-agent': agentOnly }">
       <h1 class="page-title">{{ agentOnly ? 'AI Agent 接入' : '文件管理' }}</h1>
       <p v-if="agentOnly" class="page-subtitle">
         通过 MCP 服务让 小遥Claw、Claude Code、Codex 等 Agent 读取本机账单数据；默认关闭，仅监听 127.0.0.1。
@@ -555,6 +555,12 @@ async function handleClearAllData() {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+}
+
+.page-header-agent {
+  /* 标题与说明上下排列，长文案不再挤压标题 */
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .page-subtitle {
