@@ -4,6 +4,7 @@ pub mod analysis;
 pub mod category;
 pub mod dataset;
 pub mod files;
+pub mod insights;
 pub mod transactions;
 
 pub use dataset::{demo_dataset, load_dataset, ServiceError};
