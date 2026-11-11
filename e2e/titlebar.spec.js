@@ -70,3 +70,18 @@ test('侧边栏 LOGO 已替换为新版本', async ({ page }) => {
   expect(box.width).toBe(44)
   expect(box.height).toBe(44)
 })
+
+test('侧边栏为浅灰底色，选中项用白色胶囊区分', async ({ page }) => {
+  await page.goto('/')
+
+  const sidebarBg = await page
+    .locator('.sidebar')
+    .evaluate((el) => getComputedStyle(el).backgroundColor)
+  expect(sidebarBg).toBe('rgb(242, 242, 244)')
+
+  const activeBg = await page
+    .locator('.nav-item.active')
+    .first()
+    .evaluate((el) => getComputedStyle(el).backgroundColor)
+  expect(activeBg).toBe('rgb(255, 255, 255)')
+})

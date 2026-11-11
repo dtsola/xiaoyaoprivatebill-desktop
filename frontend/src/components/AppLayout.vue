@@ -260,7 +260,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  background: var(--card-bg);
+  background: #F2F2F4;
   border-bottom: 1px solid var(--border-color);
   user-select: none;
 }
@@ -316,7 +316,8 @@ onMounted(async () => {
   top: 34px;
   bottom: 0;
   width: var(--sidebar-width);
-  background: var(--card-bg);
+  /* 比卡片白底略灰，避免整块侧栏发白 */
+  background: #F2F2F4;
   border-right: 1px solid var(--border-color);
   z-index: 1000;
   overflow-y: auto;
@@ -362,14 +363,15 @@ onMounted(async () => {
 }
 
 .nav-item:hover {
-  background: var(--hover-bg);
+  background: #E7E7EB;
   color: var(--primary-color);
 }
 
 .nav-item.active {
-  background: var(--hover-bg);
+  background: #FFFFFF;
   color: var(--primary-color);
   font-weight: 500;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .nav-item i {
