@@ -155,7 +155,7 @@ Web 版在本期冻结，仅修复安全问题；新功能只进桌面版。
 | 功能 | 接口 | 页面 |
 |---|---|---|
 | F1 导入 | `/upload` | 设置 |
-| F2 文件管理 | `/files`、`/clear_data` | 设置 |
+| F2 文件管理 | `/files`、`/clear_data` | 设置（「账单文件」「数据管理」分组） |
 | F3 年度 | `/yearly_analysis` | 年度分析 |
 | F4 月度 | `/monthly_analysis` | 月度分析 |
 | F5 分类 | `/category_analysis`、`/category_available_dates` | 分类分析 |
