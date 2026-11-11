@@ -384,7 +384,7 @@ cargo test --workspace
 python tools/golden/generate.py
 git diff --exit-code fixtures/expected
 
-# 前端冻结基线校验（只允许 7 个文件 diff）
+# 前端冻结基线校验（只允许 8 个文件 diff）
 node scripts/check-frontend-baseline.mjs
 ```
 

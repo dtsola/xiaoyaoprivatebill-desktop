@@ -41,7 +41,7 @@ xiaoyaoprivatebill-desktop/
 ├─ rust-toolchain.toml            # channel = "1.95"
 ├─ package.json                   # @tauri-apps/cli + 插件
 ├─ frontend/                      # 从 Web 版复制，冻结基线
-│  ├─ PATCHES.md                  # 允许改动的 7 个文件清单
+│  ├─ PATCHES.md                  # 允许改动的 8 个文件清单
 │  └─ src/...
 ├─ src-tauri/                     # Tauri 壳
 │  ├─ tauri.conf.json
@@ -84,7 +84,7 @@ bill-core ← bill-parsers ← bill-services ← bill-api ← bill-mcp
 ### 1.4 与 Web 版的关系
 
 - Web 版是**行为基准**，不是要修改的代码库。
-- 前端从 Web 版复制并打 tag `web-baseline`，只允许改 7 个文件。
+- 前端从 Web 版复制并打 tag `web-baseline`，只允许改 8 个文件。
 - 后端 100% Rust 重写；Python 仅用于开发期生成 golden，不进入产物。
 - Web 版冻结，仅修复安全问题；新功能只进桌面版。
 
@@ -164,7 +164,7 @@ pub fn yearly_analysis(dataset: &Dataset, year: i32) -> Result<Value, ApiError> 
 
 ### 3.3 Vue / 前端规范
 
-- **只允许修改 7 个文件**：
+- **只允许修改 8 个文件**：
   1. `frontend/src/api/client.js`
   2. `frontend/src/views/Settings.vue`
   3. `frontend/index.html`
@@ -172,7 +172,8 @@ pub fn yearly_analysis(dataset: &Dataset, year: i32) -> Result<Value, ApiError> 
   5. `frontend/src/components/AppLayout.vue`
   6. `frontend/src/views/AboutAuthor.vue`
   7. `frontend/vite.config.js`
-- 9 个页面（除 Settings）、3 个公共组件、4 个 Pinia store、`main.css` 保持冻结。
+  8. `frontend/src/views/Home.vue`（仅隐私文案两处，见技术方案 03 §11.8）
+- 8 个之外，其余 9 个页面、3 个公共组件、4 个 Pinia store、`main.css` 保持冻结。
 - 不新增前端依赖（`@tauri-apps/api`、dialog、opener 除外）。
 - 新增样式写在对应 `<style scoped>` 内，不改全局主题。
 - 视觉与 Web 版保持一致；不擅自重设计。
@@ -470,7 +471,7 @@ node scripts/check-frontend-baseline.mjs
 - 27 个接口 = 18 在用 + 9 兼容。
 - 14 个 MCP 工具 = 10 读 + 4 写。
 - 61 个任务；14–24 人日；日历 14–22 个工作日。
-- 前端 7 个文件可改；9 个页面；演示数据 7,396 条。
+- 前端 8 个文件可改；9 个页面；演示数据 7,396 条。
 - 不得写成「13 个工具」「前端零改动」「30/90 分钟自动清理」「Docker/Nginx 部署」。
 
 ---
@@ -489,13 +490,13 @@ node scripts/check-frontend-baseline.mjs
 
 **影响**: 需要 3–5 人日复刻 pandas 统计口径；27 个接口需逐字段对账。
 
-### AD-20261111-002: 前端冻结复用，只改 7 个文件
+### AD-20261111-002: 前端冻结复用，只改 8 个文件
 
 **日期**: 2026-11-11
 
 **背景**: 9 个页面与视觉已经稳定，重写成本高且容易引入回归。
 
-**决策**: 复制 Web 版 `frontend/` 作为冻结基线，只允许改 7 个文件。
+**决策**: 复制 Web 版 `frontend/` 作为冻结基线，只允许改 8 个文件。
 
 **影响**: 联调返工可控；用 `check-frontend-baseline.mjs` 做 CI 门禁。
 
