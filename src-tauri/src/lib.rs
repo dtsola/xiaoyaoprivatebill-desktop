@@ -3,12 +3,12 @@
 mod commands;
 mod tray;
 
-use std::path::PathBuf;
+use bill_core::DataPaths;
 use tauri::Manager;
 
-/// 应用级状态。P0 只保存数据目录；P1 会扩展为完整的 AppState。
+/// 应用级状态。P1 起保存完整的数据目录布局；后续再扩展设置与数据集。
 pub struct AppState {
-    pub app_data_dir: PathBuf,
+    pub paths: DataPaths,
 }
 
 pub fn run() {
@@ -24,9 +24,9 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            let app_data_dir = app.path().app_data_dir()?;
-            std::fs::create_dir_all(&app_data_dir)?;
-            app.manage(AppState { app_data_dir });
+            let paths = DataPaths::new(app.path().app_data_dir()?);
+            paths.ensure_layout()?;
+            app.manage(AppState { paths });
 
             tray::create_tray(app)?;
 
