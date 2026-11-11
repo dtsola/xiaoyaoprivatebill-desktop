@@ -56,7 +56,7 @@ release/
 
 # 临时文档
 **/项目提示词.md
-**/开发**.md
+**/开发实施步骤.md
 **/桌面端**
 docs/base/
 
@@ -88,3 +88,10 @@ fixtures/tmp/
 .env.local
 .env.*.local
 
+
+# 测试与验收产物
+test-results/
+playwright-report/
+blob-report/
+artifacts/ui/
+.tmp-fontawesome/
