@@ -30,7 +30,7 @@ test('关于页外链交给系统浏览器打开', async ({ page }) => {
     .poll(() => page.evaluate(() => window.__TAURI_TEST_OPENED))
     .toBe('https://www.dtsola.com')
 
-  await page.locator('.project-link').click()
+  await page.locator('.project-link', { hasText: 'GitHub 仓库' }).click()
   await expect
     .poll(() => page.evaluate(() => window.__TAURI_TEST_OPENED))
     .toBe('https://github.com/dtsola/xiaoyaoprivatebill-desktop')
@@ -73,4 +73,15 @@ test('GitHub 仓库指向桌面版仓库', async ({ page }) => {
   await expect
     .poll(() => page.evaluate(() => window.__TAURI_TEST_OPENED))
     .toBe('https://github.com/dtsola/xiaoyaoprivatebill-desktop')
+})
+
+test('产品官网入口指向桌面版官网', async ({ page }) => {
+  await page.goto('/#/about-author')
+
+  const link = page.locator('.project-link', { hasText: '产品官网' })
+  await expect(link).toBeVisible()
+  await link.click()
+  await expect
+    .poll(() => page.evaluate(() => window.__TAURI_TEST_OPENED))
+    .toBe('https://www.xiaoyaosai.com/xiaoyaoprivatebill-desktop/')
 })

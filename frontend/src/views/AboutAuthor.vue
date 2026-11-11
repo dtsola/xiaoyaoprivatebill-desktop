@@ -112,7 +112,11 @@
             数据完全本地处理，不上传任何服务器。支持支付宝和微信账单的自动解析和多维度数据可视化分析。
           </p>
           <div class="project-links">
-            <a href="https://github.com/dtsola/xiaoyaoprivatebill-desktop" target="_blank" rel="noopener noreferrer" class="project-link" @click.prevent="openExternal('https://github.com/dtsola/xiaoyaoprivatebill-desktop')">
+            <a href="https://www.xiaoyaosai.com/xiaoyaoprivatebill-desktop/" target="_blank" rel="noopener noreferrer" class="project-link" @click.prevent="openExternal('https://www.xiaoyaosai.com/xiaoyaoprivatebill-desktop/')">
+              <Compass :size="'1em'" />
+              <span>产品官网</span>
+            </a>
+            <a href="https://github.com/dtsola/xiaoyaoprivatebill-desktop" target="_blank" rel="noopener noreferrer" class="project-link secondary" @click.prevent="openExternal('https://github.com/dtsola/xiaoyaoprivatebill-desktop')">
               <Github :size="'1em'" />
               <span>GitHub 仓库</span>
             </a>
@@ -419,6 +423,18 @@ const closePreview = () => {
   background: #0066E6;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+/* GitHub 作为次要入口：白底描边，突出「产品官网」主按钮 */
+.project-link.secondary {
+  background: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.project-link.secondary:hover {
+  background: var(--hover-bg);
+  box-shadow: var(--shadow-card);
 }
 
 /* 响应式设计 */
