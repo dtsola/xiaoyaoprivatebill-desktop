@@ -19,6 +19,7 @@ rmcp = { version = "3.9", default-features = false, features = [
 tokio = { version = "1", features = ["net", "rt-multi-thread", "macros", "sync", "time"] }
 getrandom = "0.3"
 schemars = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }

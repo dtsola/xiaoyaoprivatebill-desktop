@@ -61,3 +61,27 @@ pub fn read(paths: &DataPaths, limit: usize, tool: Option<&str>, since: Option<&
     }
     json!({ "entries": entries })
 }
+
+/// 写入一条审计记录（intent / result）。
+pub fn record(
+    paths: &DataPaths,
+    tool: &str,
+    phase: &str,
+    result: &str,
+    target: Value,
+    error: Option<&str>,
+) -> Result<(), String> {
+    let entry = json!({
+        "ts": chrono::Local::now().to_rfc3339(),
+        "event": tool,
+        "phase": phase,
+        "actor": { "kind": "mcp", "tool": tool },
+        "request_id": crate::token::short_id(),
+        "target": target,
+        "result": result,
+        "error": error,
+        "app_version": env!("CARGO_PKG_VERSION"),
+        "schema_version": 1,
+    });
+    append(paths, &entry)
+}

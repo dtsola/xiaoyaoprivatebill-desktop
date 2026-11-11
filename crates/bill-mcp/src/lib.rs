@@ -8,6 +8,7 @@ pub mod auth;
 pub mod lifecycle;
 pub mod token;
 pub mod tools;
+pub mod write;
 
 use std::sync::Arc;
 
@@ -150,6 +151,17 @@ impl BillMcp {
         Parameters(params): Parameters<tools::AuditParams>,
     ) -> Result<CallToolResult, ErrorData> {
         Self::json(tools::get_audit_log(&self.runtime.paths, &params))
+    }
+
+    #[tool(
+        description = "导入支付宝/微信账单文件（绝对路径，1-20 个），逐个返回结果",
+        annotations(title = "导入账单", destructive_hint = false)
+    )]
+    async fn import_bill(
+        &self,
+        Parameters(params): Parameters<write::ImportParams>,
+    ) -> Result<CallToolResult, ErrorData> {
+        Self::json(write::import_bill(&self.runtime, &params))
     }
 }
 

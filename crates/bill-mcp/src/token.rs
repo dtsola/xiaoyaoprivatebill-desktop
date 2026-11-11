@@ -40,6 +40,20 @@ fn generate_and_save(paths: &DataPaths) -> Result<String, String> {
     Ok(token)
 }
 
+/// 生成 16 位十六进制短 ID，用于审计 `request_id`。
+pub fn short_id() -> String {
+    let mut bytes = [0u8; 8];
+    if getrandom::fill(&mut bytes).is_err() {
+        return "0000000000000000".to_owned();
+    }
+    let mut id = String::with_capacity(16);
+    for byte in bytes {
+        id.push(HEX[(byte >> 4) as usize] as char);
+        id.push(HEX[(byte & 0x0f) as usize] as char);
+    }
+    id
+}
+
 fn random_hex() -> Result<String, getrandom::Error> {
     let mut bytes = [0u8; TOKEN_BYTES];
     getrandom::fill(&mut bytes)?;

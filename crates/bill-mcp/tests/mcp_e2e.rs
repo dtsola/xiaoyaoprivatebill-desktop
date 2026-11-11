@@ -123,6 +123,7 @@ async fn lists_ten_tools_and_calls_list_bills() {
             "get_summary",
             "get_time_analysis",
             "get_yearly_analysis",
+            "import_bill",
             "list_bills",
             "search_transactions",
         ]
