@@ -17,7 +17,7 @@
           <h2 class="section-title">联系方式</h2>
 
           <div class="contact-list">
-            <a href="https://www.dtsola.com" target="_blank" rel="noopener noreferrer" class="contact-item">
+            <a href="https://www.dtsola.com" target="_blank" rel="noopener noreferrer" class="contact-item" @click.prevent="openExternal('https://www.dtsola.com')">
               <div class="contact-icon website">
                 <i class="fas fa-globe"></i>
               </div>
@@ -28,7 +28,7 @@
               <i class="fas fa-external-link-alt contact-arrow"></i>
             </a>
 
-            <a href="https://space.bilibili.com/736015" target="_blank" rel="noopener noreferrer" class="contact-item">
+            <a href="https://space.bilibili.com/736015" target="_blank" rel="noopener noreferrer" class="contact-item" @click.prevent="openExternal('https://space.bilibili.com/736015')">
               <div class="contact-icon bilibili">
                 <i class="fab fa-bilibili"></i>
               </div>
@@ -96,7 +96,7 @@
             数据完全本地处理，不上传任何服务器。支持支付宝和微信账单的自动解析和多维度数据可视化分析。
           </p>
           <div class="project-links">
-            <a href="https://github.com/dtsola/xiaoyaoprivatebill" target="_blank" rel="noopener noreferrer" class="project-link">
+            <a href="https://github.com/dtsola/xiaoyaoprivatebill" target="_blank" rel="noopener noreferrer" class="project-link" @click.prevent="openExternal('https://github.com/dtsola/xiaoyaoprivatebill')">
               <i class="fab fa-github"></i>
               <span>GitHub 仓库</span>
             </a>
@@ -122,6 +122,16 @@
 
 <script setup>
 import { ref } from 'vue'
+import { openUrl } from '@tauri-apps/plugin-opener'
+
+// 外链一律交给系统浏览器，避免在 WebView 内新开窗口。
+async function openExternal(url) {
+  try {
+    await openUrl(url)
+  } catch (error) {
+    console.error('[AboutAuthor] 打开链接失败:', error)
+  }
+}
 
 // 预览状态
 const previewVisible = ref(false)

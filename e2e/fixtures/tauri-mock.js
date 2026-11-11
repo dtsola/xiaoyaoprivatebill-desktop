@@ -346,6 +346,10 @@ export function installTauriMock() {
     if (cmd === 'plugin:event|listen') return 1
     if (cmd === 'plugin:event|unlisten') return null
     if (cmd === 'plugin:dialog|open') return window.__TAURI_TEST_DIALOG ?? null
+    if (cmd === 'plugin:opener|open_url') {
+      window.__TAURI_TEST_OPENED = args?.url ?? null
+      return null
+    }
     return null
   }
 
