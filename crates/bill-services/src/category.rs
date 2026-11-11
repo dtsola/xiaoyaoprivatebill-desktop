@@ -6,7 +6,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use bill_core::Dataset;
-use chrono::Datelike;
+use chrono::{Datelike, Timelike};
 use serde_json::{json, Value};
 
 /// 分类支出统计：仅支出行（含退款，复刻 D7），按金额降序。
@@ -50,8 +50,14 @@ pub fn category_available_dates(dataset: &Dataset) -> Value {
 /// `category` 为空时返回分类排行；按 0.7×金额排名 + 0.3×笔数排名升序，
 /// 排名采用 pandas 的 average 规则（并列取平均名次）。
 pub fn category_analysis(dataset: &Dataset, category: Option<&str>, year: Option<i32>) -> Value {
+    let all_expense: Vec<&bill_core::Transaction> = dataset
+        .transactions
+        .iter()
+        .filter(|row| row.direction == "支出" && !row.is_refund)
+        .collect();
+
     if let Some(category) = category {
-        return json!({ "error": format!("未找到分类 \"{category}\" 的数据") });
+        return category_detail_branch(dataset, &all_expense, category, year);
     }
 
     let rows: Vec<&bill_core::Transaction> = dataset
@@ -158,4 +164,153 @@ fn average_ranks(values: &[f64], descending: bool) -> Vec<f64> {
         index = end;
     }
     ranks
+}
+
+/// 分类明细分支：统计、12 个月趋势、24 小时分布、金额区间分布。
+fn category_detail_branch(
+    dataset: &Dataset,
+    all_expense: &[&bill_core::Transaction],
+    category: &str,
+    year: Option<i32>,
+) -> Value {
+    let year = year.or_else(|| dataset.transactions.iter().map(|row| row.time.year()).max());
+    let in_year: Vec<&bill_core::Transaction> = all_expense
+        .iter()
+        .copied()
+        .filter(|row| year.is_none_or(|value| row.time.year() == value))
+        .collect();
+    let rows: Vec<&bill_core::Transaction> = in_year
+        .iter()
+        .copied()
+        .filter(|row| row.category == category)
+        .collect();
+
+    if rows.is_empty() {
+        return json!({ "error": format!("未找到分类 \"{category}\" 的数据") });
+    }
+
+    let total: f64 = rows.iter().map(|row| row.amount).sum();
+    let total_all: f64 = in_year.iter().map(|row| row.amount).sum();
+    let mut amounts: Vec<f64> = rows.iter().map(|row| row.amount).collect();
+    amounts.sort_by(|left, right| left.total_cmp(right));
+    let median = if amounts.len().is_multiple_of(2) {
+        (amounts[amounts.len() / 2 - 1] + amounts[amounts.len() / 2]) / 2.0
+    } else {
+        amounts[amounts.len() / 2]
+    };
+
+    let prefix = year
+        .map(|value| value.to_string())
+        .unwrap_or_else(|| "None".into());
+    let months: Vec<String> = (1..=12)
+        .map(|month| format!("{prefix}-{month:02}"))
+        .collect();
+    let monthly_total: BTreeMap<&str, f64> =
+        in_year.iter().fold(BTreeMap::new(), |mut acc, row| {
+            *acc.entry(row.month.as_str()).or_insert(0.0) += row.amount;
+            acc
+        });
+    let category_monthly: BTreeMap<&str, (f64, usize)> =
+        rows.iter().fold(BTreeMap::new(), |mut acc, row| {
+            let entry = acc.entry(row.month.as_str()).or_insert((0.0, 0));
+            entry.0 += row.amount;
+            entry.1 += 1;
+            acc
+        });
+
+    let mut trend_amounts = Vec::new();
+    let mut trend_counts = Vec::new();
+    let mut trend_ratios = Vec::new();
+    for month in &months {
+        let (amount, count) = category_monthly
+            .get(month.as_str())
+            .copied()
+            .unwrap_or((0.0, 0));
+        let total_month = monthly_total.get(month.as_str()).copied().unwrap_or(0.0);
+        trend_amounts.push(round2(amount));
+        trend_counts.push(count);
+        trend_ratios.push(if total_month > 0.0 {
+            round1(amount / total_month * 100.0)
+        } else {
+            0.0
+        });
+    }
+
+    let mut hour_counts = vec![0usize; 24];
+    let mut hour_sums = [0.0f64; 24];
+    for row in &rows {
+        let hour = row.time.hour() as usize;
+        hour_counts[hour] += 1;
+        hour_sums[hour] += row.amount;
+    }
+    let hour_amounts: Vec<f64> = hour_sums.iter().map(|value| round2(*value)).collect();
+    let hour_averages: Vec<f64> = hour_sums
+        .iter()
+        .zip(&hour_counts)
+        .map(|(sum, count)| {
+            if *count == 0 {
+                0.0
+            } else {
+                round2(sum / *count as f64)
+            }
+        })
+        .collect();
+
+    let buckets = [0.0, 50.0, 100.0, 200.0, 500.0, 1000.0, f64::INFINITY];
+    let labels = ["0-50", "50-100", "100-200", "200-500", "500-1000", "1000+"];
+    let mut bucket_counts = vec![0usize; 6];
+    // 复刻 pandas cut 的右闭区间：(0,50]、(50,100]……
+    for amount in &amounts {
+        for index in 0..6 {
+            if *amount <= buckets[index + 1] {
+                bucket_counts[index] += 1;
+                break;
+            }
+        }
+    }
+    let percentages: Vec<f64> = bucket_counts
+        .iter()
+        .map(|count| {
+            if rows.is_empty() {
+                0.0
+            } else {
+                round1(*count as f64 / rows.len() as f64 * 100.0)
+            }
+        })
+        .collect();
+
+    json!({
+        "category": category,
+        "stats": {
+            "total_expense": total,
+            "transaction_count": rows.len(),
+            "avg_amount": round2(total / rows.len() as f64),
+            "expense_ratio": if total_all > 0.0 { round2(total / total_all * 100.0) } else { 0.0 },
+            "date_range": 365,
+            "max_amount": amounts.last().copied().unwrap_or(0.0),
+            "min_amount": amounts.first().copied().unwrap_or(0.0),
+            "median_amount": median,
+        },
+        "trend": {
+            "dates": months,
+            "amounts": trend_amounts,
+            "counts": trend_counts,
+            "ratios": trend_ratios,
+        },
+        "pattern": {
+            "hours": (0..24).collect::<Vec<i32>>(),
+            "counts": hour_counts,
+            "amounts": hour_amounts,
+            "averages": hour_averages,
+        },
+        "distribution": {
+            "ranges": labels,
+            "counts": bucket_counts,
+            "percentages": percentages,
+        }
+    })
+}
+
+fn round1(value: f64) -> f64 {
+    (value * 10.0).round() / 10.0
 }

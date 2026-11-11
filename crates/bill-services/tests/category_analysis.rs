@@ -73,3 +73,34 @@ fn year_filter_limits_rows() {
     assert_eq!(response["categories"], json!(["餐饮"]));
     assert_eq!(response["stats"]["totals"], json!([999.0]));
 }
+
+#[test]
+fn detail_branch_returns_stats_trend_pattern_distribution() {
+    let response = category_analysis(&dataset(), Some("餐饮"), Some(2024));
+
+    assert_eq!(response["category"], json!("餐饮"));
+    assert_eq!(response["stats"]["total_expense"], json!(150.0));
+    assert_eq!(response["stats"]["transaction_count"], json!(2));
+    assert_eq!(response["stats"]["avg_amount"], json!(75.0));
+    assert_eq!(response["stats"]["expense_ratio"], json!(65.22));
+    assert_eq!(response["stats"]["max_amount"], json!(100.0));
+    assert_eq!(response["stats"]["min_amount"], json!(50.0));
+    assert_eq!(response["stats"]["median_amount"], json!(75.0));
+
+    let trend = &response["trend"];
+    assert_eq!(trend["dates"].as_array().expect("月份").len(), 12);
+    assert_eq!(trend["amounts"][0], json!(100.0));
+    assert_eq!(trend["amounts"][1], json!(50.0));
+
+    let pattern = &response["pattern"];
+    assert_eq!(pattern["hours"].as_array().expect("小时").len(), 24);
+    assert_eq!(pattern["counts"][12], json!(2));
+
+    let distribution = &response["distribution"];
+    assert_eq!(distribution["ranges"][0], json!("0-50"));
+    assert_eq!(
+        distribution["counts"],
+        json!([1, 1, 0, 0, 0, 0]),
+        "pandas cut 为右闭区间"
+    );
+}
