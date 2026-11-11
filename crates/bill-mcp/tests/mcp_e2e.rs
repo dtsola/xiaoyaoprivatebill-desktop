@@ -115,6 +115,7 @@ async fn lists_ten_tools_and_calls_list_bills() {
     assert_eq!(
         names,
         vec![
+            "delete_bill",
             "get_audit_log",
             "get_category_analysis",
             "get_insights",
@@ -125,6 +126,7 @@ async fn lists_ten_tools_and_calls_list_bills() {
             "get_yearly_analysis",
             "import_bill",
             "list_bills",
+            "restore_bill",
             "search_transactions",
         ]
     );

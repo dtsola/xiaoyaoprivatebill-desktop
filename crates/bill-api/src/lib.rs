@@ -420,7 +420,7 @@ fn handle_upload(runtime: &Runtime, body: &Value) -> Value {
 fn handle_delete(runtime: &Runtime, raw_name: &str) -> Value {
     let name = percent_decode(raw_name);
     match delete_file(&runtime.paths, &name) {
-        Ok(()) => {
+        Ok(_) => {
             runtime.refresh();
             json!({ "success": true })
         }

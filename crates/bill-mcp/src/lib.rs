@@ -163,6 +163,28 @@ impl BillMcp {
     ) -> Result<CallToolResult, ErrorData> {
         Self::json(write::import_bill(&self.runtime, &params))
     }
+
+    #[tool(
+        description = "删除账单文件（移入回收站，可恢复）",
+        annotations(title = "删除账单", destructive_hint = true)
+    )]
+    async fn delete_bill(
+        &self,
+        Parameters(params): Parameters<write::DeleteParams>,
+    ) -> Result<CallToolResult, ErrorData> {
+        Self::json(write::delete_bill(&self.runtime, &params))
+    }
+
+    #[tool(
+        description = "从回收站恢复账单（传入删除时返回的 trash_id）",
+        annotations(title = "恢复账单", destructive_hint = false)
+    )]
+    async fn restore_bill(
+        &self,
+        Parameters(params): Parameters<write::RestoreParams>,
+    ) -> Result<CallToolResult, ErrorData> {
+        Self::json(write::restore_bill(&self.runtime, &params))
+    }
 }
 
 #[tool_handler]

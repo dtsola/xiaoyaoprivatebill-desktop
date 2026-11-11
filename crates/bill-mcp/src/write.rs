@@ -86,3 +86,103 @@ fn file_name(raw: &str) -> Option<String> {
         .file_name()
         .map(|value| value.to_string_lossy().into_owned())
 }
+
+/// 删除参数。
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct DeleteParams {
+    /// `bills/` 下的文件名。
+    pub filename: String,
+}
+
+/// 恢复参数。
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct RestoreParams {
+    /// 回收站条目 ID。
+    pub trash_id: String,
+}
+
+/// 删除账单：移入回收站，返回条目 ID。
+pub fn delete_bill(runtime: &Runtime, params: &DeleteParams) -> Value {
+    if Session::load(&runtime.paths).is_demo {
+        return json!({ "success": false, "error": DEMO_WRITE_ERROR });
+    }
+
+    let _ = audit::record(
+        &runtime.paths,
+        "delete_bill",
+        "intent",
+        "ok",
+        json!({ "files": [params.filename] }),
+        None,
+    );
+
+    match bill_services::files::delete_file(&runtime.paths, &params.filename) {
+        Ok(trash_id) => {
+            runtime.refresh();
+            let _ = audit::record(
+                &runtime.paths,
+                "delete_bill",
+                "result",
+                "ok",
+                json!({ "files": [params.filename], "trash_id": trash_id }),
+                None,
+            );
+            json!({ "ok": true, "trash_id": trash_id, "filename": params.filename })
+        }
+        Err(error) => {
+            let message = error.to_string();
+            let _ = audit::record(
+                &runtime.paths,
+                "delete_bill",
+                "result",
+                "err",
+                json!({ "files": [params.filename] }),
+                Some(&message),
+            );
+            json!({ "ok": false, "error": message })
+        }
+    }
+}
+
+/// 从回收站恢复。
+pub fn restore_bill(runtime: &Runtime, params: &RestoreParams) -> Value {
+    if Session::load(&runtime.paths).is_demo {
+        return json!({ "success": false, "error": DEMO_WRITE_ERROR });
+    }
+
+    let _ = audit::record(
+        &runtime.paths,
+        "restore_bill",
+        "intent",
+        "ok",
+        json!({ "trash_id": params.trash_id }),
+        None,
+    );
+
+    match bill_services::files::restore_trash(&runtime.paths, &params.trash_id) {
+        Ok(restored) => {
+            runtime.refresh();
+            let _ = audit::record(
+                &runtime.paths,
+                "restore_bill",
+                "result",
+                "ok",
+                json!({ "trash_id": params.trash_id, "files": restored }),
+                None,
+            );
+            json!({ "ok": true, "restored": restored })
+        }
+        Err(error) => {
+            let message = error.to_string();
+            let _ = audit::record(
+                &runtime.paths,
+                "restore_bill",
+                "result",
+                "err",
+                json!({ "trash_id": params.trash_id }),
+                Some(&message),
+            );
+            json!({ "ok": false, "error": message })
+        }
+    }
+}

@@ -124,8 +124,8 @@ pub fn list_files(paths: &DataPaths) -> Result<Vec<FileEntry>, FileError> {
     Ok(files)
 }
 
-/// 把文件移入回收站并写 manifest。
-pub fn delete_file(paths: &DataPaths, filename: &str) -> Result<(), FileError> {
+/// 把文件移入回收站并写 manifest，返回回收站条目 ID。
+pub fn delete_file(paths: &DataPaths, filename: &str) -> Result<String, FileError> {
     if !has_bill_extension(filename) || !is_plain_name(filename) {
         return Err(FileError::InvalidName);
     }
@@ -138,7 +138,77 @@ pub fn delete_file(paths: &DataPaths, filename: &str) -> Result<(), FileError> {
     let trash = create_trash_entry(paths, "delete", &[filename.to_owned()])?;
     fs::rename(&source, trash.join("files").join(filename))
         .map_err(|error| FileError::Io(format!("移动到回收站失败: {error}")))?;
-    Ok(())
+    Ok(trash
+        .file_name()
+        .map(|value| value.to_string_lossy().into_owned())
+        .unwrap_or_default())
+}
+
+/// 从回收站恢复条目，返回实际恢复的文件名（重名自动加序号）。
+pub fn restore_trash(paths: &DataPaths, trash_id: &str) -> Result<Vec<String>, FileError> {
+    if !is_plain_name(trash_id) {
+        return Err(FileError::InvalidName);
+    }
+
+    let dir = paths.trash_dir().join(trash_id);
+    let manifest_path = dir.join("manifest.json");
+    let bytes = fs::read(&manifest_path).map_err(|_| FileError::NotFound)?;
+    let mut manifest: serde_json::Value =
+        serde_json::from_slice(&bytes).map_err(|error| FileError::Io(error.to_string()))?;
+    if manifest.get("restored_at").is_some() {
+        return Err(FileError::Io("该回收站条目已恢复".into()));
+    }
+
+    let names: Vec<String> = manifest
+        .get("files")
+        .and_then(|value| value.as_array())
+        .map(|items| {
+            items
+                .iter()
+                .filter_map(|item| item.as_str().map(str::to_owned))
+                .collect()
+        })
+        .unwrap_or_default();
+
+    let mut restored = Vec::new();
+    for name in names {
+        if !is_plain_name(&name) {
+            continue;
+        }
+        let source = dir.join("files").join(&name);
+        if !source.is_file() {
+            continue;
+        }
+        let target = unique_name(&paths.bills_dir(), &name);
+        fs::rename(&source, paths.bills_dir().join(&target))
+            .map_err(|error| FileError::Io(format!("恢复文件失败: {error}")))?;
+        restored.push(target);
+    }
+
+    manifest["restored_at"] =
+        serde_json::Value::String(Local::now().format("%Y-%m-%d %H:%M:%S").to_string());
+    let bytes = serde_json::to_vec_pretty(&manifest)
+        .map_err(|error| FileError::Io(format!("序列化 manifest 失败: {error}")))?;
+    write_atomic(&manifest_path, &bytes)?;
+    Ok(restored)
+}
+
+fn unique_name(dir: &std::path::Path, name: &str) -> String {
+    if !dir.join(name).exists() {
+        return name.to_owned();
+    }
+    let (base, extension) = match name.rsplit_once('.') {
+        Some((base, extension)) => (base.to_owned(), format!(".{extension}")),
+        None => (name.to_owned(), String::new()),
+    };
+    let mut counter = 1;
+    loop {
+        let candidate = format!("{base}_{counter}{extension}");
+        if !dir.join(&candidate).exists() {
+            return candidate;
+        }
+        counter += 1;
+    }
 }
 
 /// 清空 `bills/`，所有文件移入同一个回收站条目，返回移动数量。

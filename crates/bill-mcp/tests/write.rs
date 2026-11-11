@@ -4,7 +4,10 @@ use std::sync::Arc;
 
 use bill_api::Runtime;
 use bill_core::{DataPaths, Dataset, Session};
-use bill_mcp::write::{import_bill, ImportParams, DEMO_WRITE_ERROR};
+use bill_mcp::write::{
+    delete_bill, import_bill, restore_bill, DeleteParams, ImportParams, RestoreParams,
+    DEMO_WRITE_ERROR,
+};
 use serde_json::json;
 
 const ALIPAY: &str = "交易时间,交易分类,交易对方,商品说明,收/支,金额,收/付款方式,交易状态\n\
@@ -137,4 +140,127 @@ fn import_rejects_empty_and_oversized_batches() {
         "错误信息: {}",
         oversized["error"]
     );
+}
+
+fn write_bill(env: &Env, name: &str) {
+    std::fs::write(env.runtime.paths.bills_dir().join(name), ALIPAY).expect("写账单");
+}
+
+#[test]
+fn delete_moves_to_trash_and_returns_id() {
+    let env = setup();
+    write_bill(&env, "test.csv");
+
+    let response = delete_bill(
+        &env.runtime,
+        &DeleteParams {
+            filename: "test.csv".into(),
+        },
+    );
+    assert_eq!(response["ok"], json!(true));
+    assert_eq!(response["filename"], json!("test.csv"));
+    let trash_id = response["trash_id"].as_str().expect("trash_id");
+    assert!(!trash_id.is_empty());
+    assert!(!env.runtime.paths.bills_dir().join("test.csv").exists());
+
+    let lines = audit_lines(&env);
+    assert_eq!(lines[0]["actor"]["tool"], json!("delete_bill"));
+    assert_eq!(lines[0]["phase"], json!("intent"));
+    assert_eq!(lines[1]["phase"], json!("result"));
+}
+
+#[test]
+fn delete_missing_file_reports_error() {
+    let env = setup();
+    let response = delete_bill(
+        &env.runtime,
+        &DeleteParams {
+            filename: "nope.csv".into(),
+        },
+    );
+    assert_eq!(response["ok"], json!(false));
+    assert_eq!(response["error"], json!("文件不存在"));
+}
+
+#[test]
+fn restore_brings_file_back_and_is_single_use() {
+    let env = setup();
+    write_bill(&env, "test.csv");
+    let deleted = delete_bill(
+        &env.runtime,
+        &DeleteParams {
+            filename: "test.csv".into(),
+        },
+    );
+    let trash_id = deleted["trash_id"].as_str().expect("trash_id");
+
+    let restored = restore_bill(
+        &env.runtime,
+        &RestoreParams {
+            trash_id: trash_id.into(),
+        },
+    );
+    assert_eq!(restored["ok"], json!(true));
+    assert_eq!(restored["restored"], json!(["test.csv"]));
+    assert!(env.runtime.paths.bills_dir().join("test.csv").exists());
+
+    let again = restore_bill(
+        &env.runtime,
+        &RestoreParams {
+            trash_id: trash_id.into(),
+        },
+    );
+    assert_eq!(again["ok"], json!(false));
+    assert!(
+        again["error"].as_str().expect("错误").contains("已恢复"),
+        "错误信息: {}",
+        again["error"]
+    );
+}
+
+#[test]
+fn restore_adds_suffix_when_name_taken() {
+    let env = setup();
+    write_bill(&env, "test.csv");
+    let deleted = delete_bill(
+        &env.runtime,
+        &DeleteParams {
+            filename: "test.csv".into(),
+        },
+    );
+    let trash_id = deleted["trash_id"].as_str().expect("trash_id");
+
+    // 恢复前又导入同名文件，恢复时应自动加序号。
+    write_bill(&env, "test.csv");
+    let restored = restore_bill(
+        &env.runtime,
+        &RestoreParams {
+            trash_id: trash_id.into(),
+        },
+    );
+
+    assert_eq!(restored["restored"], json!(["test_1.csv"]));
+    assert!(env.runtime.paths.bills_dir().join("test_1.csv").exists());
+}
+
+#[test]
+fn demo_mode_rejects_delete_and_restore() {
+    let env = setup();
+    Session::enter_demo(&env.runtime.paths).expect("进入演示");
+
+    let deleted = delete_bill(
+        &env.runtime,
+        &DeleteParams {
+            filename: "test.csv".into(),
+        },
+    );
+    assert_eq!(deleted["error"], json!(DEMO_WRITE_ERROR));
+
+    let restored = restore_bill(
+        &env.runtime,
+        &RestoreParams {
+            trash_id: "20240101000000-0000".into(),
+        },
+    );
+    assert_eq!(restored["error"], json!(DEMO_WRITE_ERROR));
 }
