@@ -49,6 +49,8 @@ pub struct Runtime {
     /// 数据目录布局。
     pub paths: DataPaths,
     dataset: RwLock<Dataset>,
+    /// 写操作串行化锁（GUI 与 MCP 共用）。
+    mutation: std::sync::Mutex<()>,
 }
 
 impl Runtime {
@@ -60,6 +62,7 @@ impl Runtime {
         Self {
             paths,
             dataset: RwLock::new(dataset),
+            mutation: std::sync::Mutex::new(()),
         }
     }
 
@@ -68,7 +71,15 @@ impl Runtime {
         Self {
             paths,
             dataset: RwLock::new(dataset),
+            mutation: std::sync::Mutex::new(()),
         }
+    }
+
+    /// 获取写操作锁；所有导入/删除/清空必须持有它。
+    pub fn lock_mutation(&self) -> std::sync::MutexGuard<'_, ()> {
+        self.mutation
+            .lock()
+            .unwrap_or_else(|poison| poison.into_inner())
     }
 
     /// 当前数据集快照。
@@ -394,6 +405,7 @@ fn handle_list(runtime: &Runtime) -> Value {
 }
 
 fn handle_upload(runtime: &Runtime, body: &Value) -> Value {
+    let _guard = runtime.lock_mutation();
     let Some(paths) = body.get("paths").and_then(|value| value.as_array()) else {
         return json!({ "success": false, "error": "没有文件被上传" });
     };
@@ -418,6 +430,7 @@ fn handle_upload(runtime: &Runtime, body: &Value) -> Value {
 }
 
 fn handle_delete(runtime: &Runtime, raw_name: &str) -> Value {
+    let _guard = runtime.lock_mutation();
     let name = percent_decode(raw_name);
     match delete_file(&runtime.paths, &name) {
         Ok(_) => {
@@ -457,6 +470,7 @@ fn handle_demo(runtime: &Runtime, enter: bool) -> Value {
 }
 
 fn handle_clear(runtime: &Runtime) -> Value {
+    let _guard = runtime.lock_mutation();
     match clear_data(&runtime.paths) {
         Ok(_) => {
             runtime.refresh();

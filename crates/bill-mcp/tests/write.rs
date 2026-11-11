@@ -329,3 +329,41 @@ fn demo_mode_rejects_clear() {
     assert_eq!(response["error"], json!(DEMO_WRITE_ERROR));
     assert!(env.runtime.paths.bills_dir().join("a.csv").exists());
 }
+
+#[test]
+fn concurrent_imports_do_not_lose_updates() {
+    let env = setup();
+    let mut sources = Vec::new();
+    for index in 0..8 {
+        let path = env.source_dir.path().join(format!("bill{index}.csv"));
+        std::fs::write(&path, ALIPAY).expect("写来源");
+        sources.push(path.to_string_lossy().into_owned());
+    }
+
+    std::thread::scope(|scope| {
+        for path in &sources {
+            let runtime = env.runtime.clone();
+            scope.spawn(move || {
+                import_bill(&runtime, &params(std::slice::from_ref(path)));
+            });
+        }
+    });
+
+    let bills = std::fs::read_dir(env.runtime.paths.bills_dir())
+        .expect("bills")
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| entry.path().is_file())
+        .count();
+    assert_eq!(bills, 8, "并发导入不得丢文件");
+    assert_eq!(
+        env.runtime.dataset().transactions.len(),
+        8,
+        "数据集应包含全部导入"
+    );
+
+    let result_lines = audit_lines(&env)
+        .into_iter()
+        .filter(|line| line["phase"] == json!("result"))
+        .count();
+    assert_eq!(result_lines, 8, "每次导入一条 result 审计");
+}

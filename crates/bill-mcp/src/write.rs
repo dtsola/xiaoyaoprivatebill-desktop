@@ -41,6 +41,7 @@ pub fn import_bill(runtime: &Runtime, params: &ImportParams) -> Value {
         None,
     );
 
+    let _guard = runtime.lock_mutation();
     let mut results = Vec::new();
     for path in &params.paths {
         let source = PathBuf::from(path);
@@ -116,6 +117,7 @@ pub fn delete_bill(runtime: &Runtime, params: &DeleteParams) -> Value {
         None,
     );
 
+    let _guard = runtime.lock_mutation();
     match bill_services::files::delete_file(&runtime.paths, &params.filename) {
         Ok(trash_id) => {
             runtime.refresh();
@@ -159,6 +161,7 @@ pub fn restore_bill(runtime: &Runtime, params: &RestoreParams) -> Value {
         None,
     );
 
+    let _guard = runtime.lock_mutation();
     match bill_services::files::restore_trash(&runtime.paths, &params.trash_id) {
         Ok(restored) => {
             runtime.refresh();
@@ -215,6 +218,7 @@ pub fn clear_data(runtime: &Runtime, params: &ClearParams) -> Value {
         None,
     );
 
+    let _guard = runtime.lock_mutation();
     let (snapshot_id, _) = match bill_services::snapshot::create_snapshot(&runtime.paths) {
         Ok(snapshot) => snapshot,
         Err(error) => {
