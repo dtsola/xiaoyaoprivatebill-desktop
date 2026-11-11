@@ -9,6 +9,9 @@ pub enum ParseError {
     /// 找不到支付宝账单表头行。
     #[error("无法找到支付宝账单表头行")]
     AlipayHeader,
+    /// 找不到微信账单表头行。
+    #[error("无法找到微信账单表头行")]
+    WechatHeader,
     /// 缺少必要列。
     #[error("支付宝账单缺少必要列: {0}")]
     MissingColumn(String),

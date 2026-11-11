@@ -5,23 +5,15 @@
 //! - D2：不做 `金额（元）→金额` 映射，缺少 `金额` 列直接报错。
 
 use bill_core::Transaction;
-use chrono::NaiveDateTime;
-use encoding_rs::{GBK, UTF_8};
 
+use crate::common::{decode_gbk_or_utf8, first_field, line_offset, parse_time, text_field};
 use crate::error::ParseError;
-
-const TIME_FORMATS: [&str; 4] = [
-    "%Y-%m-%d %H:%M:%S",
-    "%Y-%m-%d %H:%M",
-    "%Y/%m/%d %H:%M:%S",
-    "%Y/%m/%d %H:%M",
-];
 
 /// 解析支付宝 CSV 字节流。
 ///
 /// 编码优先 GBK，解码出错时回退 UTF-8。无法解析时间的行会被跳过。
 pub fn parse_alipay_csv(bytes: &[u8]) -> Result<Vec<Transaction>, ParseError> {
-    let text = decode(bytes)?;
+    let text = decode_gbk_or_utf8(bytes)?;
 
     let header_offset = line_offset(&text, "交易时间").ok_or(ParseError::AlipayHeader)?;
     let status_offset = line_offset(&text, "交易状态");
@@ -94,66 +86,4 @@ pub fn parse_alipay_csv(bytes: &[u8]) -> Result<Vec<Transaction>, ParseError> {
     }
 
     Ok(rows)
-}
-
-/// GBK 优先，解码出错回退 UTF-8。
-fn decode(bytes: &[u8]) -> Result<String, ParseError> {
-    let (gbk_text, _, gbk_failed) = GBK.decode(bytes);
-    if !gbk_failed {
-        return Ok(gbk_text.into_owned());
-    }
-
-    let (utf8_text, _, utf8_failed) = UTF_8.decode(bytes);
-    if utf8_failed {
-        return Err(ParseError::Decode);
-    }
-    Ok(utf8_text.into_owned())
-}
-
-/// 找到首个包含关键字整行的字节偏移。
-fn line_offset(text: &str, needle: &str) -> Option<usize> {
-    let mut offset = 0;
-    for line in text.split_inclusive('\n') {
-        if line.contains(needle) {
-            return Some(offset);
-        }
-        offset += line.len();
-    }
-    None
-}
-
-/// 把一行按 CSV 解析后取第一个字段。
-fn first_field(line: &str) -> Option<String> {
-    let mut reader = csv::ReaderBuilder::new()
-        .has_headers(false)
-        .flexible(true)
-        .from_reader(line.as_bytes());
-    reader
-        .records()
-        .next()
-        .and_then(|record| record.ok())
-        .and_then(|record| record.get(0).map(str::to_owned))
-}
-
-fn text_field(
-    record: &csv::StringRecord,
-    headers: &csv::StringRecord,
-    name: &str,
-) -> Option<String> {
-    headers
-        .iter()
-        .position(|header| header == name)
-        .and_then(|index| record.get(index))
-        .map(str::to_owned)
-}
-
-/// 按固定格式依次尝试解析时间。
-fn parse_time(raw: &str) -> Option<NaiveDateTime> {
-    let raw = raw.trim();
-    if raw.is_empty() {
-        return None;
-    }
-    TIME_FORMATS
-        .iter()
-        .find_map(|format| NaiveDateTime::parse_from_str(raw, format).ok())
 }
