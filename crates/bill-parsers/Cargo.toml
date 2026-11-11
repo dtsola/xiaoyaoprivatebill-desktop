@@ -7,7 +7,7 @@ license = "MIT"
 [dependencies]
 bill-core = { path = "../bill-core" }
 csv = "1"
-calamine = "0.38"
+calamine = { version = "0.38", features = ["chrono"] }
 encoding_rs = "0.8"
 chrono = "0.4"
 regex = "1"

@@ -12,6 +12,12 @@ pub enum ParseError {
     /// 找不到微信账单表头行。
     #[error("无法找到微信账单表头行")]
     WechatHeader,
+    /// 表头存在但缺少「交易时间」，不是有效账单。
+    #[error("不是有效的微信账单文件")]
+    WechatInvalid,
+    /// Excel 工作簿无法读取。
+    #[error("Excel 读取失败: {0}")]
+    Excel(String),
     /// 缺少必要列。
     #[error("支付宝账单缺少必要列: {0}")]
     MissingColumn(String),
