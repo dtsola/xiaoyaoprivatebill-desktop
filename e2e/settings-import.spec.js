@@ -11,7 +11,7 @@ test.beforeEach(async ({ page }) => {
 
 test('点击上传区调用系统对话框并显示文件', async ({ page }) => {
   await page.goto('/#/settings')
-  await expect(page.locator('.page-title')).toHaveText('文件管理')
+  await expect(page.locator('.page-title')).toHaveText('设置')
 
   await page.locator('.file-upload').first().click()
 

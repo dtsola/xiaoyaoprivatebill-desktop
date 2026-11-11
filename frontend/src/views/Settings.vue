@@ -1,14 +1,15 @@
 <template>
   <div class="settings-page">
-    <!-- 页面标题：设置页只做文件与桌面管理；/agent 复用本页渲染 MCP 区块 -->
+    <!-- 页面标题：设置页按「账单文件 / 数据管理 / 存储与审计 / 桌面」分组；/agent 复用本页只渲染 MCP 区块 -->
     <div class="page-header" :class="{ 'page-header-agent': agentOnly }">
-      <h1 class="page-title">{{ agentOnly ? 'AI Agent 接入' : '文件管理' }}</h1>
+      <h1 class="page-title">{{ agentOnly ? 'AI Agent 接入' : '设置' }}</h1>
       <p v-if="agentOnly" class="page-subtitle">
         通过 MCP 服务让 小遥Claw、Claude Code、Codex 等 Agent 读取本机账单数据；默认关闭，仅监听 127.0.0.1。
       </p>
     </div>
 
-    <!-- 双栏布局：支付宝和微信 -->
+    <!-- 账单文件：导入与已上传列表 -->
+    <h2 v-if="!agentOnly" class="section-title">账单文件</h2>
     <div v-if="!agentOnly" class="split-layout">
       <!-- 左侧：支付宝专区 -->
       <div class="provider-column alipay-column">
@@ -141,9 +142,9 @@
       </div>
     </div>
 
-    <!-- 桌面设置 -->
+    <!-- 存储与审计：数据目录与可恢复数据 -->
     <div v-if="!agentOnly" class="desktop-section">
-      <h2 class="section-title">桌面</h2>
+      <h2 class="section-title">存储与审计</h2>
       <div class="desktop-card">
         <div class="desktop-row">
           <span class="mcp-label">数据目录</span>
@@ -164,6 +165,13 @@
           <span class="mcp-label">审计日志</span>
           <span class="storage-value">{{ auditSizeText }}</span>
         </div>
+      </div>
+    </div>
+
+    <!-- 桌面行为 -->
+    <div v-if="!agentOnly" class="desktop-section">
+      <h2 class="section-title">桌面</h2>
+      <div class="desktop-card">
         <div class="desktop-row">
           <span class="mcp-label">关闭行为</span>
           <button class="mcp-btn" @click="toggleCloseToTray">
