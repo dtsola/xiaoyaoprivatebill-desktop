@@ -91,7 +91,9 @@ async function enterDemoMode() {
 .welcome-section {
   text-align: center;
   padding: 48px 24px;
-  max-width: 800px;
+  /* 随窗口自适应：窄窗口铺满内容区，宽窗口最多 1200px */
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -112,7 +114,8 @@ async function enterDemoMode() {
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  /* 默认两列；宽窗口改为四列，窄窗口单列 */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
   margin-bottom: 48px;
 }
@@ -259,7 +262,18 @@ async function enterDemoMode() {
   box-shadow: var(--shadow-card);
 }
 
+/* 宽窗口（内容区 ≥ 1200px）四张卡片并排，避免两侧留白 */
+@media (min-width: 1440px) {
+  .features-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
+  .features-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .start-button {
     padding: 10px 20px;
     font-size: 14px;
