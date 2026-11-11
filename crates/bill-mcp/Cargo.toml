@@ -17,6 +17,8 @@ rmcp = { version = "3.9", default-features = false, features = [
     "transport-streamable-http-server",
 ] }
 tokio = { version = "1", features = ["net", "rt-multi-thread", "macros"] }
+getrandom = "0.3"
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }
+tempfile = "3"

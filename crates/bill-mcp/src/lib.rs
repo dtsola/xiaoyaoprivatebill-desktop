@@ -3,9 +3,14 @@
 //! P0 阶段建立 axum + rmcp Streamable HTTP 传输骨架，只验证可编译、可挂载；
 //! P4 再接入 14 个工具、Bearer Token 鉴权与审计。
 
+pub mod auth;
+pub mod token;
+
 use std::sync::Arc;
 
 use axum::Router;
+
+pub use auth::Auth;
 use rmcp::transport::streamable_http_server::session::local::LocalSessionManager;
 use rmcp::transport::{StreamableHttpServerConfig, StreamableHttpService};
 use rmcp::ServerHandler;
@@ -42,7 +47,20 @@ pub fn mcp_service() -> StreamableHttpService<BillMcp, LocalSessionManager> {
     )
 }
 
-/// 构建仅包含 MCP 路由的 axum Router。
+/// 构建仅包含 MCP 路由的 axum Router（**不含鉴权**）。
+///
+/// 仅用于传输层测试；生产入口是 [`router_with_token`]。
 pub fn router() -> Router {
     Router::new().nest_service(ROUTE_PATH, mcp_service())
+}
+
+/// 构建带 Bearer + Origin 校验的 MCP Router。
+pub fn router_with_token(token: &str) -> Router {
+    Router::new()
+        .nest_service(ROUTE_PATH, mcp_service())
+        .layer(axum::middleware::from_fn_with_state(
+            Auth::new(token),
+            auth::bearer_check,
+        ))
+        .layer(axum::extract::DefaultBodyLimit::max(MAX_REQUEST_BODY_BYTES))
 }

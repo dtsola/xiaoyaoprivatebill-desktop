@@ -318,9 +318,11 @@ dependencies = [
  "bill-api",
  "bill-core",
  "bill-services",
+ "getrandom 0.3.4",
  "rmcp",
  "serde",
  "serde_json",
+ "tempfile",
  "tokio",
  "tower",
 ]
