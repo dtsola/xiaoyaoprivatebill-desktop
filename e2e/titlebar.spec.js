@@ -117,3 +117,19 @@ test('滚动内容时页面标题区保持固定', async ({ page }) => {
     )
     .toBe(0)
 })
+
+test('首页顶部空白区可拖拽并双击最大化', async ({ page }) => {
+  await page.goto('/')
+
+  const strip = page.locator('.drag-strip')
+  await expect(strip).toBeVisible()
+  await expect(strip).toHaveAttribute('data-tauri-drag-region', '')
+  const box = await strip.boundingBox()
+  expect(box.y).toBe(0)
+  expect(box.height).toBe(56)
+
+  await strip.dblclick()
+  await expect
+    .poll(() => page.evaluate(() => window.__TAURI_TEST_INVOKES))
+    .toContain('plugin:window|toggle_maximize')
+})

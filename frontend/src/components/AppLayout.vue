@@ -1,5 +1,9 @@
 <template>
   <div class="app-shell" :class="{ 'platform-mac': isMac, 'sidebar-collapsed': collapsed }">
+    <!-- 顶部拖拽条：给没有页面标题区的页面（首页）提供拖拽与双击最大化；
+         有标题区的页面，标题区本身固定在更上层并自带拖拽标记 -->
+    <div class="drag-strip" data-tauri-drag-region @dblclick="toggleMaximize"></div>
+
     <!-- 窗口按钮：26px 圆角按钮，右上角 -->
     <div class="window-controls" v-if="!isMac">
       <button class="window-btn" aria-label="最小化" title="最小化" @click="minimizeWindow">
@@ -31,7 +35,7 @@
     <div class="app-container">
       <!-- 侧边栏：整列贴到窗口顶部，LOGO 区域可拖拽窗口 -->
       <aside class="sidebar">
-        <div class="logo" data-tauri-drag-region>
+        <div class="logo" data-tauri-drag-region @dblclick="toggleMaximize">
           <img
             src="/images/logo_128.png"
             alt="小遥账单助手"
@@ -367,6 +371,17 @@ watch(
 }
 
 /* 拖拽条只覆盖内容区：侧边栏占满窗口高度，LOGO 区也可拖拽 */
+/* 顶部拖拽条：只在标题区下方生效（无标题区页面如首页用） */
+.drag-strip {
+  position: absolute;
+  top: 0;
+  left: var(--sb-current-width);
+  right: 96px;
+  height: 56px;
+  z-index: 2000;
+  user-select: none;
+}
+
 /* 窗口按钮：与 xiaoyaotime 对齐（26px、右上角、圆角悬停） */
 .window-controls {
   position: absolute;
