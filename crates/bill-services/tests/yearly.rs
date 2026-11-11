@@ -216,3 +216,22 @@ fn daily_data_groups_dates_and_computes_quantiles() {
     );
     assert_eq!(data["expense_quantiles"], json!([30.0, 30.0, 30.0, 30.0]));
 }
+
+#[test]
+fn top_transactions_filters_and_limits() {
+    let dataset = Dataset {
+        transactions: vec![
+            tx((2024, 1, 10), "支出", 1500.0, "餐饮", false),
+            tx((2024, 1, 11), "支出", 3000.0, "数码", false),
+            tx((2024, 1, 12), "支出", 500.0, "交通", false),
+            tx((2024, 1, 13), "收入", 9000.0, "工资", false),
+        ],
+        files: Vec::new(),
+    };
+    let data = bill_services::analysis::top_transactions(&dataset, 2, 1000.0);
+
+    let items = data["transactions"].as_array().expect("列表");
+    assert_eq!(items.len(), 2);
+    assert_eq!(items[0]["amount"], json!(3000.0));
+    assert_eq!(items[1]["amount"], json!(1500.0));
+}

@@ -7,7 +7,8 @@ use std::sync::RwLock;
 
 use bill_core::{DataPaths, Dataset};
 use bill_services::analysis::{
-    daily_data, monthly_analysis, time_analysis, yearly_analysis, MonthlyQuery, YearlyQuery,
+    daily_data, monthly_analysis, time_analysis, top_transactions, yearly_analysis, MonthlyQuery,
+    YearlyQuery,
 };
 use bill_services::category::{
     category_analysis, category_available_dates, category_detail, category_expenses, category_trend,
@@ -100,6 +101,19 @@ pub fn handle(runtime: &Runtime, req: &ApiRequest) -> Result<Value, String> {
         })),
         ("GET", "/yearly_analysis") => Ok(handle_yearly(runtime, &req.query)),
         ("GET", "/monthly_analysis") => Ok(handle_monthly(runtime, &req.query)),
+        ("GET", "/top_transactions") => Ok({
+            let limit = req
+                .query
+                .get("limit")
+                .and_then(|value| value.parse::<usize>().ok())
+                .unwrap_or(10);
+            let min_amount = req
+                .query
+                .get("min_amount")
+                .and_then(|value| value.parse::<f64>().ok())
+                .unwrap_or(1000.0);
+            top_transactions(&runtime.dataset(), limit, min_amount)
+        }),
         ("GET", "/daily_data") => Ok({
             let year = req
                 .query

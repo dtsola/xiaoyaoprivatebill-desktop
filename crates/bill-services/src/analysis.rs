@@ -501,3 +501,31 @@ fn quantiles(values: &[f64]) -> Vec<f64> {
         })
         .collect()
 }
+
+/// 大额交易：仅支出，按金额降序取前 N 条（并列保持原顺序）。
+pub fn top_transactions(dataset: &Dataset, limit: usize, min_amount: f64) -> Value {
+    let mut rows: Vec<&Transaction> = dataset
+        .transactions
+        .iter()
+        .filter(|row| row.direction == "支出" && row.amount >= min_amount)
+        .collect();
+    rows.sort_by(|left, right| right.amount.total_cmp(&left.amount));
+    rows.truncate(limit);
+
+    let items: Vec<Value> = rows
+        .iter()
+        .map(|row| {
+            json!({
+                "time": row.time.format("%Y-%m-%d %H:%M:%S").to_string(),
+                "date": row.date,
+                "category": row.category,
+                "description": row.description,
+                "amount": row.amount,
+                "status": row.status,
+                "counterparty": row.counterparty,
+            })
+        })
+        .collect();
+
+    json!({ "success": true, "transactions": items })
+}
