@@ -3,6 +3,7 @@
 pub mod alipay;
 mod common;
 pub mod error;
+pub mod filename;
 pub mod wechat;
 
 pub use error::ParseError;
