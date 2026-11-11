@@ -34,6 +34,12 @@ test('自定义标题栏隐藏原生 title，并提供拖拽区与窗口按钮',
   expect(scroll.windowScroll).toBeLessThanOrEqual(1)
   expect(scroll.contentOverflow).toBe('auto')
 
+  // 内容区紧贴侧边栏（不能被 main.css 的 margin-left 再推开一次）
+  const contentMargin = await page
+    .locator('.content')
+    .evaluate((el) => getComputedStyle(el).marginLeft)
+  expect(contentMargin).toBe('0px')
+
   expect(errors, `控制台错误: ${errors.join(' | ')}`).toEqual([])
 })
 

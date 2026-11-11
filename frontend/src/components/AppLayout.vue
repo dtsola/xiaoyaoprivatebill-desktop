@@ -405,6 +405,9 @@ onMounted(async () => {
 .content {
   flex: 1;
   min-width: 0;
+  /* 覆盖 main.css：侧边栏已占位，不能再留左外边距；也不要撑满 100vh */
+  margin-left: 0;
+  min-height: 0;
   padding: 20px;
   background: var(--bg-color);
   overflow-y: auto;
