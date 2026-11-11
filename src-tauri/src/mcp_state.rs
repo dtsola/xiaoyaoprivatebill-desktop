@@ -5,6 +5,8 @@ use std::sync::{Arc, Mutex};
 use bill_core::{DataPaths, DesktopSettings, McpSettings, Settings};
 use bill_mcp::lifecycle::McpManager;
 use serde_json::{json, Value};
+use tauri::menu::MenuItem;
+use tauri::Wry;
 
 /// 主管 MCP 生命周期的共享状态。
 pub struct McpState {
@@ -13,6 +15,7 @@ pub struct McpState {
     /// 生命周期管理器。
     pub manager: McpManager,
     settings: Mutex<Settings>,
+    tray_item: Mutex<Option<MenuItem<Wry>>>,
 }
 
 impl McpState {
@@ -24,6 +27,28 @@ impl McpState {
             runtime,
             manager,
             settings: Mutex::new(settings),
+            tray_item: Mutex::new(None),
+        }
+    }
+
+    /// 记录托盘里的 MCP 菜单项，供设置页切换后同步文案。
+    pub fn set_tray_item(&self, item: MenuItem<Wry>) {
+        if let Ok(mut guard) = self.tray_item.lock() {
+            *guard = Some(item);
+        }
+    }
+
+    /// 按当前启用状态刷新托盘菜单文案。
+    pub fn sync_tray_label(&self) {
+        let label = if self.enabled() {
+            "关闭 MCP 服务"
+        } else {
+            "开启 MCP 服务"
+        };
+        if let Ok(guard) = self.tray_item.lock() {
+            if let Some(item) = guard.as_ref() {
+                let _ = item.set_text(label);
+            }
         }
     }
 

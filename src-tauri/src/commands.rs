@@ -26,7 +26,11 @@ pub async fn mcp_status(state: State<'_, McpState>) -> Result<Value, String> {
 
 /// 开启/关闭 MCP 服务。
 #[tauri::command]
-pub async fn mcp_set_enabled(state: State<'_, McpState>, enabled: bool) -> Result<Value, String> {
+pub async fn mcp_set_enabled(
+    app: tauri::AppHandle,
+    state: State<'_, McpState>,
+    enabled: bool,
+) -> Result<Value, String> {
     if enabled {
         let token = bill_mcp::token::ensure_token(&state.runtime.paths)?;
         state.update_mcp(|mcp| mcp.enabled = true)?;
@@ -49,7 +53,10 @@ pub async fn mcp_set_enabled(state: State<'_, McpState>, enabled: bool) -> Resul
             mcp.last_error = None;
         })?;
     }
-    Ok(state.status())
+    state.sync_tray_label();
+    let status = state.status();
+    let _ = tauri::Emitter::emit(&app, "desktop://mcp-status", status.clone());
+    Ok(status)
 }
 
 /// 客户端配置：端点 + Token。

@@ -30,3 +30,23 @@ test('设置页可开启、轮换 Token、关闭 MCP 服务', async ({ page }) =
 
   expect(errors, `控制台错误:\n${errors.join('\n')}`).toEqual([])
 })
+
+test('托盘切换后设置页同步显示运行状态', async ({ page }) => {
+  const errors = []
+  page.on('pageerror', (error) => errors.push(error.message))
+
+  await page.goto('/#/settings')
+  await page.evaluate(() =>
+    window.__TAURI_TEST_EMIT('desktop://mcp-status', {
+      enabled: true,
+      running: true,
+      port: 17650,
+      endpoint: 'http://127.0.0.1:17650/mcp',
+      last_error: null
+    })
+  )
+
+  await expect(page.locator('.mcp-status')).toHaveText('运行中')
+  await expect(page.locator('.mcp-token')).toHaveText('a'.repeat(64))
+  expect(errors, `控制台错误:\n${errors.join('\n')}`).toEqual([])
+})

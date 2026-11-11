@@ -207,6 +207,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { open } from '@tauri-apps/plugin-dialog'
+import { listen } from '@tauri-apps/api/event'
 import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { useSessionStore } from '@/stores/session'
 import { useUiStore } from '@/stores/ui'
@@ -245,6 +246,7 @@ const mcp = ref({
 })
 
 let unlistenDragDrop = null
+let unlistenMcp = null
 
 // 总文件数
 const totalFileCount = computed(() => alipayFiles.value.length + wechatFiles.value.length)
@@ -255,12 +257,23 @@ onMounted(async () => {
   await loadMcp()
   await loadDesktop()
   await loadStorage()
+  unlistenMcp = await listen('desktop://mcp-status', async (event) => {
+    mcp.value = { ...mcp.value, ...event.payload, token: '' }
+    if (event.payload?.running) {
+      const config = await api.mcpConfig()
+      mcp.value = { ...mcp.value, ...config }
+    }
+  })
 })
 
 onUnmounted(() => {
   if (unlistenDragDrop) {
     unlistenDragDrop()
     unlistenDragDrop = null
+  }
+  if (unlistenMcp) {
+    unlistenMcp()
+    unlistenMcp = null
   }
 })
 

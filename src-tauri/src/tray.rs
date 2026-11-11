@@ -2,7 +2,7 @@
 
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
-use tauri::{App, Manager};
+use tauri::{App, Emitter, Manager};
 use tauri_plugin_opener::OpenerExt;
 
 use crate::mcp_state::McpState;
@@ -17,6 +17,7 @@ pub fn create_tray(app: &App) -> tauri::Result<()> {
     };
     let mcp = MenuItem::with_id(app, "mcp", mcp_label, true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
+    app.state::<McpState>().set_tray_item(mcp.clone());
     let menu = Menu::with_items(app, &[&show, &data_dir, &mcp, &quit])?;
 
     let Some(icon) = app.default_window_icon().cloned() else {
@@ -76,5 +77,6 @@ fn toggle_mcp(app: &tauri::AppHandle, item: MenuItem<tauri::Wry>) {
             "开启 MCP 服务"
         };
         let _ = item.set_text(label);
+        let _ = handle.emit("desktop://mcp-status", state.status());
     });
 }
