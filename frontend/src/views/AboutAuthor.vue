@@ -19,13 +19,13 @@
           <div class="contact-list">
             <a href="https://www.dtsola.com" target="_blank" rel="noopener noreferrer" class="contact-item" @click.prevent="openExternal('https://www.dtsola.com')">
               <div class="contact-icon website">
-                <i class="fas fa-globe"></i>
+                <Globe :size="'1em'" />
               </div>
               <div class="contact-info">
                 <div class="contact-label">个人网站</div>
                 <div class="contact-value">www.dtsola.com</div>
               </div>
-              <i class="fas fa-external-link-alt contact-arrow"></i>
+              <ExternalLink class="contact-arrow" :size="'1em'" />
             </a>
 
             <a href="https://space.bilibili.com/736015" target="_blank" rel="noopener noreferrer" class="contact-item" @click.prevent="openExternal('https://space.bilibili.com/736015')">
@@ -36,7 +36,7 @@
                 <div class="contact-label">B站</div>
                 <div class="contact-value">space.bilibili.com/736015</div>
               </div>
-              <i class="fas fa-external-link-alt contact-arrow"></i>
+              <ExternalLink class="contact-arrow" :size="'1em'" />
             </a>
 
             <div class="contact-item">
@@ -97,7 +97,7 @@
           </p>
           <div class="project-links">
             <a href="https://github.com/dtsola/xiaoyaoprivatebill" target="_blank" rel="noopener noreferrer" class="project-link" @click.prevent="openExternal('https://github.com/dtsola/xiaoyaoprivatebill')">
-              <i class="fab fa-github"></i>
+              <Github :size="'1em'" />
               <span>GitHub 仓库</span>
             </a>
           </div>
@@ -110,7 +110,7 @@
       <div v-if="previewVisible" class="preview-modal" @click="closePreview">
         <div class="preview-content" @click.stop>
           <button class="preview-close" @click="closePreview">
-            <i class="fas fa-times"></i>
+            <X :size="'1em'" />
           </button>
           <img :src="previewImage" :alt="previewTitle" class="preview-image" />
           <p class="preview-title">{{ previewTitle }}</p>
@@ -121,6 +121,7 @@
 </template>
 
 <script setup>
+import { ExternalLink, Github, Globe, X } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { openUrl } from '@tauri-apps/plugin-opener'
 

@@ -11,7 +11,17 @@ export const ALLOWED_FILES = new Set([
   'frontend/src/components/AppLayout.vue',
   'frontend/src/views/AboutAuthor.vue',
   'frontend/vite.config.js',
-  'frontend/src/views/Home.vue'
+  'frontend/src/views/Home.vue',
+  // 图标迁移例外：Font Awesome → Lucide（仅保留支付宝/微信/Bilibili 品牌图标）
+  'frontend/src/views/Yearly.vue',
+  'frontend/src/views/Monthly.vue',
+  'frontend/src/views/Category.vue',
+  'frontend/src/views/Time.vue',
+  'frontend/src/views/Insights.vue',
+  'frontend/src/views/Transactions.vue',
+  'frontend/src/components/common/Toast.vue',
+  'frontend/src/components/common/Modal.vue',
+  'frontend/src/components/common/StatCard.vue'
 ])
 
 export const ALLOWED_PREFIXES = ['frontend/public/vendor/']

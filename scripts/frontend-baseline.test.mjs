@@ -10,12 +10,17 @@ test('允许的 8 个文件通过', () => {
 })
 
 test('越界的页面组件被拦截', () => {
-  assert.deepEqual(violations(['frontend/src/views/Yearly.vue']), [
-    'frontend/src/views/Yearly.vue'
+  assert.deepEqual(violations(['frontend/src/views/Home.vue2']), [
+    'frontend/src/views/Home.vue2'
   ])
   assert.deepEqual(violations(['frontend/src/stores/data.js']), [
     'frontend/src/stores/data.js'
   ])
+})
+
+test('图标迁移涉及的页面与公共组件放行', () => {
+  assert.equal(isAllowed('frontend/src/views/Yearly.vue'), true)
+  assert.equal(isAllowed('frontend/src/components/common/Toast.vue'), true)
 })
 
 test('离线图标、测试配置与测试文件不算越界', () => {

@@ -4,11 +4,11 @@
       <h1 class="page-title">时间分析</h1>
       <div class="control-group">
         <button @click="prevYear" class="control-button" :disabled="!canGoPrev">
-          <i class="fas fa-chevron-left"></i>
+          <ChevronLeft :size="'1em'" />
         </button>
         <span class="control-display">{{ currentYear }}年</span>
         <button @click="nextYear" class="control-button" :disabled="!canGoNext">
-          <i class="fas fa-chevron-right"></i>
+          <ChevronRight :size="'1em'" />
         </button>
       </div>
     </div>
@@ -68,7 +68,7 @@
     </div>
 
     <div v-else class="empty-state">
-      <i class="fas fa-chart-bar empty-icon"></i>
+      <ChartColumn class="empty-icon" :size="'1em'" />
       <p>暂无数据</p>
       <button class="btn btn-primary" @click="$router.push('/settings')">
         上传账单
@@ -78,6 +78,7 @@
 </template>
 
 <script setup>
+import { ChartColumn, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useDataStore } from '@/stores/data'
 import { useUiStore } from '@/stores/ui'

@@ -35,7 +35,7 @@
           @click="pickFiles('alipay')"
         >
           <div class="upload-icon">
-            <i class="fas fa-file-csv"></i>
+            <FileSpreadsheet :size="'1em'" />
           </div>
           <div class="upload-text">
             点击选择或拖拽<br />支付宝 CSV 文件
@@ -48,12 +48,12 @@
           <h4>已上传文件</h4>
           <div class="file-list">
             <div v-for="file in alipayFiles" :key="file.name" class="file-item">
-              <i :class="file.name.endsWith('.xlsx') ? 'fas fa-file-excel' : 'fas fa-file-csv'"></i>
+              <FileSpreadsheet :size="'1em'" />
               <span class="file-name">{{ file.name }}</span>
               <div class="file-actions">
                 <span class="file-status status-success">已上传</span>
                 <button class="delete-btn" @click="deleteFile(file.name)">
-                  <i class="fas fa-trash"></i>
+                  <Trash2 :size="'1em'" />
                 </button>
               </div>
             </div>
@@ -86,7 +86,7 @@
           @click="pickFiles('wechat')"
         >
           <div class="upload-icon">
-            <i class="fas fa-file-invoice"></i>
+            <FileText :size="'1em'" />
           </div>
           <div class="upload-text">
             点击或拖拽<br />微信 XLSX/CSV 文件
@@ -99,12 +99,12 @@
           <h4>已上传文件</h4>
           <div class="file-list">
             <div v-for="file in wechatFiles" :key="file.name" class="file-item">
-              <i :class="file.name.endsWith('.xlsx') ? 'fas fa-file-excel' : 'fas fa-file-csv'"></i>
+              <FileSpreadsheet :size="'1em'" />
               <span class="file-name">{{ file.name }}</span>
               <div class="file-actions">
                 <span class="file-status status-success">已上传</span>
                 <button class="delete-btn" @click="deleteFile(file.name)">
-                  <i class="fas fa-trash"></i>
+                  <Trash2 :size="'1em'" />
                 </button>
               </div>
             </div>
@@ -117,12 +117,12 @@
     <div class="bottom-action-bar" :class="{ visible: totalFileCount > 0 }">
       <div class="action-bar-content">
         <div class="file-summary">
-          <i class="fas fa-file-alt"></i>
+          <FileText :size="'1em'" />
           <span>{{ totalFileCount > 0 ? `已就绪 ${totalFileCount} 个账单文件` : '请上传账单文件' }}</span>
         </div>
         <div class="action-buttons">
           <router-link to="/yearly" class="start-button" :class="{ disabled: totalFileCount === 0 }">
-            <i class="fas fa-chart-line"></i>
+            <ChartLine :size="'1em'" />
             开始分析
           </router-link>
         </div>
@@ -134,7 +134,7 @@
       <h2 class="section-title">数据管理</h2>
       <div class="delete-area">
         <button class="delete-all-btn" @click="handleClearAllData">
-          <i class="fas fa-trash-alt"></i>
+          <Trash2 :size="'1em'" />
           删除所有账单数据
         </button>
         <p class="delete-warning">删除后将清空所有已上传的账单文件和分析数据，此操作不可恢复。</p>
@@ -207,6 +207,7 @@
 </template>
 
 <script setup>
+import { ChartLine, FileSpreadsheet, FileText, Trash2 } from 'lucide-vue-next'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { open } from '@tauri-apps/plugin-dialog'
 import { listen } from '@tauri-apps/api/event'

@@ -28,7 +28,7 @@ test('IPC：年度页显示可用年份 2024', async ({ page }) => {
   await expect(page.locator('.control-display')).toHaveText('2024年')
 })
 
-test('不加载 CDN：Font Awesome 必须本地化', async ({ page }) => {
+test('图标本地化：Lucide SVG 正常渲染且不加载外部资源', async ({ page }) => {
   const externalRequests = []
   page.on('request', (request) => {
     const url = request.url()
@@ -42,12 +42,10 @@ test('不加载 CDN：Font Awesome 必须本地化', async ({ page }) => {
 
   expect(externalRequests.filter((url) => url.includes('bootcdn'))).toEqual([])
 
-  // 图标字体本地 CSS 已生效：::before 有字形内容
-  const iconContent = await page
-    .locator('.nav-item .fas')
-    .first()
-    .evaluate((el) => getComputedStyle(el, '::before').content)
-  expect(iconContent).not.toBe('none')
+  // 侧边栏图标已换成 Lucide SVG：渲染出可见尺寸
+  const iconBox = await page.locator('.nav-item svg').first().boundingBox()
+  expect(iconBox.width).toBeGreaterThan(10)
+  expect(iconBox.height).toBeGreaterThan(10)
 })
 
 test('10 个页面可切换且无未捕获异常', async ({ page }) => {

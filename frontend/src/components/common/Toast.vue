@@ -5,10 +5,10 @@
         class="toast"
         :class="[`toast-${uiStore.toast.type}`, { show: uiStore.toast.show }]"
       >
-        <i :class="iconClass" class="toast-icon"></i>
+        <component :is="iconComponent" class="toast-icon" :size="18" />
         <span class="toast-message">{{ uiStore.toast.message }}</span>
         <button class="toast-close" @click="uiStore.hideToast">
-          <i class="fas fa-times"></i>
+          <X :size="'1em'" />
         </button>
       </div>
     </div>
@@ -16,17 +16,18 @@
 </template>
 
 <script setup>
+import { CircleAlert, CircleCheck, Info, TriangleAlert, X } from 'lucide-vue-next'
 import { useUiStore } from '@/stores/ui'
 import { computed } from 'vue'
 
 const uiStore = useUiStore()
 
-const iconClass = computed(() => {
+const iconComponent = computed(() => {
   const icons = {
-    success: 'fas fa-check-circle',
-    error: 'fas fa-exclamation-circle',
-    warning: 'fas fa-exclamation-triangle',
-    info: 'fas fa-info-circle'
+    success: CircleCheck,
+    error: CircleAlert,
+    warning: TriangleAlert,
+    info: Info
   }
   return icons[uiStore.toast.type] || icons.info
 })

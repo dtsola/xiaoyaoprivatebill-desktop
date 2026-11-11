@@ -5,7 +5,7 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(installTauriMock)
 })
 
-test('自定义标题栏隐藏原生 title，并提供拖拽区与窗口按钮', async ({ page }) => {
+test('侧边栏贴窗口顶部，拖拽区只覆盖内容区并提供窗口按钮', async ({ page }) => {
   const errors = []
   page.on('pageerror', (error) => errors.push(error.message))
   page.on('console', (message) => {
@@ -14,19 +14,24 @@ test('自定义标题栏隐藏原生 title，并提供拖拽区与窗口按钮',
 
   await page.goto('/')
 
-  const titlebar = page.locator('.titlebar')
-  await expect(titlebar).toBeVisible()
-  // 整条标题栏是拖拽区，原生标题栏已被去掉
-  await expect(titlebar).toHaveAttribute('data-tauri-drag-region', '')
-
-  const box = await titlebar.boundingBox()
-  expect(box.height).toBe(34)
-  expect(box.width).toBe(1280)
-
-  // 主内容与侧边栏都让位到标题栏下方
+  // 侧边栏从窗口最顶部开始（包含标题栏高度）
   const sidebar = await page.locator('.sidebar').boundingBox()
-  expect(sidebar.y).toBeGreaterThanOrEqual(34)
-  // 滚动只发生在内容区：窗口本身不滚动，滚动条不会顶到标题栏
+  expect(sidebar.y).toBe(0)
+  expect(sidebar.height).toBe(840)
+
+  // 拖拽区在侧边栏右侧，右侧让出 96px 给窗口按钮
+  const strip = page.locator('.drag-strip')
+  await expect(strip).toHaveAttribute('data-tauri-drag-region', '')
+  const box = await strip.boundingBox()
+  expect(box.height).toBe(36)
+  expect(box.width).toBe(1280 - 240 - 96)
+  expect(box.x).toBe(240)
+
+  const btn = await page.locator('.window-btn').first().boundingBox()
+  expect(btn.width).toBe(26)
+  expect(btn.height).toBe(26)
+
+  // 滚动只发生在内容区：窗口本身不滚动，滚动条不会顶到拖拽区
   const scroll = await page.evaluate(() => ({
     windowScroll: document.scrollingElement.scrollHeight - window.innerHeight,
     contentOverflow: getComputedStyle(document.querySelector('.content')).overflowY
@@ -34,11 +39,11 @@ test('自定义标题栏隐藏原生 title，并提供拖拽区与窗口按钮',
   expect(scroll.windowScroll).toBeLessThanOrEqual(1)
   expect(scroll.contentOverflow).toBe('auto')
 
-  // 内容区紧贴侧边栏（不能被 main.css 的 margin-left 再推开一次）
+  // 内容区让出侧边栏宽度
   const contentMargin = await page
     .locator('.content')
     .evaluate((el) => getComputedStyle(el).marginLeft)
-  expect(contentMargin).toBe('0px')
+  expect(contentMargin).toBe('240px')
 
   expect(errors, `控制台错误: ${errors.join(' | ')}`).toEqual([])
 })
@@ -46,19 +51,19 @@ test('自定义标题栏隐藏原生 title，并提供拖拽区与窗口按钮',
 test('最小化、最大化/还原、关闭按钮调用窗口 API', async ({ page }) => {
   await page.goto('/')
 
-  await page.locator('.titlebar-btn[aria-label="最小化"]').click()
+  await page.locator('.window-btn[aria-label="最小化"]').click()
   await expect
     .poll(() => page.evaluate(() => window.__TAURI_TEST_INVOKES))
     .toContain('plugin:window|minimize')
 
-  const maximize = page.locator('.titlebar-btn[aria-label="最大化"]')
+  const maximize = page.locator('.window-btn[aria-label="最大化"]')
   await maximize.click()
-  await expect(page.locator('.titlebar-btn[aria-label="还原"]')).toBeVisible()
+  await expect(page.locator('.window-btn[aria-label="还原"]')).toBeVisible()
 
-  await page.locator('.titlebar-btn[aria-label="还原"]').click()
-  await expect(page.locator('.titlebar-btn[aria-label="最大化"]')).toBeVisible()
+  await page.locator('.window-btn[aria-label="还原"]').click()
+  await expect(page.locator('.window-btn[aria-label="最大化"]')).toBeVisible()
 
-  await page.locator('.titlebar-btn[aria-label="关闭"]').click()
+  await page.locator('.window-btn[aria-label="关闭"]').click()
   await expect
     .poll(() => page.evaluate(() => window.__TAURI_TEST_INVOKES))
     .toContain('plugin:window|close')

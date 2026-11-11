@@ -9,7 +9,7 @@
             <div class="category-pill active">
               <span class="icon" :style="{ backgroundColor: getCategoryColor(currentCategory) }"></span>
               <span>{{ currentCategory }}</span>
-              <i class="fas fa-chevron-down dropdown-icon"></i>
+              <ChevronDown class="dropdown-icon" :size="'1em'" />
             </div>
           </div>
           <div class="category-expanded" v-show="categoryExpanded" @click.stop>
@@ -56,13 +56,13 @@
 
       <div class="time-range-selector">
         <button class="time-button" @click="prevTime" :disabled="!canGoPrev" v-show="timeRange !== 'all'">
-          <i class="fas fa-chevron-left"></i>
+          <ChevronLeft :size="'1em'" />
         </button>
         <div class="time-display">
           <span>{{ timeDisplay }}</span>
         </div>
         <button class="time-button" @click="nextTime" :disabled="!canGoNext" v-show="timeRange !== 'all'">
-          <i class="fas fa-chevron-right"></i>
+          <ChevronRight :size="'1em'" />
         </button>
       </div>
 
@@ -136,7 +136,7 @@
     </div>
 
     <div v-else class="empty-state">
-      <i class="fas fa-chart-bar empty-icon"></i>
+      <ChartColumn class="empty-icon" :size="'1em'" />
       <p>暂无数据</p>
       <button class="btn btn-primary" @click="$router.push('/settings')">
         上传账单
@@ -146,6 +146,7 @@
 </template>
 
 <script setup>
+import { ChartColumn, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useUiStore } from '@/stores/ui'
 import { useSessionStore } from '@/stores/session'

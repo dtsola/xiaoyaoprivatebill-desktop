@@ -9,7 +9,7 @@
     <div class="features-grid">
       <div class="feature-card">
         <div class="feature-icon feature-icon-analysis">
-          <i class="fas fa-chart-pie"></i>
+          <ChartPie :size="'1em'" />
         </div>
         <h3 class="feature-title">多维度分析</h3>
         <p class="feature-description">
@@ -18,7 +18,7 @@
       </div>
       <div class="feature-card">
         <div class="feature-icon feature-icon-privacy">
-          <i class="fas fa-shield-alt"></i>
+          <ShieldCheck :size="'1em'" />
         </div>
         <h3 class="feature-title">隐私保护</h3>
         <p class="feature-description">
@@ -27,7 +27,7 @@
       </div>
       <div class="feature-card">
         <div class="feature-icon feature-icon-trend">
-          <i class="fas fa-chart-line"></i>
+          <ChartLine :size="'1em'" />
         </div>
         <h3 class="feature-title">趋势追踪</h3>
         <p class="feature-description">
@@ -36,7 +36,7 @@
       </div>
       <div class="feature-card">
         <div class="feature-icon feature-icon-search">
-          <i class="fas fa-search"></i>
+          <Search :size="'1em'" />
         </div>
         <h3 class="feature-title">智能搜索</h3>
         <p class="feature-description">
@@ -53,11 +53,11 @@
       </p>
       <div class="action-buttons">
         <router-link to="/settings" class="start-button">
-          <i class="fas fa-upload"></i>
+          <Upload :size="'1em'" />
           上传账单文件
         </router-link>
         <button @click="enterDemoMode" class="demo-button">
-          <i class="fas fa-eye"></i>
+          <Eye :size="'1em'" />
           查看示例数据
         </button>
       </div>
@@ -66,6 +66,7 @@
 </template>
 
 <script setup>
+import { ChartLine, ChartPie, Eye, Search, ShieldCheck, Upload } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { useUiStore } from '@/stores/ui'
 import { useSessionStore } from '@/stores/session'

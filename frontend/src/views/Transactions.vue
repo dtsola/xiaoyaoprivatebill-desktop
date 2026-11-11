@@ -64,7 +64,7 @@
         </div>
 
         <div v-else-if="transactions.length === 0" class="empty-state">
-          <i class="fas fa-receipt empty-icon"></i>
+          <Receipt class="empty-icon" :size="'1em'" />
           <p>暂无交易记录</p>
         </div>
 
@@ -125,6 +125,7 @@
 </template>
 
 <script setup>
+import { Receipt } from 'lucide-vue-next'
 import { ref, reactive, onMounted, watch } from 'vue'
 import { useDataStore } from '@/stores/data'
 import { useUiStore } from '@/stores/ui'

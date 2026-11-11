@@ -1,13 +1,13 @@
 <template>
   <div class="stat-card">
     <div class="stat-icon" :style="{ background: `${iconColor}15` }">
-      <i :class="icon" :style="{ color: iconColor }"></i>
+      <component :is="iconComponent" :size="22" :style="{ color: iconColor }" />
     </div>
     <div class="stat-content">
       <p class="stat-title">{{ title }}</p>
       <p class="stat-value">{{ value }}</p>
       <div v-if="change !== null && change !== undefined" class="stat-change" :class="changeClass">
-        <i :class="changeIcon"></i>
+        <component :is="changeIcon" :size="12" />
         <span>{{ changeText }}</span>
       </div>
     </div>
@@ -16,6 +16,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { ArrowDown, ArrowUp, ChartLine, Minus } from 'lucide-vue-next'
 
 const props = defineProps({
   title: {
@@ -32,7 +33,7 @@ const props = defineProps({
   },
   icon: {
     type: String,
-    default: 'fas fa-chart-line'
+    default: 'fa-chart-line'
   },
   color: {
     type: String,
@@ -42,14 +43,24 @@ const props = defineProps({
 
 const iconColor = computed(() => props.color)
 
+// 兼容页面传入的旧 Font Awesome 名称
+const ICONS = {
+  'fa-chart-line': ChartLine,
+  'fa-arrow-up': ArrowUp,
+  'fa-arrow-down': ArrowDown,
+  'fa-minus': Minus
+}
+
+const iconComponent = computed(() => ICONS[props.icon] || ChartLine)
+
 const changeClass = computed(() => {
   if (props.change === null || props.change === undefined) return ''
   return props.change > 0 ? 'positive' : props.change < 0 ? 'negative' : 'neutral'
 })
 
 const changeIcon = computed(() => {
-  if (props.change === null || props.change === undefined) return 'fas fa-minus'
-  return props.change > 0 ? 'fas fa-arrow-up' : props.change < 0 ? 'fas fa-arrow-down' : 'fas fa-minus'
+  if (props.change === null || props.change === undefined) return Minus
+  return props.change > 0 ? ArrowUp : props.change < 0 ? ArrowDown : Minus
 })
 
 const changeText = computed(() => {

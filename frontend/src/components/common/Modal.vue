@@ -5,7 +5,7 @@
         <div class="modal-header">
           <h3 class="modal-title">{{ uiStore.modal.title }}</h3>
           <button class="modal-close" @click="uiStore.hideModal">
-            <i class="fas fa-times"></i>
+            <X :size="'1em'" />
           </button>
         </div>
         <div class="modal-body">
@@ -18,6 +18,7 @@
 </template>
 
 <script setup>
+import { X } from 'lucide-vue-next'
 import { useUiStore } from '@/stores/ui'
 
 const uiStore = useUiStore()

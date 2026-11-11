@@ -4,11 +4,11 @@
       <h1 class="page-title">年度总览</h1>
       <div class="control-group">
         <button @click="prevYear" class="control-button" :disabled="!canGoPrev">
-          <i class="fas fa-chevron-left"></i>
+          <ChevronLeft :size="'1em'" />
         </button>
         <span class="control-display">{{ currentYear }}年</span>
         <button @click="nextYear" class="control-button" :disabled="!canGoNext">
-          <i class="fas fa-chevron-right"></i>
+          <ChevronRight :size="'1em'" />
         </button>
       </div>
       <div></div>
@@ -32,7 +32,7 @@
             <span style="margin-left: 8px">{{ balanceRatio }}</span>
           </div>
           <div class="comparison">
-            <i :class="['fas', getComparisonData('balance').icon, 'trend-icon', getComparisonData('balance').iconClass]"></i>
+            <component :is="getComparisonData('balance').icon" class="trend-icon" :class="getComparisonData('balance').iconClass" :size="12" />
             <span class="change-value">{{ getComparisonData('balance').text }}</span>
           </div>
         </div>
@@ -44,7 +44,7 @@
             <span style="margin-left: 8px">日均 {{ formatMoney(yearlyData.yearly_stats?.avg_daily_expense || 0) }} 元</span>
           </div>
           <div class="comparison">
-            <i :class="['fas', getComparisonData('expense').icon, 'trend-icon', getComparisonData('expense').iconClass]"></i>
+            <component :is="getComparisonData('expense').icon" class="trend-icon" :class="getComparisonData('expense').iconClass" :size="12" />
             <span class="change-value">{{ getComparisonData('expense').text }}</span>
           </div>
         </div>
@@ -56,7 +56,7 @@
             <span style="margin-left: 8px">月均 {{ formatMoney(yearlyData.yearly_stats?.avg_monthly_income || 0) }} 元</span>
           </div>
           <div class="comparison">
-            <i :class="['fas', getComparisonData('income').icon, 'trend-icon', getComparisonData('income').iconClass]"></i>
+            <component :is="getComparisonData('income').icon" class="trend-icon" :class="getComparisonData('income').iconClass" :size="12" />
             <span class="change-value">{{ getComparisonData('income').text }}</span>
           </div>
         </div>
@@ -68,7 +68,7 @@
             <span style="margin-left: 8px">{{ yearlyData.yearly_stats?.active_days || 0 }} 个交易日</span>
           </div>
           <div class="comparison">
-            <i :class="['fas', getComparisonData('count').icon, 'trend-icon', getComparisonData('count').iconClass]"></i>
+            <component :is="getComparisonData('count').icon" class="trend-icon" :class="getComparisonData('count').iconClass" :size="12" />
             <span class="change-value">{{ getComparisonData('count').text }}</span>
           </div>
         </div>
@@ -85,14 +85,14 @@
                 :class="{ active: currentType === 'expense' }"
                 @click="switchType('expense')"
               >
-                <i class="fas fa-arrow-up"></i>支出
+                <ArrowUp :size="'1em'" />支出
               </button>
               <button
                 class="toggle-btn"
                 :class="{ active: currentType === 'income' }"
                 @click="switchType('income')"
               >
-                <i class="fas fa-arrow-down"></i>收入
+                <ArrowDown :size="'1em'" />收入
               </button>
             </div>
           </div>
@@ -114,7 +114,7 @@
     </div>
 
     <div v-else class="empty-state">
-      <i class="fas fa-chart-bar empty-icon"></i>
+      <ChartColumn class="empty-icon" :size="'1em'" />
       <p>暂无数据</p>
       <button class="btn btn-primary" @click="$router.push('/settings')">
         上传账单
@@ -124,6 +124,7 @@
 </template>
 
 <script setup>
+import { ArrowDown, ArrowUp, ChartColumn, ChevronLeft, ChevronRight, Minus } from 'lucide-vue-next'
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useDataStore } from '@/stores/data'
 import { useUiStore } from '@/stores/ui'
@@ -199,7 +200,7 @@ function getComparisonData(type) {
   const comp = comparisons.value[type]
   if (!comp) {
     return {
-      icon: 'fa-minus',
+      icon: Minus,
       iconClass: 'neutral',
       text: '暂无对比数据'
     }
@@ -210,7 +211,7 @@ function getComparisonData(type) {
 
   if (change === null || change === undefined) {
     return {
-      icon: 'fa-minus',
+      icon: Minus,
       iconClass: 'neutral',
       text: '暂无对比数据'
     }
@@ -218,7 +219,7 @@ function getComparisonData(type) {
 
   if (Math.abs(change) < threshold) {
     return {
-      icon: 'fa-minus',
+      icon: Minus,
       iconClass: 'neutral',
       text: '与上期基本持平'
     }
@@ -232,7 +233,7 @@ function getComparisonData(type) {
       text += ` (+${rate.toFixed(1)}%)`
     }
     return {
-      icon: 'fa-arrow-up',
+      icon: ArrowUp,
       iconClass: 'up',
       text
     }
@@ -244,7 +245,7 @@ function getComparisonData(type) {
       text += ` (${rate.toFixed(1)}%)`
     }
     return {
-      icon: 'fa-arrow-down',
+      icon: ArrowDown,
       iconClass: 'down',
       text
     }

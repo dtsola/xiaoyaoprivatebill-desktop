@@ -4,11 +4,11 @@
       <h1 class="page-title">消费洞察</h1>
       <div class="control-group">
         <button @click="prevYear" class="control-button" :disabled="!canGoPrev">
-          <i class="fas fa-chevron-left"></i>
+          <ChevronLeft :size="'1em'" />
         </button>
         <span class="control-display">{{ currentYear }}年</span>
         <button @click="nextYear" class="control-button" :disabled="!canGoNext">
-          <i class="fas fa-chevron-right"></i>
+          <ChevronRight :size="'1em'" />
         </button>
       </div>
     </div>
@@ -33,7 +33,7 @@
         <div class="analysis-card story-entry-card" @click="showStoryModeFunc">
           <div class="story-card-content">
             <div class="story-icon">
-              <i class="fas fa-film"></i>
+              <Film :size="'1em'" />
             </div>
             <div class="story-title">年度消费故事</div>
             <div class="story-desc">点击开启您的时光之旅</div>
@@ -144,7 +144,7 @@
 
         <!-- 时间密码 -->
         <div class="viz-section-header">
-          <div class="section-subtitle"><i class="fas fa-clock"></i> 时间密码</div>
+          <div class="section-subtitle">${SVG.clock} 时间密码</div>
         </div>
 
         <!-- 河流图 -->
@@ -174,7 +174,7 @@
 
         <!-- 决策心理 -->
         <div class="viz-section-header">
-          <div class="section-subtitle"><i class="fas fa-brain"></i> 决策心理</div>
+          <div class="section-subtitle"><Brain :size="'1em'" /> 决策心理</div>
         </div>
 
         <!-- 象限图 -->
@@ -204,7 +204,7 @@
 
         <!-- 结构解析 -->
         <div class="viz-section-header">
-          <div class="section-subtitle"><i class="fas fa-chart-pie"></i> 结构解析</div>
+          <div class="section-subtitle"><ChartPie :size="'1em'" /> 结构解析</div>
         </div>
 
         <!-- 帕累托图 -->
@@ -235,7 +235,7 @@
     </div>
 
     <div v-else class="empty-state">
-      <i class="fas fa-chart-bar empty-icon"></i>
+      <ChartColumn class="empty-icon" :size="'1em'" />
       <p>暂无数据</p>
       <button class="btn btn-primary" @click="$router.push('/settings')">
         上传账单
@@ -246,18 +246,18 @@
     <div v-if="showStoryMode" class="story-modal" @click.self="showStoryMode = false" style="display: flex;">
       <div class="story-content">
         <button class="close-story" @click="showStoryMode = false">
-          <i class="fas fa-times"></i>
+          <X :size="'1em'" />
         </button>
         <div class="story-slides" ref="storySlides">
           <!-- 动态生成幻灯片 -->
         </div>
         <div class="story-controls">
           <button class="story-btn prev" @click="prevSlide">
-            <i class="fas fa-chevron-left"></i>
+            <ChevronLeft :size="'1em'" />
           </button>
           <div class="story-indicators" ref="storyIndicators"></div>
           <button class="story-btn next" @click="nextSlide">
-            <i class="fas fa-chevron-right"></i>
+            <ChevronRight :size="'1em'" />
           </button>
         </div>
       </div>
@@ -266,6 +266,27 @@
 </template>
 
 <script setup>
+import { BookOpen, Brain, ChartColumn, ChartLine, ChartPie, ChevronLeft, ChevronRight, CirclePlay, Clock, Coffee, Film, Moon, ShoppingBag, Star, Utensils, VenetianMask, Wallet, X } from 'lucide-vue-next'
+// 幻灯片与滚动文案是 innerHTML 注入，无法使用组件，这里存一份 SVG 字符串。
+const SVG = {
+  book: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>`,
+  play: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z"/><circle cx="12" cy="12" r="10"/></svg>`,
+  clock: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`,
+  utensils: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>`,
+  coffee: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></svg>`,
+  moon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>`,
+  mask: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11c-1.5 0-2.5.5-3 2"/><path d="M4 6a2 2 0 0 0-2 2v4a5 5 0 0 0 5 5 8 8 0 0 1 5 2 8 8 0 0 1 5-2 5 5 0 0 0 5-5V8a2 2 0 0 0-2-2h-3a8 8 0 0 0-5 2 8 8 0 0 0-5-2z"/><path d="M6 11c1.5 0 2.5.5 3 2"/></svg>`,
+  chart: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg>`,
+  bag: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 10a4 4 0 0 1-8 0"/><path d="M3.103 6.034h17.794"/><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z"/></svg>`,
+  star: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>`,
+  wallet: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>`,
+  snow: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10 20-1.25-2.5L6 18"/><path d="M10 4 8.75 6.5 6 6"/><path d="m14 20 1.25-2.5L18 18"/><path d="m14 4 1.25 2.5L18 6"/><path d="m17 21-3-6h-4"/><path d="m17 3-3 6 1.5 3"/><path d="M2 12h6.5L10 9"/><path d="m20 10-1.5 2 1.5 2"/><path d="M22 12h-6.5L14 15"/><path d="m4 10 1.5 2L4 14"/><path d="m7 21 3-6-1.5-3"/><path d="m7 3 3 6h4"/></svg>`,
+  sun: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`,
+  leaf: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`,
+  up: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>`,
+  down: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>`,
+  minus: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>`,
+}
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useDataStore } from '@/stores/data'
 import { useUiStore } from '@/stores/ui'
@@ -445,7 +466,7 @@ function generateStorySlides() {
         <h1>您的年度消费故事</h1>
         <p>这一年，您经历了 ${data.summary.total_days} 个日夜</p>
         <p>完成了 ${data.summary.tx_count} 笔交易</p>
-        <div class="slide-big-icon"><i class="fas fa-book-open"></i></div>
+        <div class="slide-big-icon">${SVG.book}</div>
       </div>
     </div>
     `,
@@ -458,7 +479,7 @@ function generateStorySlides() {
         <p>您在 <strong>${data.features.first_tx.merchant}</strong></p>
         <div class="slide-amount">¥${formatMoney(data.features.first_tx.amount)}</div>
         <p>用这笔消费开启了全新的一年。</p>
-        <div class="slide-big-icon"><i class="fas fa-play-circle"></i></div>
+        <div class="slide-big-icon">${SVG.play}</div>
       </div>
     </div>
     ` : '',
@@ -470,7 +491,7 @@ function generateStorySlides() {
         <p>每天的 <strong>${data.features.peak_hour}点</strong></p>
         <div class="slide-keyword" style="font-size:32px">是您最活跃的时刻</div>
         <p>${data.features.peak_hour < 12 ? '早起的鸟儿有虫吃？' : (data.features.peak_hour > 20 ? '月黑风高夜，正是剁手时。' : '工作日摸鱼下单？')}</p>
-        <div class="slide-big-icon"><i class="fas fa-clock"></i></div>
+        <div class="slide-big-icon">${SVG.clock}</div>
       </div>
     </div>
     ` : '',
@@ -482,7 +503,7 @@ function generateStorySlides() {
         <div class="slide-amount">${data.features.takeout.count} 单</div>
         <p>贡献了 ${formatMoney(data.features.takeout.amount)} 元给外卖/快餐</p>
         <p>世界那么大，还是外卖最懂你的胃。</p>
-        <div class="slide-big-icon"><i class="fas fa-utensils"></i></div>
+        <div class="slide-big-icon">${SVG.utensils}</div>
       </div>
     </div>
     ` : '',
@@ -494,7 +515,7 @@ function generateStorySlides() {
         <p>您在</p>
         <div class="slide-keyword" style="color:#FF7950">${data.features.top_season}天</div>
         <p>留下了最多的消费足迹。</p>
-        <div class="slide-big-icon"><i class="fas ${data.features.top_season === '冬' ? 'fa-snowflake' : (data.features.top_season === '夏' ? 'fa-sun' : 'fa-leaf')}"></i></div>
+        <div class="slide-big-icon">${data.features.top_season === '冬' ? SVG.snow : (data.features.top_season === '夏' ? SVG.sun : SVG.leaf)}</div>
       </div>
     </div>
     ` : '',
@@ -507,7 +528,7 @@ function generateStorySlides() {
         <p>您今年在咖啡/奶茶上投入了</p>
         <div class="slide-keyword" style="font-size:24px">¥${formatMoney(data.features.coffee.amount)}</div>
         <p>${data.features.coffee.count > 100 ? '相当于喝掉了一个浴缸的量！' : '您是理性的咖啡因摄入者。'}</p>
-        <div class="slide-big-icon"><i class="fas fa-coffee"></i></div>
+        <div class="slide-big-icon">${SVG.coffee}</div>
       </div>
     </div>
     ` : '',
@@ -519,7 +540,7 @@ function generateStorySlides() {
         <p>晚10点后，您平均消费</p>
         <div class="slide-amount">¥${formatMoney(data.features.night.avg)}</div>
         <p>看来深夜不仅有灵感，还有食欲。</p>
-        <div class="slide-big-icon"><i class="fas fa-moon"></i></div>
+        <div class="slide-big-icon">${SVG.moon}</div>
       </div>
     </div>
     ` : '',
@@ -531,7 +552,7 @@ function generateStorySlides() {
         <p>工作日均价 vs 周末均价</p>
         <div class="slide-amount" style="font-size:32px">¥${formatMoney(data.features.weekend.weekday_avg)} <span style="font-size:20px;color:#999">vs</span> ¥${formatMoney(data.features.weekend.weekend_avg)}</div>
         <p>${data.features.weekend.weekend_avg > data.features.weekend.weekday_avg * 2 ? '平日沙县小吃，周末米其林大餐！' : '您的消费习惯非常稳定。'}</p>
-        <div class="slide-big-icon"><i class="fas fa-mask"></i></div>
+        <div class="slide-big-icon">${SVG.mask}</div>
       </div>
     </div>
     ` : '',
@@ -543,7 +564,7 @@ function generateStorySlides() {
         <p>您常去的 <strong>${data.features.inflation.merchant}</strong></p>
         <div class="slide-amount" style="font-size:32px">¥${formatMoney(data.features.inflation.start_price)} ➔ ¥${formatMoney(data.features.inflation.end_price)}</div>
         <p>${data.features.inflation.trend === 'up' ? '悄悄涨价了，且喝且珍惜。' : '居然降价了？良心商家！'}</p>
-        <div class="slide-big-icon"><i class="fas fa-chart-line"></i></div>
+        <div class="slide-big-icon">${SVG.chart}</div>
       </div>
     </div>
     ` : '',
@@ -555,7 +576,7 @@ function generateStorySlides() {
         <div class="slide-date">${data.max_day.date}</div>
         <div class="slide-amount">${formatMoney(data.max_day.amount)}</div>
         <p>那天发生了什么？是爱自己多一点吗？</p>
-        <div class="slide-big-icon"><i class="fas fa-shopping-bag"></i></div>
+        <div class="slide-big-icon">${SVG.bag}</div>
       </div>
     </div>
     `,
@@ -567,7 +588,7 @@ function generateStorySlides() {
         <div class="slide-keyword">${data.top_category.name}</div>
         <p>这是您投入最多的领域 (${formatMoney(data.top_category.amount)})</p>
         <p>新的一年，愿每一笔消费都物超所值！</p>
-        <div class="slide-big-icon"><i class="fas fa-star"></i></div>
+        <div class="slide-big-icon">${SVG.star}</div>
       </div>
     </div>
     `
@@ -692,28 +713,28 @@ function updateTags() {
   const detailsHtml = `
     <div class="profile-details">
       <div class="profile-feature">
-        <div class="feature-icon"><i class="fas fa-clock"></i></div>
+        <div class="feature-icon">${SVG.clock}</div>
         <div class="feature-content">
           <div class="feature-title">消费时间</div>
           <div class="feature-description">${formatTimePattern(tagsData.time_pattern || '-')}</div>
         </div>
       </div>
       <div class="profile-feature">
-        <div class="feature-icon"><i class="fas fa-shopping-bag"></i></div>
+        <div class="feature-icon">${SVG.bag}</div>
         <div class="feature-content">
           <div class="feature-title">消费偏好</div>
           <div class="feature-description">${formatPreference(tagsData.spending_preference || '-')}</div>
         </div>
       </div>
       <div class="profile-feature">
-        <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+        <div class="feature-icon">${SVG.chart}</div>
         <div class="feature-content">
           <div class="feature-title">消费规律</div>
           <div class="feature-description">${formatPattern(tagsData.spending_pattern || '-')}</div>
         </div>
       </div>
       <div class="profile-feature">
-        <div class="feature-icon"><i class="fas fa-wallet"></i></div>
+        <div class="feature-icon">${SVG.wallet}</div>
         <div class="feature-content">
           <div class="feature-title">消费能力</div>
           <div class="feature-description">${formatPower(tagsData.spending_power || '-')}</div>
@@ -933,11 +954,10 @@ function updateAdvancedInsights() {
   // 个人通胀
   const inf = data.inflation_analysis || {}
   if (inflationContent.value) {
-    const trendIcon = inf.trend === 'up' ? 'fa-arrow-up' : (inf.trend === 'down' ? 'fa-arrow-down' : 'fa-minus')
     const trendColor = inf.trend === 'up' ? '#FF3B30' : (inf.trend === 'down' ? '#34C759' : '#8E8E93')
     inflationContent.value.innerHTML = `
       <div class="insight-stat-big" style="color: ${trendColor}">
-        <i class="fas ${trendIcon}"></i> ${Math.abs(inf.rate || 0).toFixed(2)}%
+        ${inf.trend === 'up' ? SVG.up : (inf.trend === 'down' ? SVG.down : SVG.minus)} ${Math.abs(inf.rate || 0).toFixed(2)}%
       </div>
       <div class="insight-desc">季度客单价变化趋势</div>
       <div class="insight-meta">从 ${formatMoney(inf.first_avg || 0)} 变动至 ${formatMoney(inf.last_avg || 0)}</div>
