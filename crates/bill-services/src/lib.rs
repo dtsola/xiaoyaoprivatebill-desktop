@@ -1,5 +1,7 @@
-//! 业务服务层：数据集加载、导入、统计与图表数据。
+//! 业务服务层：数据集加载、文件管理、统计与图表数据。
 
 pub mod dataset;
+pub mod files;
 
 pub use dataset::{demo_dataset, load_dataset, ServiceError};
+pub use files::{clear_data, delete_file, import_paths, list_files, FileError, MAX_UPLOAD_SIZE};

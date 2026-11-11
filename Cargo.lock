@@ -295,6 +295,7 @@ dependencies = [
  "bill-services",
  "serde",
  "serde_json",
+ "tempfile",
 ]
 
 [[package]]

@@ -6,11 +6,6 @@ mod tray;
 use bill_core::DataPaths;
 use tauri::Manager;
 
-/// 应用级状态。P1 起保存完整的数据目录布局；后续再扩展设置与数据集。
-pub struct AppState {
-    pub paths: DataPaths,
-}
-
 pub fn run() {
     tauri::Builder::default()
         // 单实例必须是第一个注册的插件。
@@ -26,7 +21,7 @@ pub fn run() {
         .setup(|app| {
             let paths = DataPaths::new(app.path().app_data_dir()?);
             paths.ensure_layout()?;
-            app.manage(AppState { paths });
+            app.manage(bill_api::Runtime::new(paths));
 
             tray::create_tray(app)?;
 
