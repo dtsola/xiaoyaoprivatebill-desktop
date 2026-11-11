@@ -169,3 +169,13 @@ fn dataset_files_are_listed_with_source() {
     assert_eq!(dataset.file_count(), 1);
     assert_eq!(dataset.files[0].source, "支付宝");
 }
+
+#[test]
+fn data_paths_use_fixed_app_dir_name() {
+    let paths = DataPaths::from_data_root(std::path::Path::new("C:/Users/demo/AppData/Roaming"));
+
+    assert_eq!(
+        paths.base(),
+        std::path::Path::new("C:/Users/demo/AppData/Roaming/xiaoyaobill-desktop")
+    );
+}

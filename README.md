@@ -213,8 +213,8 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 
 | 平台 | 数据目录 |
 |---|---|
-| Windows | `%APPDATA%\com.dtsola.xiaoyaobill.desktop` |
-| macOS | `~/Library/Application Support/com.dtsola.xiaoyaobill.desktop` |
+| Windows | `%APPDATA%\xiaoyaobill-desktop` |
+| macOS | `~/Library/Application Support/xiaoyaobill-desktop` |
 
 - 卸载应用**不会**删除数据目录；如需彻底清除，请手动删除上述目录。
 - 备份时复制整个数据目录即可；`bills/` 是唯一真源。

@@ -7,6 +7,12 @@ use std::path::{Path, PathBuf};
 
 use crate::error::CoreError;
 
+/// 应用数据目录名（位于平台数据目录之下）。
+///
+/// 与安装包 `identifier`（`com.dtsola.xiaoyaobill.desktop`）解耦：
+/// 目录名可独立调整，不影响安装与升级。
+pub const APP_DIR_NAME: &str = "xiaoyaobill-desktop";
+
 /// 应用数据目录及其派生路径。
 #[derive(Debug, Clone)]
 pub struct DataPaths {
@@ -17,6 +23,13 @@ impl DataPaths {
     /// 以应用数据根目录构造。
     pub fn new(base: PathBuf) -> Self {
         Self { base }
+    }
+
+    /// 以平台数据目录构造：`<data_dir>/xiaoyaobill-desktop`。
+    ///
+    /// Windows 为 `%APPDATA%`，macOS 为 `~/Library/Application Support`。
+    pub fn from_data_root(data_dir: &Path) -> Self {
+        Self::new(data_dir.join(APP_DIR_NAME))
     }
 
     /// 根目录。

@@ -19,7 +19,8 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            let paths = DataPaths::new(app.path().app_data_dir()?);
+            // 数据目录固定为 <平台数据目录>/xiaoyaobill-desktop，与 identifier 解耦。
+            let paths = DataPaths::from_data_root(&app.path().data_dir()?);
             paths.ensure_layout()?;
             app.manage(bill_api::Runtime::new(paths));
 

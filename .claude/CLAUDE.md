@@ -301,9 +301,10 @@ macOS 通过 GitHub Actions 分架构构建：
 
 | 平台 | 路径 |
 |---|---|
-| Windows | `%APPDATA%\com.dtsola.xiaoyaobill.desktop` |
-| macOS | `~/Library/Application Support/com.dtsola.xiaoyaobill.desktop` |
+| Windows | `%APPDATA%\xiaoyaobill-desktop` |
+| macOS | `~/Library/Application Support/xiaoyaobill-desktop` |
 
+- 目录名由 `bill_core::paths::APP_DIR_NAME` 唯一定义，与安装包 `identifier` 解耦；改目录名不影响安装与升级。
 - 卸载不删除数据目录。
 - `bills/` 是唯一真源；`trash/`、`snapshots/`、`audit.jsonl` 永不自动清理。
 

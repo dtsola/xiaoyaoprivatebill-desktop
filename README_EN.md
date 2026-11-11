@@ -213,8 +213,8 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 
 | Platform | Data directory |
 |---|---|
-| Windows | `%APPDATA%\com.dtsola.xiaoyaobill.desktop` |
-| macOS | `~/Library/Application Support/com.dtsola.xiaoyaobill.desktop` |
+| Windows | `%APPDATA%\xiaoyaobill-desktop` |
+| macOS | `~/Library/Application Support/xiaoyaobill-desktop` |
 
 - Uninstalling the app does **not** delete the data directory; delete it manually if needed.
 - To back up, copy the entire data directory; `bills/` is the single source of truth.

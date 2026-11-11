@@ -439,7 +439,7 @@ claude mcp add --transport http xiaoyao-bill http://127.0.0.1:17650/mcp \
 │ └──────────────────────┘ └──────────────────────┘          │
 │ ─────────────────────────────────────────────────────────  │
 │ 桌面                                                       │
-│ 数据目录：C:\Users\...\com.dtsola.xiaoyaobill.desktop [打开] │
+│ 数据目录：C:\Users\...\xiaoyaobill-desktop [打开] │
 │ MCP 服务：[开关] 状态：已停止                               │
 │   端点：http://127.0.0.1:17650/mcp                          │
 │   Token：**** [复制] [重新生成] [复制 MCP 配置]              │
@@ -483,8 +483,8 @@ claude mcp add --transport http xiaoyao-bill http://127.0.0.1:17650/mcp \
 
 | 平台 | 数据目录 |
 |---|---|
-| Windows | `%APPDATA%\com.dtsola.xiaoyaobill.desktop` |
-| macOS | `~/Library/Application Support/com.dtsola.xiaoyaobill.desktop` |
+| Windows | `%APPDATA%\xiaoyaobill-desktop` |
+| macOS | `~/Library/Application Support/xiaoyaobill-desktop` |
 
 卸载不自动删除用户数据；安装器提示数据目录位置。
 
