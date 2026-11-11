@@ -7,7 +7,9 @@ use std::sync::RwLock;
 
 use bill_core::{DataPaths, Dataset};
 use bill_services::analysis::{monthly_analysis, yearly_analysis, MonthlyQuery, YearlyQuery};
-use bill_services::category::{category_analysis, category_available_dates, category_expenses};
+use bill_services::category::{
+    category_analysis, category_available_dates, category_detail, category_expenses, category_trend,
+};
 use bill_services::dataset::{demo_dataset, load_dataset};
 use bill_services::files::{clear_data, delete_file, import_paths, list_files};
 use bill_services::transactions::{list_transactions, TransactionQuery};
@@ -116,6 +118,18 @@ pub fn handle(runtime: &Runtime, req: &ApiRequest) -> Result<Value, String> {
         ("POST", "/upload") => Ok(handle_upload(runtime, &req.body)),
         ("POST", "/clear_data") => Ok(handle_clear(runtime)),
         _ => {
+            if let Some(rest) = req.path.strip_prefix("/category_detail/") {
+                let mut parts = rest.splitn(2, '/');
+                let month = percent_decode(parts.next().unwrap_or_default());
+                let category = percent_decode(parts.next().unwrap_or_default());
+                return Ok(category_detail(&runtime.dataset(), &month, &category));
+            }
+            if let Some(category) = req.path.strip_prefix("/category_trend/") {
+                return Ok(category_trend(
+                    &runtime.dataset(),
+                    &percent_decode(category),
+                ));
+            }
             if let Some(name) = req.path.strip_prefix("/files/") {
                 if req.method == "DELETE" {
                     return Ok(handle_delete(runtime, name));

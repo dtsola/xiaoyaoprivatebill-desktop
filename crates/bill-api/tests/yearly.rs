@@ -143,3 +143,17 @@ fn category_analysis_list_branch() {
     assert_eq!(response["categories"], json!(["餐饮"]));
     assert_eq!(response["stats"]["totals"], json!([100.0]));
 }
+
+#[test]
+fn category_detail_and_trend_routes() {
+    let (_dir, runtime) = runtime();
+    let detail = call(
+        &runtime,
+        "/category_detail/2024-01/%E9%A4%90%E9%A5%AE",
+        json!({}),
+    );
+    assert_eq!(detail.as_array().expect("数组").len(), 1);
+
+    let trend = call(&runtime, "/category_trend/%E9%A4%90%E9%A5%AE", json!({}));
+    assert_eq!(trend["months"], json!(["2024-01"]));
+}

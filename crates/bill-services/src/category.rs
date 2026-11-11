@@ -314,3 +314,124 @@ fn category_detail_branch(
 fn round1(value: f64) -> f64 {
     (value * 10.0).round() / 10.0
 }
+
+/// 某月某分类的支出明细，按金额降序。
+pub fn category_detail(dataset: &Dataset, month: &str, category: &str) -> Value {
+    let mut rows: Vec<&bill_core::Transaction> = dataset
+        .transactions
+        .iter()
+        .filter(|row| row.month == month && row.category == category && row.direction == "支出")
+        .collect();
+    rows.sort_by(|left, right| right.amount.total_cmp(&left.amount));
+
+    let items: Vec<Value> = rows
+        .iter()
+        .map(|row| {
+            json!({
+                "time": row.time.format("%Y-%m-%d %H:%M:%S").to_string(),
+                "description": row.description,
+                "counterparty": row.counterparty,
+                "amount": round2(row.amount),
+                "status": row.status,
+            })
+        })
+        .collect();
+    Value::Array(items)
+}
+
+/// 分类的跨月趋势。
+pub fn category_trend(dataset: &Dataset, category: &str) -> Value {
+    let rows: Vec<&bill_core::Transaction> = dataset
+        .transactions
+        .iter()
+        .filter(|row| row.direction == "支出" && row.category == category)
+        .collect();
+    if rows.is_empty() {
+        return json!({ "error": format!("未找到分类 \"{category}\" 的数据") });
+    }
+
+    let totals_all: BTreeMap<&str, f64> = dataset
+        .transactions
+        .iter()
+        .filter(|row| row.direction == "支出")
+        .fold(BTreeMap::new(), |mut acc, row| {
+            *acc.entry(row.month.as_str()).or_insert(0.0) += row.amount;
+            acc
+        });
+
+    struct MonthStat {
+        total: f64,
+        count: usize,
+        days: BTreeSet<String>,
+    }
+    let mut monthly: BTreeMap<&str, MonthStat> = BTreeMap::new();
+    for row in &rows {
+        let entry = monthly.entry(row.month.as_str()).or_insert(MonthStat {
+            total: 0.0,
+            count: 0,
+            days: BTreeSet::new(),
+        });
+        entry.total += row.amount;
+        entry.count += 1;
+        entry.days.insert(row.date.clone());
+    }
+
+    let months: Vec<String> = monthly.keys().map(|month| (*month).to_owned()).collect();
+    let mut totals = Vec::new();
+    let mut transactions = Vec::new();
+    let mut averages = Vec::new();
+    let mut daily_averages = Vec::new();
+    let mut mom_rates = Vec::new();
+    let mut percentages = Vec::new();
+    let mut previous: Option<f64> = None;
+
+    for month in &months {
+        let stat = &monthly[month.as_str()];
+        totals.push(round2(stat.total));
+        transactions.push(stat.count);
+        averages.push(round2(stat.total / stat.count as f64));
+        daily_averages.push(round2(stat.total / stat.days.len().max(1) as f64));
+
+        mom_rates.push(match previous {
+            None => 0.0,
+            Some(prev) if prev != 0.0 => round2((stat.total - prev) / prev * 100.0),
+            // pandas 会得到 inf；本项目禁止 Infinity，统一记 0。
+            Some(_) => 0.0,
+        });
+        previous = Some(stat.total);
+
+        let month_total = totals_all.get(month.as_str()).copied().unwrap_or(0.0);
+        percentages.push(if month_total > 0.0 {
+            round2(stat.total / month_total * 100.0)
+        } else {
+            0.0
+        });
+    }
+
+    let max_index = (0..totals.len())
+        .max_by(|left, right| totals[*left].total_cmp(&totals[*right]))
+        .unwrap_or(0);
+    let min_index = (0..totals.len())
+        .min_by(|left, right| totals[*left].total_cmp(&totals[*right]))
+        .unwrap_or(0);
+    let total_amount: f64 = rows.iter().map(|row| row.amount).sum();
+
+    json!({
+        "months": months,
+        "total": totals,
+        "transactions": transactions,
+        "avg_amount": averages,
+        "daily_avg": daily_averages,
+        "mom_rate": mom_rates,
+        "percentage": percentages,
+        "summary": {
+            "total_amount": round2(total_amount),
+            "total_transactions": rows.len(),
+            "max_month": months[max_index],
+            "max_amount": totals[max_index],
+            "min_month": months[min_index],
+            "min_amount": totals[min_index],
+            "avg_monthly": round2(totals.iter().sum::<f64>() / totals.len() as f64),
+        }
+    })
+}

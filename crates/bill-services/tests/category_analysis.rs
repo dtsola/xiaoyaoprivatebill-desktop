@@ -1,7 +1,7 @@
 //! P2-6 契约测试：分类分析（列表分支）。
 
 use bill_core::{Dataset, Transaction};
-use bill_services::category::category_analysis;
+use bill_services::category::{category_analysis, category_detail, category_trend};
 use chrono::NaiveDate;
 use serde_json::json;
 
@@ -103,4 +103,26 @@ fn detail_branch_returns_stats_trend_pattern_distribution() {
         json!([1, 1, 0, 0, 0, 0]),
         "pandas cut 为右闭区间"
     );
+}
+
+#[test]
+fn category_detail_lists_month_rows_sorted_desc() {
+    let response = category_detail(&dataset(), "2024-02", "餐饮");
+    let items = response.as_array().expect("数组");
+    assert_eq!(items.len(), 1);
+    assert_eq!(items[0]["amount"], json!(50.0));
+}
+
+#[test]
+fn category_trend_computes_months_and_summary() {
+    let response = category_trend(&dataset(), "餐饮");
+
+    assert_eq!(response["months"], json!(["2023-05", "2024-01", "2024-02"]));
+    assert_eq!(response["total"], json!([999.0, 100.0, 50.0]));
+    assert_eq!(response["transactions"], json!([1, 1, 1]));
+    assert_eq!(response["mom_rate"], json!([0.0, -89.99, -50.0]));
+    assert_eq!(response["percentage"], json!([100.0, 100.0, 38.46]));
+    assert_eq!(response["summary"]["max_month"], json!("2023-05"));
+    assert_eq!(response["summary"]["min_month"], json!("2024-02"));
+    assert_eq!(response["summary"]["total_transactions"], json!(3));
 }
