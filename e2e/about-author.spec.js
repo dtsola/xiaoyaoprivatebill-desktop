@@ -17,6 +17,14 @@ test('关于页外链交给系统浏览器打开', async ({ page }) => {
   // 标题区与其它页面一致
   await expect(page.locator('.page-title')).toHaveText('关于作者')
 
+  // 联系方式包含小遥官网
+  const official = page.locator('.contact-item', { hasText: '小遥官网' })
+  await expect(official).toContainText('www.xiaoyaosai.com')
+  await official.click()
+  await expect
+    .poll(() => page.evaluate(() => window.__TAURI_TEST_OPENED))
+    .toBe('https://www.xiaoyaosai.com/')
+
   await page.locator('.contact-item', { hasText: 'www.dtsola.com' }).click()
   await expect
     .poll(() => page.evaluate(() => window.__TAURI_TEST_OPENED))

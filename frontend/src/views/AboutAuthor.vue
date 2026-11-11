@@ -22,9 +22,20 @@
           <h2 class="section-title">联系方式</h2>
 
           <div class="contact-list">
+            <a href="https://www.xiaoyaosai.com/" target="_blank" rel="noopener noreferrer" class="contact-item" @click.prevent="openExternal('https://www.xiaoyaosai.com/')">
+              <div class="contact-icon official">
+                <Compass :size="22" />
+              </div>
+              <div class="contact-info">
+                <div class="contact-label">小遥官网</div>
+                <div class="contact-value">www.xiaoyaosai.com</div>
+              </div>
+              <ExternalLink class="contact-arrow" :size="'1em'" />
+            </a>
+
             <a href="https://www.dtsola.com" target="_blank" rel="noopener noreferrer" class="contact-item" @click.prevent="openExternal('https://www.dtsola.com')">
               <div class="contact-icon website">
-                <Globe :size="'1em'" />
+                <Globe :size="22" />
               </div>
               <div class="contact-info">
                 <div class="contact-label">个人网站</div>
@@ -35,7 +46,7 @@
 
             <a href="https://space.bilibili.com/736015" target="_blank" rel="noopener noreferrer" class="contact-item" @click.prevent="openExternal('https://space.bilibili.com/736015')">
               <div class="contact-icon bilibili">
-                <i class="fab fa-bilibili"></i>
+                <Video :size="22" />
               </div>
               <div class="contact-info">
                 <div class="contact-label">B站</div>
@@ -46,7 +57,7 @@
 
             <div class="contact-item">
               <div class="contact-icon wechat">
-                <i class="fab fa-weixin"></i>
+                <MessageCircle :size="22" />
               </div>
               <div class="contact-info">
                 <div class="contact-label">微信</div>
@@ -126,7 +137,7 @@
 </template>
 
 <script setup>
-import { ExternalLink, Github, Globe, X } from 'lucide-vue-next'
+import { Compass, ExternalLink, Github, Globe, MessageCircle, Video, X } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { openUrl } from '@tauri-apps/plugin-opener'
 
@@ -260,6 +271,11 @@ const closePreview = () => {
   justify-content: center;
   font-size: 20px;
   flex-shrink: 0;
+}
+
+.contact-icon.official {
+  background: linear-gradient(135deg, #007AFF 0%, #0A84FF 100%);
+  color: white;
 }
 
 .contact-icon.website {
