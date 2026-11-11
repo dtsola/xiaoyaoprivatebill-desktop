@@ -37,3 +37,31 @@ test('关于页外链交给系统浏览器打开', async ({ page }) => {
 
   expect(errors, `控制台错误:\n${errors.join('\n')}`).toEqual([])
 })
+
+test('扫码联系三张图尺寸统一且不溢出容器', async ({ page }) => {
+  await page.goto('/#/about-author')
+  await page.locator('.content').evaluate((el) => {
+    el.scrollTop = 700
+  })
+
+  const layout = await page.evaluate(() => {
+    const container = document.querySelector('.qrcode-container').getBoundingClientRect()
+    const images = [...document.querySelectorAll('.qrcode-image')].map((el) => {
+      const box = el.getBoundingClientRect()
+      return { x: Math.round(box.x), width: Math.round(box.width), height: Math.round(box.height) }
+    })
+    return {
+      containerLeft: Math.round(container.x),
+      containerRight: Math.round(container.x + container.width),
+      images
+    }
+  })
+
+  // 三张图同尺寸
+  expect(new Set(layout.images.map((img) => `${img.width}x${img.height}`)).size).toBe(1)
+  // 都在灰色容器内，不再左右溢出
+  for (const img of layout.images) {
+    expect(img.x).toBeGreaterThanOrEqual(layout.containerLeft)
+    expect(img.x + img.width).toBeLessThanOrEqual(layout.containerRight)
+  }
+})

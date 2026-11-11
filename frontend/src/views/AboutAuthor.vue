@@ -328,8 +328,8 @@ const closePreview = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 40px;
-  padding: 32px 24px;
+  gap: 24px;
+  padding: 24px;
   background: var(--bg-color);
   border-radius: var(--radius-md);
 }
@@ -340,18 +340,22 @@ const closePreview = () => {
   align-items: center;
   text-align: center;
   flex: 1;
+  min-width: 0;
 }
 
 .qrcode-divider {
   width: 1px;
-  height: 160px;
+  height: 150px;
   background: var(--border-color);
 }
 
 .qrcode-image {
-  width: 150px;
-  height: auto;
-  aspect-ratio: 1;
+  /* 三张图统一成同样大小的白色卡片，方形二维码与竖版海报不再高低错落 */
+  width: 140px;
+  height: 168px;
+  box-sizing: border-box;
+  padding: 8px;
+  background: #ffffff;
   object-fit: contain;
   border-radius: var(--radius-md);
   margin-bottom: 12px;
