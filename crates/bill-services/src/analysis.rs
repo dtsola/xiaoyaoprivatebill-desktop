@@ -586,3 +586,88 @@ pub fn summary(dataset: &Dataset, current_month: &str) -> Value {
         "has_current_month_data": current_expense.is_some(),
     })
 }
+
+/// 首页概览数据。
+pub fn overview_data(dataset: &Dataset, year: Option<i32>, filter_type: &str) -> Value {
+    let available_years = dataset.available_years();
+    let Some(default_year) = available_years.first().copied() else {
+        return json!({ "error": "没有可用的账单数据" });
+    };
+    let year = year.unwrap_or(default_year);
+
+    let year_rows: Vec<&Transaction> = dataset
+        .transactions
+        .iter()
+        .filter(|row| row.time.year() == year)
+        .filter(|row| match filter_type {
+            "large" => row.amount.abs() >= 1000.0,
+            "small" => row.amount.abs() < 1000.0,
+            _ => true,
+        })
+        .collect();
+
+    let expense: Vec<&Transaction> = year_rows
+        .iter()
+        .copied()
+        .filter(|row| row.direction == "支出" && !row.is_refund)
+        .collect();
+    let income: Vec<&Transaction> = year_rows
+        .iter()
+        .copied()
+        .filter(|row| row.direction == "收入" && !row.is_refund)
+        .collect();
+
+    let total_expense: f64 = expense.iter().map(|row| row.amount).sum();
+    let total_income: f64 = income.iter().map(|row| row.amount).sum();
+    let active_days = year_rows
+        .iter()
+        .map(|row| row.date.clone())
+        .collect::<BTreeSet<_>>()
+        .len();
+
+    let months: Vec<String> = (1..=12).map(|month| format!("{year}-{month:02}")).collect();
+    let monthly: BTreeMap<&str, f64> = expense.iter().fold(BTreeMap::new(), |mut acc, row| {
+        *acc.entry(row.month.as_str()).or_insert(0.0) += row.amount;
+        acc
+    });
+    let amounts: Vec<f64> = months
+        .iter()
+        .map(|month| round2(*monthly.get(month.as_str()).unwrap_or(&0.0)))
+        .collect();
+
+    let mut categories: Vec<(String, f64)> = category_totals(&expense);
+    categories.sort_by(|left, right| right.1.total_cmp(&left.1).then(left.0.cmp(&right.0)));
+
+    json!({
+        "available_years": available_years,
+        "current_year": year,
+        "yearly_stats": {
+            "total_expense": round2(total_expense),
+            "total_income": round2(total_income),
+            "balance": round2(total_income - total_expense),
+            "expense_count": expense.len(),
+            "income_count": income.len(),
+            "total_count": expense.len() + income.len(),
+            "active_days": active_days,
+            "avg_transaction": if expense.is_empty() { 0.0 } else { round2(total_expense / expense.len() as f64) },
+            "avg_daily_expense": round2(total_expense / 365.0),
+            "avg_monthly_income": round2(total_income / 12.0),
+            "expense_ratio": if total_income > 0.0 { round2(total_expense / total_income * 100.0) } else { 0.0 },
+        },
+        "months": months,
+        "amounts": amounts,
+        "categories": categories.iter().map(|(name, _)| name.clone()).collect::<Vec<_>>(),
+        "amounts_by_category": categories.iter().map(|(_, amount)| *amount).collect::<Vec<_>>(),
+    })
+}
+
+fn category_totals(rows: &[&Transaction]) -> Vec<(String, f64)> {
+    let mut grouped: BTreeMap<String, f64> = BTreeMap::new();
+    for row in rows {
+        *grouped.entry(row.category.clone()).or_insert(0.0) += row.amount;
+    }
+    grouped
+        .into_iter()
+        .map(|(name, total)| (name, round2(total)))
+        .collect()
+}

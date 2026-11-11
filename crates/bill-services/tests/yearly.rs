@@ -259,3 +259,27 @@ fn summary_prefers_current_month_else_latest() {
     assert_eq!(without_current["monthly_avg"], json!(150.0));
     assert_eq!(without_current["transaction_count"], json!(2));
 }
+
+#[test]
+fn overview_data_uses_latest_year_and_filters() {
+    let dataset = Dataset {
+        transactions: vec![
+            tx((2024, 1, 10), "支出", 100.0, "餐饮", false),
+            tx((2024, 2, 11), "支出", 2000.0, "数码", false),
+            tx((2024, 2, 12), "收入", 500.0, "工资", false),
+            tx((2023, 5, 1), "支出", 50.0, "交通", false),
+        ],
+        files: Vec::new(),
+    };
+
+    let all = bill_services::analysis::overview_data(&dataset, None, "all");
+    assert_eq!(all["current_year"], json!(2024));
+    assert_eq!(all["yearly_stats"]["total_expense"], json!(2100.0));
+    assert_eq!(all["yearly_stats"]["active_days"], json!(3));
+    assert_eq!(all["amounts"][0], json!(100.0));
+    assert_eq!(all["categories"], json!(["数码", "餐饮"]));
+
+    let large = bill_services::analysis::overview_data(&dataset, Some(2024), "large");
+    assert_eq!(large["yearly_stats"]["total_expense"], json!(2000.0));
+    assert_eq!(large["yearly_stats"]["expense_count"], json!(1));
+}
