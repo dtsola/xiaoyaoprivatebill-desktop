@@ -5,7 +5,7 @@
 use std::path::PathBuf;
 use std::sync::RwLock;
 
-use bill_core::{DataPaths, Dataset};
+use bill_core::{DataPaths, Dataset, Session};
 use bill_services::analysis::{
     daily_data, filtered_monthly_analysis, monthly_analysis, monthly_data, overview_data, summary,
     time_analysis, top_transactions, yearly_analysis, yearly_data, MonthlyQuery, YearlyQuery,
@@ -88,18 +88,10 @@ impl Runtime {
 }
 
 fn load_initial(paths: &DataPaths) -> Dataset {
-    if is_demo_session(paths) {
+    if Session::load(paths).is_demo {
         return demo_dataset().unwrap_or_default();
     }
     load_dataset(&paths.bills_dir()).unwrap_or_default()
-}
-
-fn is_demo_session(paths: &DataPaths) -> bool {
-    std::fs::read(paths.session_file())
-        .ok()
-        .and_then(|bytes| serde_json::from_slice::<serde_json::Value>(&bytes).ok())
-        .and_then(|value| value.get("is_demo").and_then(serde_json::Value::as_bool))
-        .unwrap_or(false)
 }
 
 /// 处理一个 API 请求。
@@ -196,6 +188,9 @@ pub fn handle(runtime: &Runtime, req: &ApiRequest) -> Result<Value, String> {
         }),
         ("GET", "/category_available_dates") => Ok(category_available_dates(&runtime.dataset())),
         ("GET", "/files") => Ok(handle_list(runtime)),
+        ("GET", "/session/status") => Ok(handle_session_status(runtime)),
+        ("POST", "/demo/enter") => Ok(handle_demo(runtime, true)),
+        ("POST", "/demo/exit") => Ok(handle_demo(runtime, false)),
         ("POST", "/upload") => Ok(handle_upload(runtime, &req.body)),
         ("POST", "/clear_data") => Ok(handle_clear(runtime)),
         _ => {
@@ -426,6 +421,34 @@ fn handle_delete(runtime: &Runtime, raw_name: &str) -> Value {
     let name = percent_decode(raw_name);
     match delete_file(&runtime.paths, &name) {
         Ok(()) => {
+            runtime.refresh();
+            json!({ "success": true })
+        }
+        Err(error) => json!({ "success": false, "error": error.to_string() }),
+    }
+}
+
+fn handle_session_status(runtime: &Runtime) -> Value {
+    let session = Session::load(&runtime.paths);
+    if !session.is_active() {
+        return json!({ "active": false, "is_demo": false });
+    }
+    json!({
+        "active": true,
+        "is_demo": session.is_demo,
+        "user_id": session.user_id.unwrap_or_default(),
+        "session_start": session.session_start.unwrap_or_default(),
+    })
+}
+
+fn handle_demo(runtime: &Runtime, enter: bool) -> Value {
+    let result = if enter {
+        Session::enter_demo(&runtime.paths)
+    } else {
+        Session::exit_demo(&runtime.paths)
+    };
+    match result {
+        Ok(_) => {
             runtime.refresh();
             json!({ "success": true })
         }

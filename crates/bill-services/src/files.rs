@@ -79,6 +79,9 @@ pub fn import_paths_with_limit(
         imported.push(final_name);
     }
 
+    // 首次导入成功后激活本地会话（演示会话保持不变）。
+    bill_core::Session::mark_import(paths)?;
+
     Ok(imported)
 }
 
