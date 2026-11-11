@@ -529,3 +529,60 @@ pub fn top_transactions(dataset: &Dataset, limit: usize, min_amount: f64) -> Val
 
     json!({ "success": true, "transactions": items })
 }
+
+/// 汇总数据。`current_month` 由调用方提供（`YYYY-MM`），便于测试。
+pub fn summary(dataset: &Dataset, current_month: &str) -> Value {
+    let mut monthly: BTreeMap<String, f64> = BTreeMap::new();
+    let mut total_expense = 0.0;
+    let mut total_income = 0.0;
+    let mut expense_count = 0usize;
+
+    for row in &dataset.transactions {
+        match row.direction.as_str() {
+            "支出" => {
+                total_expense += row.amount;
+                expense_count += 1;
+                *monthly.entry(row.month.clone()).or_insert(0.0) += row.amount;
+            }
+            "收入" => total_income += row.amount,
+            _ => {}
+        }
+    }
+
+    let Some((latest_month, latest_expense)) = monthly.iter().next_back() else {
+        return json!({ "error": "没有可用的账单数据" });
+    };
+
+    let current_expense = monthly.get(current_month).copied();
+    let display_month = if current_expense.is_some() {
+        current_month
+    } else {
+        latest_month.as_str()
+    };
+    let display_expense = current_expense.unwrap_or(*latest_expense);
+
+    // 复刻 D5：上月取「倒数第二个月」，而不是展示月的前一个月。
+    let prev_expense = if monthly.len() > 1 {
+        monthly
+            .values()
+            .nth(monthly.len() - 2)
+            .copied()
+            .unwrap_or(display_expense)
+    } else {
+        display_expense
+    };
+    let monthly_avg = monthly.values().sum::<f64>() / monthly.len() as f64;
+
+    json!({
+        "total_expense": round2(total_expense),
+        "total_income": round2(total_income),
+        "balance": round2(total_income - total_expense),
+        "monthly_avg": round2(monthly_avg),
+        "current_month_expense": round2(display_expense),
+        "prev_monthly_avg": round2(prev_expense),
+        "month_count": monthly.len(),
+        "transaction_count": expense_count,
+        "current_month": display_month,
+        "has_current_month_data": current_expense.is_some(),
+    })
+}

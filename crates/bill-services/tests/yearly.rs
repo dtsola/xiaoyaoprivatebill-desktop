@@ -235,3 +235,27 @@ fn top_transactions_filters_and_limits() {
     assert_eq!(items[0]["amount"], json!(3000.0));
     assert_eq!(items[1]["amount"], json!(1500.0));
 }
+
+#[test]
+fn summary_prefers_current_month_else_latest() {
+    let dataset = Dataset {
+        transactions: vec![
+            tx((2024, 1, 10), "支出", 100.0, "餐饮", false),
+            tx((2024, 2, 11), "支出", 200.0, "餐饮", false),
+            tx((2024, 2, 12), "收入", 500.0, "工资", false),
+        ],
+        files: Vec::new(),
+    };
+
+    let with_current = bill_services::analysis::summary(&dataset, "2024-02");
+    assert_eq!(with_current["current_month"], json!("2024-02"));
+    assert_eq!(with_current["current_month_expense"], json!(200.0));
+    assert_eq!(with_current["prev_monthly_avg"], json!(100.0));
+    assert_eq!(with_current["has_current_month_data"], json!(true));
+
+    let without_current = bill_services::analysis::summary(&dataset, "2024-07");
+    assert_eq!(without_current["current_month"], json!("2024-02"));
+    assert_eq!(without_current["has_current_month_data"], json!(false));
+    assert_eq!(without_current["monthly_avg"], json!(150.0));
+    assert_eq!(without_current["transaction_count"], json!(2));
+}
