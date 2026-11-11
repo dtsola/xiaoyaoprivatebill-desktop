@@ -137,6 +137,38 @@
         <p class="delete-warning">删除后将清空所有已上传的账单文件和分析数据，此操作不可恢复。</p>
       </div>
     </div>
+
+    <!-- MCP 服务 -->
+    <div class="mcp-section">
+      <h2 class="section-title">MCP 服务（AI Agent 接入）</h2>
+      <div class="mcp-card">
+        <div class="mcp-row">
+          <span class="mcp-label">状态</span>
+          <span class="mcp-status" :class="{ running: mcp.running }">
+            {{ mcp.running ? '运行中' : '已停止' }}
+          </span>
+        </div>
+        <div class="mcp-row">
+          <span class="mcp-label">端点</span>
+          <code class="mcp-endpoint">{{ mcp.endpoint }}</code>
+        </div>
+        <div v-if="mcp.running && mcp.token" class="mcp-row">
+          <span class="mcp-label">Token</span>
+          <code class="mcp-token">{{ mcp.token }}</code>
+          <button class="mcp-btn" @click="copyToken">复制</button>
+        </div>
+        <p v-if="mcp.last_error" class="mcp-error">{{ mcp.last_error }}</p>
+        <div class="mcp-actions">
+          <button class="mcp-btn primary" @click="toggleMcp">
+            {{ mcp.enabled ? '关闭 MCP 服务' : '开启 MCP 服务' }}
+          </button>
+          <button class="mcp-btn" @click="rotateToken">重新生成 Token</button>
+        </div>
+        <p class="mcp-hint">
+          仅监听 127.0.0.1，默认关闭；开启后请在客户端配置 Bearer Token。
+        </p>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -159,6 +191,15 @@ const wechatFiles = ref([])
 const alipayDragging = ref(false)
 const wechatDragging = ref(false)
 
+// MCP 服务状态
+const mcp = ref({
+  enabled: false,
+  running: false,
+  endpoint: 'http://127.0.0.1:17650/mcp',
+  token: '',
+  last_error: null
+})
+
 let unlistenDragDrop = null
 
 // 总文件数
@@ -167,6 +208,7 @@ const totalFileCount = computed(() => alipayFiles.value.length + wechatFiles.val
 onMounted(async () => {
   await loadFiles()
   await listenDragDrop()
+  await loadMcp()
 })
 
 onUnmounted(() => {
@@ -175,6 +217,59 @@ onUnmounted(() => {
     unlistenDragDrop = null
   }
 })
+
+// ==================== MCP 服务 ====================
+
+async function loadMcp() {
+  try {
+    const status = await api.mcpStatus()
+    mcp.value = { ...mcp.value, ...status, token: '' }
+    if (status.running) {
+      const config = await api.mcpConfig()
+      mcp.value = { ...mcp.value, ...config }
+    }
+  } catch (error) {
+    console.error('[Settings] 读取 MCP 状态失败:', error)
+  }
+}
+
+async function toggleMcp() {
+  try {
+    const next = !mcp.value.enabled
+    const status = await api.mcpSetEnabled(next)
+    mcp.value = { ...mcp.value, ...status, token: '' }
+    if (status.running) {
+      const config = await api.mcpConfig()
+      mcp.value = { ...mcp.value, ...config }
+      uiStore.showSuccess('MCP 服务已开启')
+    } else if (status.last_error) {
+      uiStore.showError(status.last_error)
+    } else {
+      uiStore.showSuccess('MCP 服务已关闭')
+    }
+  } catch (error) {
+    uiStore.showError('MCP 操作失败: ' + error.message)
+  }
+}
+
+async function rotateToken() {
+  try {
+    const config = await api.mcpRotateToken()
+    mcp.value = { ...mcp.value, ...config }
+    uiStore.showSuccess('Token 已重新生成')
+  } catch (error) {
+    uiStore.showError('Token 轮换失败: ' + error.message)
+  }
+}
+
+async function copyToken() {
+  try {
+    await navigator.clipboard.writeText(mcp.value.token)
+    uiStore.showSuccess('Token 已复制')
+  } catch (error) {
+    uiStore.showError('复制失败: ' + error.message)
+  }
+}
 
 // 监听系统拖拽事件：路径由 Tauri 提供，统一交给后端按内容识别来源
 async function listenDragDrop() {
@@ -692,5 +787,82 @@ async function handleClearAllData() {
     gap: 12px;
     align-items: flex-start;
   }
+}
+
+/* MCP 服务 */
+.mcp-section {
+  margin-top: 32px;
+}
+
+.mcp-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.mcp-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.mcp-label {
+  width: 64px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.mcp-status {
+  color: #8e8e93;
+  font-weight: 600;
+}
+
+.mcp-status.running {
+  color: #34c759;
+}
+
+.mcp-endpoint,
+.mcp-token {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  background: #f3f4f6;
+  padding: 4px 8px;
+  border-radius: 6px;
+  word-break: break-all;
+}
+
+.mcp-error {
+  color: #ff3b30;
+  font-size: 13px;
+  margin: 8px 0;
+}
+
+.mcp-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.mcp-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.mcp-btn.primary {
+  background: #007aff;
+  border-color: #007aff;
+  color: #fff;
+}
+
+.mcp-hint {
+  margin-top: 12px;
+  color: #8e8e93;
+  font-size: 12px;
 }
 </style>

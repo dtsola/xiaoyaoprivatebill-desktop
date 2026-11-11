@@ -31,6 +31,12 @@ export const api = {
   deleteFile: (filename) => delete_(`/files/${encodeURIComponent(filename)}`),
   clearData: () => post('/clear_data'),
 
+  // ==================== MCP 服务 ====================
+  mcpStatus: () => invoke('mcp_status'),
+  mcpSetEnabled: (enabled) => invoke('mcp_set_enabled', { enabled }),
+  mcpConfig: () => invoke('mcp_config'),
+  mcpRotateToken: () => invoke('mcp_rotate_token'),
+
   // ==================== 会话管理 API ====================
   enterDemo: () => post('/demo/enter'),
   exitDemo: () => post('/demo/exit'),

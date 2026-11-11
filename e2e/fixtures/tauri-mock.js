@@ -275,7 +275,27 @@ export function installTauriMock() {
   const callbacks = new Map()
   let nextCallbackId = 1
 
+  let mcpEnabled = false
+  const mcpStatus = () => ({
+    enabled: mcpEnabled,
+    running: mcpEnabled,
+    port: 17650,
+    endpoint: 'http://127.0.0.1:17650/mcp',
+    last_error: null
+  })
+
   const invoke = async (cmd, args) => {
+    if (cmd === 'mcp_status') return mcpStatus()
+    if (cmd === 'mcp_set_enabled') {
+      mcpEnabled = Boolean(args?.enabled)
+      return mcpStatus()
+    }
+    if (cmd === 'mcp_config') {
+      return { endpoint: mcpStatus().endpoint, token: 'a'.repeat(64) }
+    }
+    if (cmd === 'mcp_rotate_token') {
+      return { endpoint: mcpStatus().endpoint, token: 'b'.repeat(64) }
+    }
     if (cmd === 'api_request') {
       const req = args?.req ?? {}
       const path = req.path ?? ''
