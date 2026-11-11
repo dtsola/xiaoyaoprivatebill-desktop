@@ -135,3 +135,11 @@ fn category_endpoints_shapes() {
     let dates = call(&runtime, "/category_available_dates", json!({}));
     assert_eq!(dates["years"], json!([2024, 2023]));
 }
+
+#[test]
+fn category_analysis_list_branch() {
+    let (_dir, runtime) = runtime();
+    let response = call(&runtime, "/category_analysis", json!({"year": "2024"}));
+    assert_eq!(response["categories"], json!(["餐饮"]));
+    assert_eq!(response["stats"]["totals"], json!([100.0]));
+}
