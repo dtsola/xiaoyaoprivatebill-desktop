@@ -24,7 +24,7 @@
           <div class="contact-list">
             <a href="https://www.xiaoyaosai.com/" target="_blank" rel="noopener noreferrer" class="contact-item" @click.prevent="openExternal('https://www.xiaoyaosai.com/')">
               <div class="contact-icon official">
-                <Compass :size="22" />
+                <Compass :size="18" />
               </div>
               <div class="contact-info">
                 <div class="contact-label">小遥官网</div>
@@ -35,7 +35,7 @@
 
             <a href="https://www.dtsola.com" target="_blank" rel="noopener noreferrer" class="contact-item" @click.prevent="openExternal('https://www.dtsola.com')">
               <div class="contact-icon website">
-                <Globe :size="22" />
+                <Globe :size="18" />
               </div>
               <div class="contact-info">
                 <div class="contact-label">个人网站</div>
@@ -46,7 +46,7 @@
 
             <a href="https://space.bilibili.com/736015" target="_blank" rel="noopener noreferrer" class="contact-item" @click.prevent="openExternal('https://space.bilibili.com/736015')">
               <div class="contact-icon bilibili">
-                <Video :size="22" />
+                <Video :size="18" />
               </div>
               <div class="contact-info">
                 <div class="contact-label">B站</div>
@@ -57,7 +57,7 @@
 
             <div class="contact-item">
               <div class="contact-icon wechat">
-                <MessageCircle :size="22" />
+                <MessageCircle :size="18" />
               </div>
               <div class="contact-info">
                 <div class="contact-label">微信</div>
@@ -263,34 +263,34 @@ const closePreview = () => {
 }
 
 .contact-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-sm);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
   flex-shrink: 0;
 }
 
+/* 对齐 xiaoyaotime：浅色底 + 同色系图标的轻量样式，不再用重色渐变块 */
 .contact-icon.official {
-  background: linear-gradient(135deg, #007AFF 0%, #0A84FF 100%);
-  color: white;
+  background: rgba(0, 122, 255, 0.12);
+  color: #007aff;
 }
 
 .contact-icon.website {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: rgba(88, 86, 214, 0.12);
+  color: #5856d6;
 }
 
 .contact-icon.bilibili {
-  background: linear-gradient(135deg, #00A1D6 0%, #00B5E5 100%);
-  color: white;
+  background: rgba(0, 161, 214, 0.12);
+  color: #00a1d6;
 }
 
 .contact-icon.wechat {
-  background: linear-gradient(135deg, #07C160 0%, #06AE56 100%);
-  color: white;
+  background: rgba(7, 193, 96, 0.12);
+  color: #07c160;
 }
 
 .contact-info {
