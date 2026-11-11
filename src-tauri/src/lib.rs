@@ -68,7 +68,8 @@ pub fn run() {
             commands::desktop_settings,
             commands::set_close_to_tray,
             commands::open_data_dir,
-            commands::storage_status
+            commands::storage_status,
+            commands::open_storage_dir
         ])
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {

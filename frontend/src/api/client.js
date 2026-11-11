@@ -36,6 +36,7 @@ export const api = {
   setCloseToTray: (enabled) => invoke('set_close_to_tray', { enabled }),
   openDataDir: () => invoke('open_data_dir'),
   storageStatus: () => invoke('storage_status'),
+  openStorageDir: (kind) => invoke('open_storage_dir', { kind }),
 
   // ==================== MCP 服务 ====================
   mcpStatus: () => invoke('mcp_status'),

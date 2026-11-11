@@ -113,6 +113,25 @@ pub async fn open_data_dir(
         .map_err(|error| error.to_string())
 }
 
+/// 打开回收站或快照目录。
+#[tauri::command]
+pub async fn open_storage_dir(
+    app: tauri::AppHandle,
+    state: State<'_, McpState>,
+    kind: String,
+) -> Result<(), String> {
+    let paths = &state.runtime.paths;
+    let dir = match kind.as_str() {
+        "trash" => paths.trash_dir(),
+        "snapshots" => paths.snapshots_dir(),
+        _ => return Err("未知目录类型".to_owned()),
+    };
+    std::fs::create_dir_all(&dir).map_err(|error| error.to_string())?;
+    tauri_plugin_opener::OpenerExt::opener(&app)
+        .open_path(dir.display().to_string(), None::<&str>)
+        .map_err(|error| error.to_string())
+}
+
 /// 存储概览：回收站条目、快照数、审计日志大小。
 #[tauri::command]
 pub async fn storage_status(state: State<'_, McpState>) -> Result<Value, String> {

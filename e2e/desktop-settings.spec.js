@@ -25,6 +25,9 @@ test('设置页展示数据目录并可切换关闭行为', async ({ page }) => 
   await expect(toggle).toHaveText('关闭窗口时直接退出')
   await expect(page.locator('.toast-success, .toast').first()).toContainText('直接退出')
 
-  await page.locator('.desktop-row .mcp-btn').first().click()
+  const openButtons = page.locator('.desktop-row .mcp-btn', { hasText: '打开' })
+  for (let index = 0; index < 3; index += 1) {
+    await openButtons.nth(index).click()
+  }
   expect(errors, `控制台错误:\n${errors.join('\n')}`).toEqual([])
 })

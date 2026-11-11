@@ -150,10 +150,12 @@
         <div class="desktop-row">
           <span class="mcp-label">回收站</span>
           <span class="storage-value">{{ storage.trash_count }} 个条目</span>
+          <button class="mcp-btn" @click="openStorageDir('trash')">打开</button>
         </div>
         <div class="desktop-row">
           <span class="mcp-label">快照</span>
           <span class="storage-value">{{ storage.snapshot_count }} 个</span>
+          <button class="mcp-btn" @click="openStorageDir('snapshots')">打开</button>
         </div>
         <div class="desktop-row">
           <span class="mcp-label">审计日志</span>
@@ -294,6 +296,14 @@ async function toggleCloseToTray() {
     uiStore.showSuccess(result.close_to_tray ? '关闭窗口将最小化到托盘' : '关闭窗口将直接退出')
   } catch (error) {
     uiStore.showError('设置失败: ' + error.message)
+  }
+}
+
+async function openStorageDir(kind) {
+  try {
+    await api.openStorageDir(kind)
+  } catch (error) {
+    uiStore.showError('打开目录失败: ' + error.message)
   }
 }
 

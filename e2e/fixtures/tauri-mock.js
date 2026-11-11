@@ -297,6 +297,7 @@ export function installTauriMock() {
       return { close_to_tray: closeToTray }
     }
     if (cmd === 'open_data_dir') return null
+    if (cmd === 'open_storage_dir') return null
     if (cmd === 'storage_status') {
       return {
         trash_count: 2,
