@@ -22,7 +22,7 @@
         </div>
         <h3 class="feature-title">隐私保护</h3>
         <p class="feature-description">
-          数据仅在浏览器中分析，不会永久存储。会话结束后自动删除所有上传的文件。
+          数据仅保存在本机，不发起任何网络请求。文件由你手动管理，可随时删除。
         </p>
       </div>
       <div class="feature-card">
@@ -48,7 +48,7 @@
     <div class="upload-section">
       <h2 class="upload-title">开始分析您的账单</h2>
       <p class="privacy-notice">
-        支持导入支付宝(CSV)和微信(XLSX)账单文件，文件将在会话结束后自动删除。<br />
+        支持导入支付宝和微信账单（CSV/XLSX），文件保存在本机数据目录，可随时删除。<br />
         所有数据分析均在本地进行，我们不会收集或存储您的个人信息。
       </p>
       <div class="action-buttons">
