@@ -167,3 +167,27 @@ fn without_last_year_comparisons_are_null() {
     assert_eq!(comparisons["expense"]["change"], serde_json::Value::Null);
     assert_eq!(comparisons["expense"]["rate"], serde_json::Value::Null);
 }
+
+#[test]
+fn time_analysis_buckets_hours_and_weekend() {
+    // 2024-01-10 是周三，2024-01-13 是周六。
+    let dataset = Dataset {
+        transactions: vec![
+            tx((2024, 1, 10), "支出", 30.0, "餐饮", false),
+            tx((2024, 1, 13), "支出", 70.0, "餐饮", false),
+        ],
+        files: Vec::new(),
+    };
+    let data = bill_services::analysis::time_analysis(&dataset, Some(2024), "all");
+
+    assert_eq!(data["hourly"]["amounts"][12], json!(100.0));
+    assert_eq!(data["hourly"]["counts"][12], json!(2));
+    assert_eq!(
+        data["weekday_weekend"]["餐饮"]["weekday"]["amount"],
+        json!(30.0)
+    );
+    assert_eq!(
+        data["weekday_weekend"]["餐饮"]["weekend"]["percentage"],
+        json!(70.0)
+    );
+}

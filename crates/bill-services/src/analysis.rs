@@ -5,7 +5,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use bill_core::{Dataset, Transaction};
-use chrono::Datelike;
+use chrono::{Datelike, Timelike};
 use serde_json::{json, Value};
 
 /// 年度分析查询参数。
@@ -328,4 +328,89 @@ fn month_comparison(change: f64, base: f64) -> Value {
         json!(Value::Null)
     };
     json!({ "change": change, "rate": rate })
+}
+
+/// 时间分析：24 小时分布 + 分类的工作日/周末分布。
+pub fn time_analysis(dataset: &Dataset, year: Option<i32>, filter_type: &str) -> Value {
+    use chrono::Weekday;
+
+    let rows: Vec<&Transaction> = dataset
+        .transactions
+        .iter()
+        .filter(|row| row.direction == "支出" && !row.is_refund && row.amount > 0.0)
+        .filter(|row| year.is_none_or(|value| row.time.year() == value))
+        .filter(|row| match filter_type {
+            "large" => row.amount > 1000.0,
+            "small" => row.amount <= 1000.0,
+            _ => true,
+        })
+        .collect();
+
+    let mut hour_sums = [0.0f64; 24];
+    let mut hour_counts = [0usize; 24];
+    let mut grouped: BTreeMap<String, (f64, usize, f64, usize)> = BTreeMap::new();
+    for row in &rows {
+        let hour = row.time.hour() as usize;
+        hour_sums[hour] += row.amount;
+        hour_counts[hour] += 1;
+
+        let entry = grouped
+            .entry(row.category.clone())
+            .or_insert((0.0, 0, 0.0, 0));
+        let weekend = matches!(row.time.weekday(), Weekday::Sat | Weekday::Sun);
+        if weekend {
+            entry.2 += row.amount;
+            entry.3 += 1;
+        } else {
+            entry.0 += row.amount;
+            entry.1 += 1;
+        }
+    }
+
+    let amounts: Vec<f64> = hour_sums.iter().map(|value| round2(*value)).collect();
+
+    let mut items: Vec<(String, (f64, usize, f64, usize))> = grouped
+        .into_iter()
+        .filter(|(_, (weekday, _, weekend, _))| weekday + weekend > 0.0)
+        .collect();
+    items.sort_by(|left, right| {
+        let left_total = left.1 .0 + left.1 .2;
+        let right_total = right.1 .0 + right.1 .2;
+        right_total
+            .total_cmp(&left_total)
+            .then(left.0.cmp(&right.0))
+    });
+
+    let mut weekday_weekend = serde_json::Map::new();
+    for (category, (weekday_amount, weekday_count, weekend_amount, weekend_count)) in items {
+        let total = weekday_amount + weekend_amount;
+        weekday_weekend.insert(
+            category,
+            json!({
+                "weekday": {
+                    "amount": weekday_amount,
+                    "count": weekday_count,
+                    "percentage": round1(weekday_amount / total * 100.0),
+                },
+                "weekend": {
+                    "amount": weekend_amount,
+                    "count": weekend_count,
+                    "percentage": round1(weekend_amount / total * 100.0),
+                }
+            }),
+        );
+    }
+
+    json!({
+        "hourly": { "amounts": amounts, "counts": hour_counts },
+        "weekday_weekend": weekday_weekend,
+    })
+}
+
+fn round1(value: f64) -> f64 {
+    (value * 10.0).round() / 10.0
+}
+
+fn round2(value: f64) -> f64 {
+    (value * 100.0).round() / 100.0
 }

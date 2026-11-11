@@ -6,7 +6,9 @@ use std::path::PathBuf;
 use std::sync::RwLock;
 
 use bill_core::{DataPaths, Dataset};
-use bill_services::analysis::{monthly_analysis, yearly_analysis, MonthlyQuery, YearlyQuery};
+use bill_services::analysis::{
+    monthly_analysis, time_analysis, yearly_analysis, MonthlyQuery, YearlyQuery,
+};
 use bill_services::category::{
     category_analysis, category_available_dates, category_detail, category_expenses, category_trend,
 };
@@ -98,6 +100,14 @@ pub fn handle(runtime: &Runtime, req: &ApiRequest) -> Result<Value, String> {
         })),
         ("GET", "/yearly_analysis") => Ok(handle_yearly(runtime, &req.query)),
         ("GET", "/monthly_analysis") => Ok(handle_monthly(runtime, &req.query)),
+        ("GET", "/time_analysis") => Ok({
+            let year = req
+                .query
+                .get("year")
+                .and_then(|value| value.parse::<i32>().ok());
+            let filter = req.query.get("filter").map(String::as_str).unwrap_or("all");
+            time_analysis(&runtime.dataset(), year, filter)
+        }),
         ("GET", "/transactions") => Ok(handle_transactions(runtime, &req.query)),
         ("GET", "/available_dates") => Ok(handle_available_dates(runtime)),
         ("GET", "/categories") => Ok(handle_categories(runtime)),
