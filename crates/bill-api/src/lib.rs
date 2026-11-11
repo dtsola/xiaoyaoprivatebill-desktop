@@ -7,6 +7,7 @@ use std::sync::RwLock;
 
 use bill_core::{DataPaths, Dataset};
 use bill_services::analysis::{monthly_analysis, yearly_analysis, MonthlyQuery, YearlyQuery};
+use bill_services::category::{category_available_dates, category_expenses};
 use bill_services::dataset::{demo_dataset, load_dataset};
 use bill_services::files::{clear_data, delete_file, import_paths, list_files};
 use bill_services::transactions::{list_transactions, TransactionQuery};
@@ -98,6 +99,8 @@ pub fn handle(runtime: &Runtime, req: &ApiRequest) -> Result<Value, String> {
         ("GET", "/transactions") => Ok(handle_transactions(runtime, &req.query)),
         ("GET", "/available_dates") => Ok(handle_available_dates(runtime)),
         ("GET", "/categories") => Ok(handle_categories(runtime)),
+        ("GET", "/category_expenses") => Ok(category_expenses(&runtime.dataset())),
+        ("GET", "/category_available_dates") => Ok(category_available_dates(&runtime.dataset())),
         ("GET", "/files") => Ok(handle_list(runtime)),
         ("POST", "/upload") => Ok(handle_upload(runtime, &req.body)),
         ("POST", "/clear_data") => Ok(handle_clear(runtime)),

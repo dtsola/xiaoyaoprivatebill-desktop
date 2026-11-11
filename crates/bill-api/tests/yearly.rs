@@ -125,3 +125,13 @@ fn monthly_analysis_requires_year_and_month() {
         31
     );
 }
+
+#[test]
+fn category_endpoints_shapes() {
+    let (_dir, runtime) = runtime();
+    let expenses = call(&runtime, "/category_expenses", json!({}));
+    assert_eq!(expenses["categories"], json!(["餐饮", "交通"]));
+
+    let dates = call(&runtime, "/category_available_dates", json!({}));
+    assert_eq!(dates["years"], json!([2024, 2023]));
+}
