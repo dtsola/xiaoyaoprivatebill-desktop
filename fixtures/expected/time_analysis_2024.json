@@ -1,0 +1,358 @@
+{
+  "hourly": {
+    "amounts": [
+      625.0,
+      1641.46,
+      575.57,
+      3782.48,
+      3465.03,
+      1468.46,
+      1672.61,
+      1938.3,
+      10118.2,
+      67598.11,
+      17566.08,
+      23461.85,
+      27968.51,
+      16084.5,
+      14774.57,
+      8171.31,
+      15133.04,
+      23580.31,
+      21353.01,
+      24622.74,
+      22622.78,
+      12713.85,
+      6383.05,
+      9439.69
+    ],
+    "counts": [
+      9,
+      12,
+      8,
+      11,
+      11,
+      9,
+      6,
+      8,
+      53,
+      83,
+      110,
+      145,
+      148,
+      121,
+      70,
+      58,
+      82,
+      123,
+      151,
+      160,
+      136,
+      79,
+      52,
+      44
+    ]
+  },
+  "weekday_weekend": {
+    "交通出行": {
+      "weekday": {
+        "amount": 4342.11,
+        "count": 97,
+        "percentage": 62.5
+      },
+      "weekend": {
+        "amount": 2609.62,
+        "count": 39,
+        "percentage": 37.5
+      }
+    },
+    "亲子": {
+      "weekday": {
+        "amount": 6113.3,
+        "count": 30,
+        "percentage": 84.8
+      },
+      "weekend": {
+        "amount": 1092.72,
+        "count": 10,
+        "percentage": 15.2
+      }
+    },
+    "住房物业": {
+      "weekday": {
+        "amount": 51171.02,
+        "count": 55,
+        "percentage": 75.9
+      },
+      "weekend": {
+        "amount": 16233.650000000001,
+        "count": 16,
+        "percentage": 24.1
+      }
+    },
+    "充值缴费": {
+      "weekday": {
+        "amount": 7132.469999999999,
+        "count": 27,
+        "percentage": 73.7
+      },
+      "weekend": {
+        "amount": 2545.61,
+        "count": 10,
+        "percentage": 26.3
+      }
+    },
+    "其他": {
+      "weekday": {
+        "amount": 9767.289999999999,
+        "count": 61,
+        "percentage": 75.7
+      },
+      "weekend": {
+        "amount": 3127.17,
+        "count": 17,
+        "percentage": 24.3
+      }
+    },
+    "医疗健康": {
+      "weekday": {
+        "amount": 3186.4199999999996,
+        "count": 17,
+        "percentage": 85.1
+      },
+      "weekend": {
+        "amount": 556.08,
+        "count": 9,
+        "percentage": 14.9
+      }
+    },
+    "商户消费": {
+      "weekday": {
+        "amount": 11266.38,
+        "count": 163,
+        "percentage": 64.8
+      },
+      "weekend": {
+        "amount": 6108.51,
+        "count": 61,
+        "percentage": 35.2
+      }
+    },
+    "宠物": {
+      "weekday": {
+        "amount": 1461.7000000000003,
+        "count": 7,
+        "percentage": 94.7
+      },
+      "weekend": {
+        "amount": 81.17,
+        "count": 1,
+        "percentage": 5.3
+      }
+    },
+    "家居家装": {
+      "weekday": {
+        "amount": 944.0699999999999,
+        "count": 7,
+        "percentage": 37.2
+      },
+      "weekend": {
+        "amount": 1592.1200000000001,
+        "count": 5,
+        "percentage": 62.8
+      }
+    },
+    "微信红包": {
+      "weekday": {
+        "amount": 1326.6699999999998,
+        "count": 23,
+        "percentage": 62.1
+      },
+      "weekend": {
+        "amount": 808.72,
+        "count": 13,
+        "percentage": 37.9
+      }
+    },
+    "扫二维码付款": {
+      "weekday": {
+        "amount": 4324.21,
+        "count": 105,
+        "percentage": 72.6
+      },
+      "weekend": {
+        "amount": 1634.1,
+        "count": 47,
+        "percentage": 27.4
+      }
+    },
+    "教育培训": {
+      "weekday": {
+        "amount": 2888.16,
+        "count": 8,
+        "percentage": 88.8
+      },
+      "weekend": {
+        "amount": 366.01,
+        "count": 4,
+        "percentage": 11.2
+      }
+    },
+    "数码电器": {
+      "weekday": {
+        "amount": 5515.86,
+        "count": 9,
+        "percentage": 91.3
+      },
+      "weekend": {
+        "amount": 526.9399999999999,
+        "count": 2,
+        "percentage": 8.7
+      }
+    },
+    "文化休闲": {
+      "weekday": {
+        "amount": 6526.0599999999995,
+        "count": 26,
+        "percentage": 84.7
+      },
+      "weekend": {
+        "amount": 1181.29,
+        "count": 10,
+        "percentage": 15.3
+      }
+    },
+    "日用百货": {
+      "weekday": {
+        "amount": 13141.300000000001,
+        "count": 100,
+        "percentage": 75.6
+      },
+      "weekend": {
+        "amount": 4239.179999999999,
+        "count": 44,
+        "percentage": 24.4
+      }
+    },
+    "服饰装扮": {
+      "weekday": {
+        "amount": 24560.88,
+        "count": 38,
+        "percentage": 53.2
+      },
+      "weekend": {
+        "amount": 21589.120000000003,
+        "count": 27,
+        "percentage": 46.8
+      }
+    },
+    "爱车养车": {
+      "weekday": {
+        "amount": 5156.889999999999,
+        "count": 19,
+        "percentage": 83.4
+      },
+      "weekend": {
+        "amount": 1029.28,
+        "count": 6,
+        "percentage": 16.6
+      }
+    },
+    "理财": {
+      "weekday": {
+        "amount": 226.10000000000002,
+        "count": 2,
+        "percentage": 100.0
+      },
+      "weekend": {
+        "amount": 0.0,
+        "count": 0,
+        "percentage": 0.0
+      }
+    },
+    "美容美发": {
+      "weekday": {
+        "amount": 4630.1900000000005,
+        "count": 18,
+        "percentage": 80.4
+      },
+      "weekend": {
+        "amount": 1132.26,
+        "count": 6,
+        "percentage": 19.6
+      }
+    },
+    "群收款": {
+      "weekday": {
+        "amount": 5092.160000000001,
+        "count": 18,
+        "percentage": 90.4
+      },
+      "weekend": {
+        "amount": 539.9,
+        "count": 5,
+        "percentage": 9.6
+      }
+    },
+    "转账": {
+      "weekday": {
+        "amount": 6394.179999999999,
+        "count": 35,
+        "percentage": 69.3
+      },
+      "weekend": {
+        "amount": 2827.7200000000003,
+        "count": 14,
+        "percentage": 30.7
+      }
+    },
+    "转账红包": {
+      "weekday": {
+        "amount": 5330.8200000000015,
+        "count": 26,
+        "percentage": 74.0
+      },
+      "weekend": {
+        "amount": 1872.89,
+        "count": 7,
+        "percentage": 26.0
+      }
+    },
+    "运动户外": {
+      "weekday": {
+        "amount": 7259.6900000000005,
+        "count": 19,
+        "percentage": 87.1
+      },
+      "weekend": {
+        "amount": 1075.42,
+        "count": 7,
+        "percentage": 12.9
+      }
+    },
+    "酒店旅游": {
+      "weekday": {
+        "amount": 32752.8,
+        "count": 20,
+        "percentage": 77.9
+      },
+      "weekend": {
+        "amount": 9284.94,
+        "count": 5,
+        "percentage": 22.1
+      }
+    },
+    "餐饮美食": {
+      "weekday": {
+        "amount": 24852.4,
+        "count": 299,
+        "percentage": 72.7
+      },
+      "weekend": {
+        "amount": 9342.96,
+        "count": 95,
+        "percentage": 27.3
+      }
+    }
+  }
+}

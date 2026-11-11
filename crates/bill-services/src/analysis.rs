@@ -641,7 +641,8 @@ pub fn overview_data(dataset: &Dataset, year: Option<i32>, filter_type: &str) ->
 
     json!({
         "available_years": available_years,
-        "current_year": year,
+        // Web 版 `overview_data` 返回字符串年份。
+        "current_year": year.to_string(),
         "yearly_stats": {
             "total_expense": round2(total_expense),
             "total_income": round2(total_income),

@@ -9,6 +9,8 @@ use bill_core::Dataset;
 use chrono::{Datelike, Timelike};
 use serde_json::{json, Value};
 
+use crate::pycompat::numpy_sum;
+
 /// 分类支出统计：仅支出行（含退款，复刻 D7），按金额降序。
 pub fn category_expenses(dataset: &Dataset) -> Value {
     let mut grouped: BTreeMap<String, f64> = BTreeMap::new();
@@ -132,7 +134,8 @@ pub fn category_analysis(dataset: &Dataset, category: Option<&str>, year: Option
 }
 
 fn round2(value: f64) -> f64 {
-    (value * 100.0).round() / 100.0
+    // pandas `.round(2)` 为四舍六入五成双，与 `f64::round` 不同。
+    (value * 100.0).round_ties_even() / 100.0
 }
 
 fn counts_as_f64(counts: &[usize]) -> Vec<f64> {
@@ -350,29 +353,34 @@ pub fn category_trend(dataset: &Dataset, category: &str) -> Value {
         return json!({ "error": format!("未找到分类 \"{category}\" 的数据") });
     }
 
-    let totals_all: BTreeMap<&str, f64> = dataset
+    // 按月收集再一次性求和：pandas 走 numpy 成对求和，逐笔累加会差 0.01。
+    let mut totals_all_raw: BTreeMap<&str, Vec<f64>> = BTreeMap::new();
+    for row in dataset
         .transactions
         .iter()
         .filter(|row| row.direction == "支出")
-        .fold(BTreeMap::new(), |mut acc, row| {
-            *acc.entry(row.month.as_str()).or_insert(0.0) += row.amount;
-            acc
-        });
+    {
+        totals_all_raw
+            .entry(row.month.as_str())
+            .or_default()
+            .push(row.amount);
+    }
+    let totals_all: BTreeMap<&str, f64> = totals_all_raw
+        .into_iter()
+        .map(|(month, amounts)| (month, numpy_sum(&amounts)))
+        .collect();
 
     struct MonthStat {
-        total: f64,
-        count: usize,
+        amounts: Vec<f64>,
         days: BTreeSet<String>,
     }
     let mut monthly: BTreeMap<&str, MonthStat> = BTreeMap::new();
     for row in &rows {
         let entry = monthly.entry(row.month.as_str()).or_insert(MonthStat {
-            total: 0.0,
-            count: 0,
+            amounts: Vec::new(),
             days: BTreeSet::new(),
         });
-        entry.total += row.amount;
-        entry.count += 1;
+        entry.amounts.push(row.amount);
         entry.days.insert(row.date.clone());
     }
 
@@ -387,22 +395,24 @@ pub fn category_trend(dataset: &Dataset, category: &str) -> Value {
 
     for month in &months {
         let stat = &monthly[month.as_str()];
-        totals.push(round2(stat.total));
-        transactions.push(stat.count);
-        averages.push(round2(stat.total / stat.count as f64));
-        daily_averages.push(round2(stat.total / stat.days.len().max(1) as f64));
+        let stat_total = numpy_sum(&stat.amounts);
+        let count = stat.amounts.len();
+        totals.push(round2(stat_total));
+        transactions.push(count);
+        averages.push(round2(stat_total / count as f64));
+        daily_averages.push(round2(stat_total / stat.days.len().max(1) as f64));
 
         mom_rates.push(match previous {
             None => 0.0,
-            Some(prev) if prev != 0.0 => round2((stat.total - prev) / prev * 100.0),
+            Some(prev) if prev != 0.0 => round2((stat_total - prev) / prev * 100.0),
             // pandas 会得到 inf；本项目禁止 Infinity，统一记 0。
             Some(_) => 0.0,
         });
-        previous = Some(stat.total);
+        previous = Some(stat_total);
 
         let month_total = totals_all.get(month.as_str()).copied().unwrap_or(0.0);
         percentages.push(if month_total > 0.0 {
-            round2(stat.total / month_total * 100.0)
+            round2(stat_total / month_total * 100.0)
         } else {
             0.0
         });
@@ -414,7 +424,7 @@ pub fn category_trend(dataset: &Dataset, category: &str) -> Value {
     let min_index = (0..totals.len())
         .min_by(|left, right| totals[*left].total_cmp(&totals[*right]))
         .unwrap_or(0);
-    let total_amount: f64 = rows.iter().map(|row| row.amount).sum();
+    let total_amount = numpy_sum(&rows.iter().map(|row| row.amount).collect::<Vec<_>>());
 
     json!({
         "months": months,

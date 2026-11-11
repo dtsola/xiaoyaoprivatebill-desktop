@@ -51,6 +51,7 @@ pub struct Runtime {
     dataset: RwLock<Dataset>,
     /// 写操作串行化锁（GUI 与 MCP 共用）。
     mutation: std::sync::Mutex<()>,
+    current_month: String,
 }
 
 impl Runtime {
@@ -63,6 +64,7 @@ impl Runtime {
             paths,
             dataset: RwLock::new(dataset),
             mutation: std::sync::Mutex::new(()),
+            current_month: chrono::Local::now().format("%Y-%m").to_string(),
         }
     }
 
@@ -72,7 +74,19 @@ impl Runtime {
             paths,
             dataset: RwLock::new(dataset),
             mutation: std::sync::Mutex::new(()),
+            current_month: chrono::Local::now().format("%Y-%m").to_string(),
         }
+    }
+
+    /// 固定「当前月」（golden 测试与可重复验收用）。
+    pub fn with_current_month(mut self, month: &str) -> Self {
+        self.current_month = month.to_owned();
+        self
+    }
+
+    /// 当前月 `YYYY-MM`。
+    pub fn current_month(&self) -> &str {
+        &self.current_month
     }
 
     /// 获取写操作锁；所有导入/删除/清空必须持有它。
@@ -148,10 +162,7 @@ pub fn handle(runtime: &Runtime, req: &ApiRequest) -> Result<Value, String> {
             let filter = req.query.get("filter").map(String::as_str).unwrap_or("all");
             overview_data(&runtime.dataset(), year, filter)
         }),
-        ("GET", "/summary") => Ok(summary(
-            &runtime.dataset(),
-            &chrono::Local::now().format("%Y-%m").to_string(),
-        )),
+        ("GET", "/summary") => Ok(summary(&runtime.dataset(), runtime.current_month())),
         ("GET", "/top_transactions") => Ok({
             let limit = req
                 .query
@@ -421,7 +432,6 @@ fn handle_upload(runtime: &Runtime, body: &Value) -> Value {
             json!({
             "success": true,
             "filename": names.first().cloned().unwrap_or_default(),
-                "filenames": names,
                 "message": "文件上传成功"
             })
         }

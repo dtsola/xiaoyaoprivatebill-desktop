@@ -44,6 +44,21 @@ def demo_frame():
     return df
 
 
+FIXED_NOW = __import__("datetime").datetime(2026, 11, 11, 12, 0, 0)
+
+
+def freeze_clock(analysis_api):
+    """把 /summary 用到的 datetime.now() 固定到 2026-11-11。"""
+    import datetime as real_datetime
+
+    class FixedDatetime(real_datetime.datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return real_datetime.datetime(2026, 11, 11, 12, 0, 0)
+
+    analysis_api.datetime = FixedDatetime
+
+
 def load_web_app(web_root: Path):
     """导入 Web 版 Flask app，并把数据源替换为演示数据。"""
     import sys
@@ -71,7 +86,29 @@ def load_web_app(web_root: Path):
     import api.analysis as analysis_api  # noqa: PLC0415
 
     analysis_api.load_alipay_data = demo_frame
+    freeze_clock(analysis_api)
     return web_app.app
+
+
+ALIPAY_HEADER = "交易时间,交易分类,交易对方,商品说明,收/支,金额,收/付款方式,交易状态"
+ALIPAY_ROW = "2024-01-15 12:30:00,餐饮美食,星巴克,咖啡,支出,28.50,余额宝,交易成功"
+ALIPAY_BYTES = chr(10).join([ALIPAY_HEADER, ALIPAY_ROW, ""]).encode("utf-8")
+DELIMITER = chr(10)
+
+
+def login(client):
+    with client.session_transaction() as sess:
+        sess["user_id"] = "golden_user"
+
+
+def reset_upload_dir():
+    import shutil
+
+    import config
+
+    target = Path(config.UPLOAD_FOLDER) / "golden_user"
+    if target.exists():
+        shutil.rmtree(target)
 
 
 def build(case: dict) -> dict:
@@ -80,8 +117,34 @@ def build(case: dict) -> dict:
         return available_years()
     if WEB_APP is None:
         raise SystemExit("该 case 需要 --web-root 指向 Web 版 backend 目录")
+
+    method = case.get("method", "GET")
+    url = case.get("path", f"/api{name}")
     client = WEB_APP.test_client()
-    response = client.get(f"/api{name}", query_string=case.get("query", {}))
+    if not case.get("no_login"):
+        login(client)
+
+    if name == "/upload":
+        reset_upload_dir()
+        response = client.post(
+            url,
+            data={"file": (__import__("io").BytesIO(ALIPAY_BYTES), "alipay_record.csv")},
+            content_type="multipart/form-data",
+        )
+    elif name.startswith("DELETE "):
+        reset_upload_dir()
+        client.post(
+            "/api/upload",
+            data={"file": (__import__("io").BytesIO(ALIPAY_BYTES), "alipay_record.csv")},
+            content_type="multipart/form-data",
+        )
+        response = client.delete(case["path"])
+    elif name in ("/clear_data", "/demo/enter", "/demo/exit"):
+        reset_upload_dir()
+        response = client.post(url)
+    else:
+        response = client.get(url, query_string=case.get("query", {}))
+
     payload = response.get_json()
     if payload is None:
         raise SystemExit(f"{name} 未返回 JSON（HTTP {response.status_code}）")

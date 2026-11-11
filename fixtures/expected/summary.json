@@ -1,0 +1,12 @@
+{
+  "balance": -490919.5,
+  "current_month": "2024-12",
+  "current_month_expense": 27279.53,
+  "has_current_month_data": false,
+  "month_count": 48,
+  "monthly_avg": 27303.97,
+  "prev_monthly_avg": 39403.28,
+  "total_expense": 1310590.8,
+  "total_income": 819671.3,
+  "transaction_count": 6791
+}

@@ -88,6 +88,163 @@
       "dataset": "demo",
       "query": {},
       "expected": "filtered_monthly_analysis_all.json"
+    },
+    {
+      "name": "available_dates",
+      "method": "GET",
+      "endpoint": "/available_dates",
+      "dataset": "demo",
+      "query": {},
+      "expected": "available_dates.json"
+    },
+    {
+      "name": "categories",
+      "method": "GET",
+      "endpoint": "/categories",
+      "dataset": "demo",
+      "query": {},
+      "expected": "categories.json"
+    },
+    {
+      "name": "category_expenses",
+      "method": "GET",
+      "endpoint": "/category_expenses",
+      "dataset": "demo",
+      "query": {},
+      "expected": "category_expenses.json"
+    },
+    {
+      "name": "category_available_dates",
+      "method": "GET",
+      "endpoint": "/category_available_dates",
+      "dataset": "demo",
+      "query": {},
+      "expected": "category_available_dates.json"
+    },
+    {
+      "name": "category_detail_2024_12_food",
+      "method": "GET",
+      "endpoint": "/category_detail/<month>/<category>",
+      "dataset": "demo",
+      "query": {},
+      "expected": "category_detail_2024_12_food.json",
+      "path": "/api/category_detail/2024-12/%E9%A4%90%E9%A5%AE%E7%BE%8E%E9%A3%9F"
+    },
+    {
+      "name": "category_trend_food",
+      "method": "GET",
+      "endpoint": "/category_trend/<category>",
+      "dataset": "demo",
+      "query": {},
+      "expected": "category_trend_food.json",
+      "path": "/api/category_trend/%E9%A4%90%E9%A5%AE%E7%BE%8E%E9%A3%9F"
+    },
+    {
+      "name": "top_transactions",
+      "method": "GET",
+      "endpoint": "/top_transactions",
+      "dataset": "demo",
+      "query": {
+        "limit": 5,
+        "min_amount": 1000
+      },
+      "expected": "top_transactions.json"
+    },
+    {
+      "name": "daily_data_2024",
+      "method": "GET",
+      "endpoint": "/daily_data",
+      "dataset": "demo",
+      "query": {
+        "year": 2024
+      },
+      "expected": "daily_data_2024.json"
+    },
+    {
+      "name": "time_analysis_2024",
+      "method": "GET",
+      "endpoint": "/time_analysis",
+      "dataset": "demo",
+      "query": {
+        "year": 2024
+      },
+      "expected": "time_analysis_2024.json"
+    },
+    {
+      "name": "overview_data_2024",
+      "method": "GET",
+      "endpoint": "/overview_data",
+      "dataset": "demo",
+      "query": {
+        "year": 2024
+      },
+      "expected": "overview_data_2024.json"
+    },
+    {
+      "name": "summary",
+      "method": "GET",
+      "endpoint": "/summary",
+      "dataset": "demo",
+      "query": {},
+      "expected": "summary.json"
+    },
+    {
+      "name": "files_empty",
+      "method": "GET",
+      "endpoint": "/files",
+      "dataset": "demo",
+      "query": {},
+      "expected": "files_empty.json"
+    },
+    {
+      "name": "session_status_fresh",
+      "method": "GET",
+      "endpoint": "/session/status",
+      "dataset": "demo",
+      "query": {},
+      "expected": "session_status_fresh.json",
+      "no_login": true
+    },
+    {
+      "name": "demo_enter",
+      "method": "POST",
+      "endpoint": "/demo/enter",
+      "dataset": "demo",
+      "query": {},
+      "expected": "demo_enter.json"
+    },
+    {
+      "name": "demo_exit",
+      "method": "POST",
+      "endpoint": "/demo/exit",
+      "dataset": "demo",
+      "query": {},
+      "expected": "demo_exit.json"
+    },
+    {
+      "name": "upload_single",
+      "method": "POST",
+      "endpoint": "/upload",
+      "dataset": "demo",
+      "query": {},
+      "expected": "upload_single.json"
+    },
+    {
+      "name": "clear_data",
+      "method": "POST",
+      "endpoint": "/clear_data",
+      "dataset": "demo",
+      "query": {},
+      "expected": "clear_data.json"
+    },
+    {
+      "name": "delete_file",
+      "method": "DELETE",
+      "endpoint": "DELETE /files/<filename>",
+      "dataset": "demo",
+      "query": {},
+      "expected": "delete_file.json",
+      "path": "/api/files/alipay_record.csv"
     }
   ]
 }

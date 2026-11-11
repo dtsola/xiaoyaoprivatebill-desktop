@@ -1,0 +1,50 @@
+{
+  "success": true,
+  "transactions": [
+    {
+      "amount": 7326.54,
+      "category": "数码电器",
+      "counterparty": "苏宁易购",
+      "date": "2021-01-10",
+      "description": "苏宁易购-充电器",
+      "status": "支付成功",
+      "time": "2021-01-10 20:29:53"
+    },
+    {
+      "amount": 6917.81,
+      "category": "数码电器",
+      "counterparty": "拼多多",
+      "date": "2021-11-14",
+      "description": "拼多多-家用电器",
+      "status": "支付成功",
+      "time": "2021-11-14 09:20:24"
+    },
+    {
+      "amount": 6824.03,
+      "category": "数码电器",
+      "counterparty": "京东自营",
+      "date": "2023-09-13",
+      "description": "京东自营-智能手环",
+      "status": "支付成功",
+      "time": "2023-09-13 12:39:03"
+    },
+    {
+      "amount": 6738.54,
+      "category": "数码电器",
+      "counterparty": "苏宁易购",
+      "date": "2021-07-15",
+      "description": "苏宁易购-电脑配件",
+      "status": "支付成功",
+      "time": "2021-07-15 11:01:05"
+    },
+    {
+      "amount": 5553.74,
+      "category": "数码电器",
+      "counterparty": "拼多多",
+      "date": "2023-01-15",
+      "description": "拼多多-耳机",
+      "status": "支付成功",
+      "time": "2023-01-15 19:20:29"
+    }
+  ]
+}
