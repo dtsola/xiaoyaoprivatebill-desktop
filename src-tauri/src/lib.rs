@@ -64,8 +64,20 @@ pub fn run() {
             commands::mcp_status,
             commands::mcp_set_enabled,
             commands::mcp_config,
-            commands::mcp_rotate_token
+            commands::mcp_rotate_token,
+            commands::desktop_settings,
+            commands::set_close_to_tray,
+            commands::open_data_dir
         ])
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                let state = window.state::<McpState>();
+                if state.desktop_settings().close_to_tray {
+                    api.prevent_close();
+                    let _ = window.hide();
+                }
+            }
+        })
         .build(tauri::generate_context!())
         .expect("启动失败");
 

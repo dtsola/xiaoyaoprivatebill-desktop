@@ -2,7 +2,7 @@
 
 use std::sync::{Arc, Mutex};
 
-use bill_core::{DataPaths, McpSettings, Settings};
+use bill_core::{DataPaths, DesktopSettings, McpSettings, Settings};
 use bill_mcp::lifecycle::McpManager;
 use serde_json::{json, Value};
 
@@ -38,6 +38,31 @@ impl McpState {
     /// 是否已启用（以设置为准，不代表正在运行）。
     pub fn enabled(&self) -> bool {
         self.mcp_settings().enabled
+    }
+
+    /// 当前桌面设置快照。
+    pub fn desktop_settings(&self) -> DesktopSettings {
+        self.settings
+            .lock()
+            .map(|guard| guard.desktop.clone())
+            .unwrap_or_default()
+    }
+
+    /// 更新桌面设置并落盘。
+    pub fn update_desktop(&self, change: impl FnOnce(&mut DesktopSettings)) -> Result<(), String> {
+        let mut guard = self
+            .settings
+            .lock()
+            .map_err(|_| "设置状态不可用".to_owned())?;
+        change(&mut guard.desktop);
+        guard
+            .save(&self.runtime.paths.settings_file())
+            .map_err(|error| error.to_string())
+    }
+
+    /// 数据目录路径（展示用）。
+    pub fn data_dir(&self) -> String {
+        self.runtime.paths.base().display().to_string()
     }
 
     /// 更新 MCP 设置并落盘。

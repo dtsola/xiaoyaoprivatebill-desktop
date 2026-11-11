@@ -275,6 +275,7 @@ export function installTauriMock() {
   const callbacks = new Map()
   let nextCallbackId = 1
 
+  let closeToTray = true
   let mcpEnabled = false
   const mcpStatus = () => ({
     enabled: mcpEnabled,
@@ -285,6 +286,17 @@ export function installTauriMock() {
   })
 
   const invoke = async (cmd, args) => {
+    if (cmd === 'desktop_settings') {
+      return {
+        close_to_tray: closeToTray,
+        data_dir: 'C:/Users/demo/AppData/Roaming/xiaoyaobill-desktop'
+      }
+    }
+    if (cmd === 'set_close_to_tray') {
+      closeToTray = Boolean(args?.enabled)
+      return { close_to_tray: closeToTray }
+    }
+    if (cmd === 'open_data_dir') return null
     if (cmd === 'mcp_status') return mcpStatus()
     if (cmd === 'mcp_set_enabled') {
       mcpEnabled = Boolean(args?.enabled)

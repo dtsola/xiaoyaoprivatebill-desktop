@@ -31,6 +31,11 @@ export const api = {
   deleteFile: (filename) => delete_(`/files/${encodeURIComponent(filename)}`),
   clearData: () => post('/clear_data'),
 
+  // ==================== 桌面设置 ====================
+  desktopSettings: () => invoke('desktop_settings'),
+  setCloseToTray: (enabled) => invoke('set_close_to_tray', { enabled }),
+  openDataDir: () => invoke('open_data_dir'),
+
   // ==================== MCP 服务 ====================
   mcpStatus: () => invoke('mcp_status'),
   mcpSetEnabled: (enabled) => invoke('mcp_set_enabled', { enabled }),

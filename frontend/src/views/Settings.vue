@@ -138,6 +138,24 @@
       </div>
     </div>
 
+    <!-- 桌面设置 -->
+    <div class="desktop-section">
+      <h2 class="section-title">桌面</h2>
+      <div class="desktop-card">
+        <div class="desktop-row">
+          <span class="mcp-label">数据目录</span>
+          <code class="mcp-endpoint">{{ desktop.data_dir }}</code>
+          <button class="mcp-btn" @click="openDataDir">打开</button>
+        </div>
+        <div class="desktop-row">
+          <span class="mcp-label">关闭行为</span>
+          <button class="mcp-btn" @click="toggleCloseToTray">
+            {{ desktop.close_to_tray ? '关闭窗口时最小化到托盘' : '关闭窗口时直接退出' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- MCP 服务 -->
     <div class="mcp-section">
       <h2 class="section-title">MCP 服务（AI Agent 接入）</h2>
@@ -191,6 +209,12 @@ const wechatFiles = ref([])
 const alipayDragging = ref(false)
 const wechatDragging = ref(false)
 
+// 桌面设置
+const desktop = ref({
+  close_to_tray: true,
+  data_dir: ''
+})
+
 // MCP 服务状态
 const mcp = ref({
   enabled: false,
@@ -209,6 +233,7 @@ onMounted(async () => {
   await loadFiles()
   await listenDragDrop()
   await loadMcp()
+  await loadDesktop()
 })
 
 onUnmounted(() => {
@@ -217,6 +242,34 @@ onUnmounted(() => {
     unlistenDragDrop = null
   }
 })
+
+// ==================== 桌面设置 ====================
+
+async function loadDesktop() {
+  try {
+    desktop.value = { ...desktop.value, ...(await api.desktopSettings()) }
+  } catch (error) {
+    console.error('[Settings] 读取桌面设置失败:', error)
+  }
+}
+
+async function toggleCloseToTray() {
+  try {
+    const result = await api.setCloseToTray(!desktop.value.close_to_tray)
+    desktop.value = { ...desktop.value, ...result }
+    uiStore.showSuccess(result.close_to_tray ? '关闭窗口将最小化到托盘' : '关闭窗口将直接退出')
+  } catch (error) {
+    uiStore.showError('设置失败: ' + error.message)
+  }
+}
+
+async function openDataDir() {
+  try {
+    await api.openDataDir()
+  } catch (error) {
+    uiStore.showError('打开数据目录失败: ' + error.message)
+  }
+}
 
 // ==================== MCP 服务 ====================
 
@@ -864,5 +917,24 @@ async function handleClearAllData() {
   margin-top: 12px;
   color: #8e8e93;
   font-size: 12px;
+}
+
+/* 桌面设置 */
+.desktop-section {
+  margin-top: 32px;
+}
+
+.desktop-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.desktop-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 </style>

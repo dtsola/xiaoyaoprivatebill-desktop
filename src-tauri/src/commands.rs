@@ -84,3 +84,31 @@ pub async fn mcp_rotate_token(state: State<'_, McpState>) -> Result<Value, Strin
         "token": token,
     }))
 }
+
+/// 桌面设置：关闭行为与数据目录。
+#[tauri::command]
+pub async fn desktop_settings(state: State<'_, McpState>) -> Result<Value, String> {
+    let desktop = state.desktop_settings();
+    Ok(json!({
+        "close_to_tray": desktop.close_to_tray,
+        "data_dir": state.data_dir(),
+    }))
+}
+
+/// 更新「关闭到托盘」开关。
+#[tauri::command]
+pub async fn set_close_to_tray(state: State<'_, McpState>, enabled: bool) -> Result<Value, String> {
+    state.update_desktop(|desktop| desktop.close_to_tray = enabled)?;
+    Ok(json!({ "close_to_tray": enabled }))
+}
+
+/// 用系统文件管理器打开数据目录。
+#[tauri::command]
+pub async fn open_data_dir(
+    app: tauri::AppHandle,
+    state: State<'_, McpState>,
+) -> Result<(), String> {
+    tauri_plugin_opener::OpenerExt::opener(&app)
+        .open_path(state.data_dir(), None::<&str>)
+        .map_err(|error| error.to_string())
+}
