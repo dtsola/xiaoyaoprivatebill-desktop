@@ -1,254 +1,124 @@
-// API 基础配置
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
+import { invoke } from '@tauri-apps/api/core'
 
 /**
- * 统一 API 客户端
- * 复用现有后端 API，零修改后端代码
+ * 统一 API 客户端。
+ *
+ * 桌面端不再走 HTTP，而是通过 Tauri IPC 调用 Rust 的 `api_request`。
+ * 20 个业务方法的名称与参数保持与 Web 版一致。
  */
 export const api = {
   // ==================== 数据分析 API ====================
-  /**
-   * 获取年度分析数据
-   * @param {Object} params - 查询参数 { year, min_amount, max_amount }
-   */
   getYearlyAnalysis: (params) => get('/yearly_analysis', params),
-
-  /**
-   * 获取月度分析数据
-   * @param {Object} params - 查询参数 { year, month }
-   */
   getMonthlyAnalysis: (params) => get('/monthly_analysis', params),
-
-  /**
-   * 获取分类支出数据
-   * @param {Object} params - 查询参数 { year, month }
-   */
   getCategoryExpenses: (params) => get('/category_expenses', params),
-
-  /**
-   * 获取交易记录列表
-   * @param {Object} params - 查询参数 { page, per_page, year, month, category, type, min_amount, max_amount, search }
-   */
   getTransactions: (params) => get('/transactions', params),
-
-  /**
-   * 获取综合分析数据
-   * @param {Object} params - 查询参数 { year }
-   */
   getAnalysis: (params) => get('/analysis', params),
-
-  /**
-   * 获取时间分析数据
-   * @param {Object} params - 查询参数 { year }
-   */
   getTimeAnalysis: (params) => get('/time_analysis', params),
-
-  /**
-   * 获取每日数据（用于热力图）
-   * @param {Object} params - 查询参数 { year, filter }
-   */
   getDailyData: (params) => get('/daily_data', params),
-
-  /**
-   * 获取汇总数据
-   */
   getSummary: () => get('/summary'),
 
   // ==================== 元数据 API ====================
-  /**
-   * 获取可用日期列表
-   */
   getAvailableDates: () => get('/available_dates'),
-
-  /**
-   * 获取可用年份列表
-   */
   getAvailableYears: () => get('/available_years'),
-
-  /**
-   * 获取所有分类
-   */
   getCategories: () => get('/categories'),
-
-  /**
-   * 获取分类分析数据（带参数时获取具体分类数据，不带参数时获取分类列表）
-   * @param {Object} params - 查询参数 { category, range, year, month, min_amount, max_amount }
-   */
   getCategoryAnalysis: (params) => get('/category_analysis', params),
-
-  /**
-   * 获取分类分析的可用日期
-   */
   getCategoryAvailableDates: () => get('/category_available_dates'),
 
   // ==================== 文件管理 API ====================
-  /**
-   * 上传文件
-   * @param {FormData} formData - 文件数据
-   */
   uploadFile: (formData) => post('/upload', formData),
-
-  /**
-   * 获取已上传文件列表
-   */
+  uploadPaths: (paths, provider) => post('/upload', { paths, provider }),
   getFiles: () => get('/files'),
-
-  /**
-   * 删除文件
-   * @param {string} filename - 文件名
-   */
-  deleteFile: (filename) => delete_(`/files/${filename}`),
-
-  /**
-   * 清除所有数据
-   */
+  deleteFile: (filename) => delete_(`/files/${encodeURIComponent(filename)}`),
   clearData: () => post('/clear_data'),
 
   // ==================== 会话管理 API ====================
-  /**
-   * 进入演示模式
-   */
   enterDemo: () => post('/demo/enter'),
-
-  /**
-   * 退出演示模式
-   */
   exitDemo: () => post('/demo/exit'),
-
-  /**
-   * 获取会话状态 (特殊处理 - 后端返回格式不同)
-   */
   getSessionStatus: () => getSessionStatus()
 }
 
 // ==================== 请求封装函数 ====================
 
-/**
- * GET 请求
- * @param {string} endpoint - API 端点
- * @param {Object} params - 查询参数
- */
-async function get(endpoint, params) {
-  const url = new URL(API_BASE + endpoint, window.location.origin)
-  if (params) {
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        url.searchParams.set(key, String(value))
+async function request(method, path, query, body) {
+  try {
+    return await invoke('api_request', {
+      req: {
+        method,
+        path,
+        query: query ?? {},
+        body: body ?? null
       }
     })
+  } catch (error) {
+    throw new Error(typeof error === 'string' ? error : '请求失败')
   }
-
-  console.log('[API] GET request to:', url.toString())
-
-  const response = await fetch(url)
-  const data = await response.json()
-
-  console.log('[API] Response:', data)
-
-  // 只在 success 字段存在且为 false 时才抛出错误
-  // 有些端点（如 category_available_dates）不返回 success 字段
-  if ('success' in data && !data.success) {
-    throw new Error(data.error || '请求失败')
-  }
-
-  // 处理不同的响应格式
-  // 有些端点返回 { success: true, data: {...} }
-  // 有些端点返回 { success: true, years: [...] } 或其他直接数据
-  if ('data' in data) {
-    return data.data
-  }
-
-  // 如果没有 data 字段，返回整个响应对象（去掉 success 字段）
-  const { success, ...result } = data
-  return result
 }
 
 /**
- * POST 请求
- * @param {string} endpoint - API 端点
- * @param {Object|FormData} data - 请求数据
+ * 处理三种响应格式：
+ * - { success: false, error } → 抛错
+ * - { success: true, data } → 解包 data
+ * - 其他对象 → 去掉 success 后返回
  */
+function normalize(data) {
+  if (data && typeof data === 'object' && 'success' in data && !data.success) {
+    throw new Error(data.error || '请求失败')
+  }
+  if (data && typeof data === 'object' && 'data' in data) {
+    return data.data
+  }
+  if (data && typeof data === 'object') {
+    const { success, ...rest } = data
+    return rest
+  }
+  return data
+}
+
+async function get(endpoint, params) {
+  const query = {}
+  for (const [key, value] of Object.entries(params ?? {})) {
+    if (value !== undefined && value !== null && value !== '') {
+      query[key] = String(value)
+    }
+  }
+  return normalize(await request('GET', endpoint, query, null))
+}
+
 async function post(endpoint, data) {
-  const isFormData = data instanceof FormData
-
-  const response = await fetch(API_BASE + endpoint, {
-    method: 'POST',
-    headers: isFormData ? {} : { 'Content-Type': 'application/json' },
-    body: isFormData ? data : JSON.stringify(data)
-  })
-
-  const result = await response.json()
-
-  // 只在 success 字段存在且为 false 时才抛出错误
-  if ('success' in result && !result.success) {
-    throw new Error(result.error || '请求失败')
+  if (typeof FormData !== 'undefined' && data instanceof FormData) {
+    throw new Error('桌面端不支持 FormData 上传，请使用 uploadPaths')
   }
-
-  // 处理不同的响应格式
-  if ('data' in result) {
-    return result.data
-  }
-
-  // 如果没有 data 字段，返回整个响应对象（去掉 success 字段）
-  const { success, ...responseData } = result
-  return responseData
+  return normalize(await request('POST', endpoint, {}, data ?? null))
 }
 
-/**
- * DELETE 请求
- * @param {string} endpoint - API 端点
- */
 async function delete_(endpoint) {
-  const response = await fetch(API_BASE + endpoint, {
-    method: 'DELETE'
-  })
-
-  const data = await response.json()
-
-  // 只在 success 字段存在且为 false 时才抛出错误
-  if ('success' in data && !data.success) {
-    throw new Error(data.error || '请求失败')
-  }
-
-  // 处理不同的响应格式
-  if ('data' in data) {
-    return data.data
-  }
-
-  // 如果没有 data 字段，返回整个响应对象（去掉 success 字段）
-  const { success, ...result } = data
-  return result
+  return normalize(await request('DELETE', endpoint, {}, null))
 }
 
 /**
- * 获取会话状态 (特殊处理)
- * 后端返回格式: { active: boolean, message: string }
- * 而不是标准的 { success: boolean, data: {...} }
+ * 会话状态接口的字段形状与普通接口不同。
+ * 桌面端返回 { active, is_demo, user_id, session_start }。
  */
 async function getSessionStatus() {
-  console.log('[API] Getting session status...')
   try {
-    const response = await fetch(API_BASE + '/session/status')
-    const data = await response.json()
-    console.log('[API] Session status response:', data)
-
-    // 后端返回格式: { active: boolean, message: string }
-    // 我们需要转换为前端期望的格式
-    // 注意: 后端的 session/status 不返回 is_demo 字段
-    // 所以我们需要通过其他方式判断演示模式
+    const data = await request('GET', '/session/status', {}, null)
+    if (data && data.success === false) {
+      throw new Error(data.error || '请求失败')
+    }
     return {
-      active: data.active || false,
-      message: data.message || '',
-      // 由于后端不返回 is_demo，我们需要在客户端维护这个状态
-      is_demo: false  // 这个值会在 session store 中被覆盖
+      active: data?.active || false,
+      message: data?.message || '',
+      is_demo: data?.is_demo || false,
+      user_id: data?.user_id ?? null,
+      session_start: data?.session_start ?? null
     }
   } catch (error) {
-    console.error('[API] Session status error:', error)
-    // 出错时返回默认状态
     return {
       active: false,
       message: '获取会话状态失败',
-      is_demo: false
+      is_demo: false,
+      user_id: null,
+      session_start: null
     }
   }
 }

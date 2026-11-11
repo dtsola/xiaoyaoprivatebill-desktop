@@ -106,12 +106,14 @@
 
 <script setup>
 import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useUiStore } from '@/stores/ui'
 import { useSessionStore } from '@/stores/session'
 import { useFilterStore } from '@/stores/filter'
 import Toast from '@/components/common/Toast.vue'
 import Modal from '@/components/common/Modal.vue'
 
+const router = useRouter()
 const uiStore = useUiStore()
 const sessionStore = useSessionStore()
 const filterStore = useFilterStore()
@@ -121,7 +123,7 @@ async function exitDemoMode() {
     try {
       await sessionStore.exitDemoMode()
       uiStore.showSuccess('已退出演示模式')
-      window.location.href = '/'
+      router.replace('/')
     } catch (error) {
       uiStore.showError('退出失败: ' + error.message)
     }
