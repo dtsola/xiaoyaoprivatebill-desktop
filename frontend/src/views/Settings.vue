@@ -4,7 +4,7 @@
     <div class="page-header" :class="{ 'page-header-agent': agentOnly }">
       <h1 class="page-title">{{ agentOnly ? 'AI Agent 接入' : '设置' }}</h1>
       <p v-if="agentOnly" class="page-subtitle">
-        通过 MCP 服务让 小遥Claw、Claude Code、Codex 等 Agent 读取本机账单数据；默认关闭，仅监听 127.0.0.1。
+        通过 MCP 服务让 小遥Claw、Claude Code、Codex 等 Agent 读取本机账单数据。
       </p>
     </div>
 

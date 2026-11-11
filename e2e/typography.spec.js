@@ -24,7 +24,8 @@ test('全局字号对齐 xiaoyaotime 标尺', async ({ page }) => {
 
   expect(sizes.body).toBe('14px')
   expect(Number(sizes.weight)).toBeGreaterThanOrEqual(450)
-  expect(sizes.title).toBe('28px')
+  // 页面标题在 56px 标题区里使用 20px
+  expect(sizes.title).toBe('20px')
   expect(sizes.nav).toBe('14px')
   expect(sizes.section).toBe('20px')
 })

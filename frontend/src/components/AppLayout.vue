@@ -1,8 +1,5 @@
 <template>
   <div class="app-shell" :class="{ 'platform-mac': isMac, 'sidebar-collapsed': collapsed }">
-    <!-- 顶部拖拽条：只覆盖内容区，侧边栏从窗口最顶开始（对齐 xiaoyaotime） -->
-    <div class="drag-strip" data-tauri-drag-region @dblclick="toggleMaximize"></div>
-
     <!-- 窗口按钮：26px 圆角按钮，右上角 -->
     <div class="window-controls" v-if="!isMac">
       <button class="window-btn" aria-label="最小化" title="最小化" @click="minimizeWindow">
@@ -147,8 +144,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import {
@@ -180,6 +177,7 @@ import Toast from '@/components/common/Toast.vue'
 import Modal from '@/components/common/Modal.vue'
 
 const router = useRouter()
+const route = useRoute()
 const uiStore = useUiStore()
 const sessionStore = useSessionStore()
 const filterStore = useFilterStore()
@@ -220,6 +218,21 @@ function toggleSidebar() {
 
 function syncWindowWidth() {
   windowWidth.value = window.innerWidth
+}
+
+// 页面标题区已固定到窗口顶部：给标题区与标题文字打上拖拽标记，
+// 空白处/标题处都能拖动窗口，按钮与筛选控件保持可点。
+function decoratePageChrome() {
+  document.querySelectorAll('.page-header, .category-page-header').forEach((header) => {
+    header.setAttribute('data-tauri-drag-region', '')
+    header.querySelectorAll('h1, h2, .page-title, .page-subtitle').forEach((el) => {
+      el.setAttribute('data-tauri-drag-region', '')
+    })
+    if (!header.dataset.chromeBound) {
+      header.dataset.chromeBound = '1'
+      header.addEventListener('dblclick', toggleMaximize)
+    }
+  })
 }
 
 // 写到 <html data-sidebar>，供全局 CSS 变量（内容区/浮动菜单等）使用
@@ -272,6 +285,8 @@ async function syncMaximized() {
 
 onMounted(async () => {
   window.addEventListener('resize', syncWindowWidth)
+  await nextTick()
+  decoratePageChrome()
   unlistenCloseHint = await listen('desktop://close-to-tray-hint', () => {
     uiStore.showSuccess('已最小化到托盘，可从托盘菜单退出')
   })
@@ -318,6 +333,15 @@ onMounted(async () => {
   // 加载会话状态
   await sessionStore.loadSessionStatus()
 })
+
+// 路由切换后页面头部会重建，重新打拖拽标记
+watch(
+  () => route.path,
+  async () => {
+    await nextTick()
+    decoratePageChrome()
+  }
+)
 </script>
 
 <style scoped>
@@ -338,31 +362,17 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding-top: 36px;
+  /* 顶部 56px 为统一标题区：页面标题与筛选控件都在这里 */
+  padding-top: 56px;
 }
 
 /* 拖拽条只覆盖内容区：侧边栏占满窗口高度，LOGO 区也可拖拽 */
-.drag-strip {
-  position: absolute;
-  top: 0;
-  left: var(--sb-current-width);
-  right: 96px;
-  height: 36px;
-  z-index: 2000;
-  user-select: none;
-}
-
-/* macOS：原生红绿灯在左上角，拖拽条从最左侧开始也无冲突 */
-.platform-mac .drag-strip {
-  left: 0;
-}
-
 /* 窗口按钮：与 xiaoyaotime 对齐（26px、右上角、圆角悬停） */
 .window-controls {
   position: absolute;
   top: 0;
   right: 0;
-  height: 36px;
+  height: 56px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -579,11 +589,44 @@ onMounted(async () => {
 .icon-settings { color: #8E8E93; }
 .icon-author { color: #FF2D55; }
 
-/* 页面头部是全局 sticky(top:0)，滚动容器换了以后需要抵消内容区 20px 内边距，
-   否则滚动时标题栏与页面头部之间会露出 20px 间隙。 */
+/* 页面标题区：各页面的 .page-header/.category-page-header 固定到窗口顶部，
+   与侧边栏、窗口按钮组成统一标题栏；滚动时不再跟随内容。 */
 .content :deep(.page-header),
 .content :deep(.category-page-header) {
-  top: -20px;
+  position: fixed;
+  top: 0;
+  left: var(--sb-current-width);
+  right: 0;
+  height: 56px;
+  min-height: 56px;
+  margin: 0;
+  /* 右侧给窗口按钮留 108px */
+  padding: 0 108px 0 20px;
+  z-index: 2400;
+  background: var(--bg-color);
+  border-bottom: 1px solid var(--border-color);
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.content :deep(.page-header .page-title),
+.content :deep(.category-page-header .page-title) {
+  font-size: var(--font-size-xl);
+  pointer-events: none;
+}
+
+/* 设置页 / AI Agent 页：标题与说明同一行，避免超出 56px */
+.content :deep(.page-header-agent) {
+  flex-direction: row;
+  gap: 16px;
+}
+
+.content :deep(.page-header-agent .page-subtitle) {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .content {
@@ -642,7 +685,7 @@ onMounted(async () => {
 /* 加载态改成内容区顶部的一条进度条：不遮挡页面、不盖住侧边栏与窗口按钮 */
 .global-loader {
   position: fixed;
-  top: 36px;
+  top: 56px;
   left: var(--sb-current-width);
   right: 0;
   height: 3px;

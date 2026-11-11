@@ -5,33 +5,34 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(installTauriMock)
 })
 
-test('侧边栏贴窗口顶部，拖拽区只覆盖内容区并提供窗口按钮', async ({ page }) => {
+test('侧边栏贴窗口顶部，页面标题区固定在窗口标题栏', async ({ page }) => {
   const errors = []
   page.on('pageerror', (error) => errors.push(error.message))
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text())
   })
 
-  await page.goto('/')
+  await page.goto('/#/category')
 
-  // 侧边栏从窗口最顶部开始（包含标题栏高度）
+  // 侧边栏从窗口最顶部开始
   const sidebar = await page.locator('.sidebar').boundingBox()
   expect(sidebar.y).toBe(0)
   expect(sidebar.height).toBe(840)
 
-  // 拖拽区在侧边栏右侧，右侧让出 96px 给窗口按钮
-  const strip = page.locator('.drag-strip')
-  await expect(strip).toHaveAttribute('data-tauri-drag-region', '')
-  const box = await strip.boundingBox()
-  expect(box.height).toBe(36)
-  expect(box.width).toBe(1280 - 240 - 96)
+  // 页面标题区固定在顶部，仅占据侧边栏右侧
+  const header = page.locator('.category-page-header')
+  await expect(header).toHaveAttribute('data-tauri-drag-region', '')
+  const box = await header.boundingBox()
   expect(box.x).toBe(240)
+  expect(box.y).toBe(0)
+  expect(box.height).toBe(56)
+  expect(box.width).toBe(1280 - 240)
 
   const btn = await page.locator('.window-btn').first().boundingBox()
   expect(btn.width).toBe(26)
   expect(btn.height).toBe(26)
 
-  // 滚动只发生在内容区：窗口本身不滚动，滚动条不会顶到拖拽区
+  // 滚动只发生在内容区；标题区不随内容滚动
   const scroll = await page.evaluate(() => ({
     windowScroll: document.scrollingElement.scrollHeight - window.innerHeight,
     contentOverflow: getComputedStyle(document.querySelector('.content')).overflowY
@@ -39,7 +40,6 @@ test('侧边栏贴窗口顶部，拖拽区只覆盖内容区并提供窗口按�
   expect(scroll.windowScroll).toBeLessThanOrEqual(1)
   expect(scroll.contentOverflow).toBe('auto')
 
-  // 内容区让出侧边栏宽度
   const contentMargin = await page
     .locator('.content')
     .evaluate((el) => getComputedStyle(el).marginLeft)
@@ -99,8 +99,11 @@ test('侧边栏为浅灰底色，选中项用白色胶囊区分', async ({ page 
   expect(activeBg).toBe('rgb(255, 255, 255)')
 })
 
-test('滚动时页面头部紧贴标题栏，不出现间隙', async ({ page }) => {
+test('滚动内容时页面标题区保持固定', async ({ page }) => {
   await page.goto('/#/settings')
+
+  const header = page.locator('.page-header')
+  await expect(header).toHaveCSS('position', 'fixed')
 
   await page.locator('.content').evaluate((el) => {
     el.scrollTop = 400
@@ -108,9 +111,8 @@ test('滚动时页面头部紧贴标题栏，不出现间隙', async ({ page }) 
   await expect
     .poll(() =>
       page.evaluate(() => {
-        const content = document.querySelector('.content').getBoundingClientRect()
         const header = document.querySelector('.page-header').getBoundingClientRect()
-        return Math.round(header.top - content.top)
+        return Math.round(header.top)
       })
     )
     .toBe(0)

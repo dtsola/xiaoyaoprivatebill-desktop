@@ -23,7 +23,7 @@ test('加载态只覆盖内容区，侧边栏保持可用', async ({ page }) => 
 
   const box = await loader.boundingBox()
   expect(box.x).toBe(240)
-  expect(box.y).toBe(36)
+  expect(box.y).toBe(56)
   expect(box.width).toBe(1280 - 240)
   expect(box.height).toBe(3)
 
