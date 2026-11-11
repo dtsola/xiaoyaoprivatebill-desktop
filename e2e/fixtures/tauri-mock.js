@@ -273,6 +273,7 @@ export function installTauriMock() {
   }
 
   const callbacks = new Map()
+  const eventListeners = new Map()
   let nextCallbackId = 1
 
   let closeToTray = true
@@ -343,7 +344,14 @@ export function installTauriMock() {
       }
       return routes[path] ?? { success: false, error: `接口不存在: ${path}` }
     }
-    if (cmd === 'plugin:event|listen') return 1
+    if (cmd === 'plugin:event|listen') {
+      const event = args?.event
+      if (event) {
+        if (!eventListeners.has(event)) eventListeners.set(event, [])
+        eventListeners.get(event).push(args?.handler)
+      }
+      return 1
+    }
     if (cmd === 'plugin:event|unlisten') return null
     if (cmd === 'plugin:dialog|open') return window.__TAURI_TEST_DIALOG ?? null
     if (cmd === 'plugin:opener|open_url') {
@@ -351,6 +359,13 @@ export function installTauriMock() {
       return null
     }
     return null
+  }
+
+  window.__TAURI_TEST_EMIT = (event, payload) => {
+    for (const id of eventListeners.get(event) ?? []) {
+      const callback = callbacks.get(id)
+      if (callback) callback({ event, id, payload })
+    }
   }
 
   window.__TAURI_INTERNALS__ = {

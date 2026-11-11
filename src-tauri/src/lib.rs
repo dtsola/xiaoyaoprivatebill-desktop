@@ -8,7 +8,7 @@ use std::sync::Arc;
 
 use bill_core::DataPaths;
 use mcp_state::McpState;
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 pub fn run() {
     let app = tauri::Builder::default()
@@ -74,9 +74,14 @@ pub fn run() {
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                 let state = window.state::<McpState>();
-                if state.desktop_settings().close_to_tray {
+                let desktop = state.desktop_settings();
+                if desktop.close_to_tray {
                     api.prevent_close();
                     let _ = window.hide();
+                    if !desktop.close_hint_shown {
+                        let _ = state.update_desktop(|settings| settings.close_hint_shown = true);
+                        let _ = window.emit("desktop://close-to-tray-hint", ());
+                    }
                 }
             }
         })

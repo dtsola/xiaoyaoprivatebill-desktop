@@ -105,8 +105,9 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { listen } from '@tauri-apps/api/event'
 import { useUiStore } from '@/stores/ui'
 import { useSessionStore } from '@/stores/session'
 import { useFilterStore } from '@/stores/filter'
@@ -117,6 +118,21 @@ const router = useRouter()
 const uiStore = useUiStore()
 const sessionStore = useSessionStore()
 const filterStore = useFilterStore()
+
+let unlistenCloseHint = null
+
+onMounted(async () => {
+  unlistenCloseHint = await listen('desktop://close-to-tray-hint', () => {
+    uiStore.showSuccess('已最小化到托盘，可从托盘菜单退出')
+  })
+})
+
+onUnmounted(() => {
+  if (unlistenCloseHint) {
+    unlistenCloseHint()
+    unlistenCloseHint = null
+  }
+})
 
 async function exitDemoMode() {
   if (confirm('确定要退出演示模式吗？')) {
