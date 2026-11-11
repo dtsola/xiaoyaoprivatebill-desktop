@@ -1,0 +1,29 @@
+{
+  "data": {
+    "active_days": 31,
+    "avg_daily_expense": 879.98,
+    "avg_transaction": 202.07,
+    "balance": -7301.090000000004,
+    "comparisons": {
+      "balance": {
+        "diff": 15672.909999999996,
+        "rate": 68.2202054496387
+      },
+      "total_expense": {
+        "diff": -12123.749999999996,
+        "rate": -30.768377657900555
+      },
+      "total_income": {
+        "diff": 3549.16,
+        "rate": 21.602650876970873
+      }
+    },
+    "expense_count": 135,
+    "expense_ratio": 136.54,
+    "income_count": 18,
+    "total_count": 153,
+    "total_expense": 27279.530000000002,
+    "total_income": 19978.44
+  },
+  "success": true
+}

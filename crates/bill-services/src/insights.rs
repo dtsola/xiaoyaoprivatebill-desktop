@@ -13,6 +13,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use bill_core::{Dataset, Transaction};
+
+use crate::pycompat::{numpy_sum, pandas_round2};
 use chrono::{Datelike, Timelike};
 use serde_json::{json, Value};
 
@@ -47,21 +49,19 @@ fn expenses(dataset: &Dataset) -> Vec<&Transaction> {
 pub fn analyze_merchants(dataset: &Dataset) -> Value {
     let rows = expenses(dataset);
 
-    let mut stats: BTreeMap<String, (usize, f64, String, String)> = BTreeMap::new();
+    let mut stats: BTreeMap<String, (Vec<f64>, chrono::NaiveDateTime, chrono::NaiveDateTime)> =
+        BTreeMap::new();
     for row in &rows {
-        let entry = stats.entry(row.counterparty.clone()).or_insert((
-            0,
-            0.0,
-            row.date.clone(),
-            row.date.clone(),
-        ));
-        entry.0 += 1;
-        entry.1 += row.amount;
-        if row.date < entry.2 {
-            entry.2 = row.date.clone();
+        let entry =
+            stats
+                .entry(row.counterparty.clone())
+                .or_insert((Vec::new(), row.time, row.time));
+        entry.0.push(row.amount);
+        if row.time < entry.1 {
+            entry.1 = row.time;
         }
-        if row.date > entry.3 {
-            entry.3 = row.date.clone();
+        if row.time > entry.2 {
+            entry.2 = row.time;
         }
     }
 
@@ -73,14 +73,16 @@ pub fn analyze_merchants(dataset: &Dataset) -> Value {
         1
     };
 
-    for (name, (count, total, first, last)) in &stats {
-        let span = span_days(first, last);
+    for (name, (amounts, first, last)) in &stats {
+        let count = &amounts.len();
+        let total = &numpy_sum(amounts);
+        let span = span_days(*first, *last);
         merchant_stats.insert(
             name.clone(),
             json!({
                 "交易次数": count,
-                "总金额": round2(*total),
-                "平均金额": round2(total / *count as f64),
+                "总金额": pandas_round2(*total),
+                "平均金额": pandas_round2(total / *count as f64),
                 "交易跨度": span,
             }),
         );
@@ -89,7 +91,7 @@ pub fn analyze_merchants(dataset: &Dataset) -> Value {
                 "name": name,
                 "amount": total,
                 "count": count,
-                "last_visit": last,
+                "last_visit": last.format("%Y-%m-%d").to_string(),
             }));
         }
     }
@@ -107,7 +109,7 @@ pub fn analyze_merchants(dataset: &Dataset) -> Value {
 
 /// 消费场景分析：渠道、时段、金额层级。
 pub fn analyze_scenarios(dataset: &Dataset) -> Value {
-    let mut grouped: BTreeMap<(String, String), f64> = BTreeMap::new();
+    let mut grouped: BTreeMap<(&str, String), Vec<f64>> = BTreeMap::new();
     for row in expenses(dataset) {
         let scene = if ONLINE_KEYWORDS
             .iter()
@@ -122,14 +124,27 @@ pub fn analyze_scenarios(dataset: &Dataset) -> Value {
             ("时段", period_of(row.time.hour()).to_owned()),
             ("层级", level_of(row.amount).to_owned()),
         ] {
-            *grouped.entry((category.to_owned(), name)).or_insert(0.0) += row.amount;
+            grouped
+                .entry((category, name))
+                .or_default()
+                .push(row.amount);
         }
     }
 
-    let items: Vec<Value> = grouped
-        .into_iter()
-        .map(|((category, name), amount)| json!({ "name": name, "value": amount, "category": category }))
-        .collect();
+    // Python 版按「渠道 → 时段 → 层级」三段追加，每段内按名称排序。
+    let mut items = Vec::new();
+    for category in ["渠道", "时段", "层级"] {
+        for ((label, name), amounts) in &grouped {
+            if *label != category {
+                continue;
+            }
+            items.push(json!({
+                "name": name,
+                "value": numpy_sum(amounts),
+                "category": category,
+            }));
+        }
+    }
     Value::Array(items)
 }
 
@@ -877,12 +892,9 @@ fn level_of(amount: f64) -> &'static str {
     }
 }
 
-fn span_days(first: &str, last: &str) -> i64 {
-    let parse = |value: &str| chrono::NaiveDate::parse_from_str(value, "%Y-%m-%d").ok();
-    match (parse(first), parse(last)) {
-        (Some(a), Some(b)) => (b - a).num_days() + 1,
-        _ => 1,
-    }
+/// 与 Web 版一致：用**时间戳**差值取整天数，再 +1。
+fn span_days(first: chrono::NaiveDateTime, last: chrono::NaiveDateTime) -> i64 {
+    (last - first).num_days() + 1
 }
 
 fn round1(value: f64) -> f64 {

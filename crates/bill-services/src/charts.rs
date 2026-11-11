@@ -14,6 +14,8 @@ use bill_core::{Dataset, Transaction};
 use chrono::{Datelike, Timelike};
 use serde_json::{json, Value};
 
+use crate::pycompat::numpy_sum;
+
 /// 星期标签，下标与 `chrono` 的 `num_days_from_monday()` 一致。
 const WEEKDAYS: [&str; 7] = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
 
@@ -154,26 +156,23 @@ pub fn generate_quadrant_data(dataset: &Dataset) -> Value {
     }
 
     struct Stats<'a> {
-        count: usize,
-        total: f64,
+        amounts: Vec<f64>,
         categories: BTreeMap<&'a str, usize>,
     }
 
     let mut merchants: BTreeMap<&str, Stats> = BTreeMap::new();
     for row in &rows {
         let entry = merchants.entry(row.counterparty.as_str()).or_insert(Stats {
-            count: 0,
-            total: 0.0,
+            amounts: Vec::new(),
             categories: BTreeMap::new(),
         });
-        entry.count += 1;
-        entry.total += row.amount;
+        entry.amounts.push(row.amount);
         *entry.categories.entry(row.category.as_str()).or_insert(0) += 1;
     }
 
     let items: Vec<Value> = merchants
         .into_iter()
-        .filter(|(_, stats)| stats.total >= 50.0 && stats.count >= 2)
+        .filter(|(_, stats)| numpy_sum(&stats.amounts) >= 50.0 && stats.amounts.len() >= 2)
         .map(|(name, stats)| {
             // `mode().iloc[0]`：并列时取字典序最小的分类。
             let mut category = "其他";
@@ -184,12 +183,13 @@ pub fn generate_quadrant_data(dataset: &Dataset) -> Value {
                     category = candidate;
                 }
             }
+            let total = numpy_sum(&stats.amounts);
             json!({
                 "name": name,
                 "category": category,
-                "frequency": stats.count,
-                "avg_amount": round2(stats.total / stats.count as f64),
-                "total_amount": round2(stats.total),
+                "frequency": stats.amounts.len(),
+                "avg_amount": round2(total / stats.amounts.len() as f64),
+                "total_amount": round2(total),
             })
         })
         .collect();

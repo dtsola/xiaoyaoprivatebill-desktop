@@ -6,6 +6,7 @@ pub mod charts;
 pub mod dataset;
 pub mod files;
 pub mod insights;
+pub mod pycompat;
 pub mod snapshot;
 pub mod transactions;
 

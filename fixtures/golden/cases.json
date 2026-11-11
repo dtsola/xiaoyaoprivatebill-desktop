@@ -7,6 +7,87 @@
       "endpoint": "/available_years",
       "dataset": "demo",
       "expected": "available_years.json"
+    },
+    {
+      "name": "yearly_analysis_2024",
+      "method": "GET",
+      "endpoint": "/yearly_analysis",
+      "dataset": "demo",
+      "query": {
+        "year": 2024
+      },
+      "expected": "yearly_analysis_2024.json"
+    },
+    {
+      "name": "monthly_analysis_2024_12",
+      "method": "GET",
+      "endpoint": "/monthly_analysis",
+      "dataset": "demo",
+      "query": {
+        "year": 2024,
+        "month": 12
+      },
+      "expected": "monthly_analysis_2024_12.json"
+    },
+    {
+      "name": "category_analysis_2024",
+      "method": "GET",
+      "endpoint": "/category_analysis",
+      "dataset": "demo",
+      "query": {
+        "year": 2024
+      },
+      "expected": "category_analysis_2024.json"
+    },
+    {
+      "name": "transactions_expense",
+      "method": "GET",
+      "endpoint": "/transactions",
+      "dataset": "demo",
+      "query": {
+        "type": "支出",
+        "per_page": 50
+      },
+      "expected": "transactions_expense.json"
+    },
+    {
+      "name": "analysis_2024",
+      "method": "GET",
+      "endpoint": "/analysis",
+      "dataset": "demo",
+      "query": {
+        "year": 2024
+      },
+      "expected": "analysis_2024.json"
+    },
+    {
+      "name": "yearly_data_2024",
+      "method": "GET",
+      "endpoint": "/yearly_data",
+      "dataset": "demo",
+      "query": {
+        "year": 2024
+      },
+      "expected": "yearly_data_2024.json"
+    },
+    {
+      "name": "monthly_data_2024_12",
+      "method": "GET",
+      "endpoint": "/monthly_data",
+      "dataset": "demo",
+      "query": {
+        "year": 2024,
+        "month": 12
+      },
+      "expected": "monthly_data_2024_12.json"
+    },
+    {
+      "name": "filtered_monthly_analysis_all",
+      "method": "GET",
+      "endpoint": "/filtered_monthly_analysis",
+      "dataset": "demo",
+      "query": {},
+      "expected": "filtered_monthly_analysis_all.json"
     }
   ]
 }

@@ -1,0 +1,466 @@
+{
+  "pagination": {
+    "current_page": 1,
+    "per_page": 50,
+    "total_pages": 136,
+    "total_records": 6791
+  },
+  "success": true,
+  "summary": {
+    "balance": -1310590.7999999998,
+    "total_expense": 1310590.7999999998,
+    "total_income": 0.0
+  },
+  "transactions": [
+    {
+      "amount": 32.81,
+      "category": "交通出行",
+      "counterparty": "哈啰单车",
+      "description": "哈啰单车-打车上班",
+      "status": "支付成功",
+      "time": "2024-12-31 20:40:43",
+      "type": "支出"
+    },
+    {
+      "amount": 739.28,
+      "category": "转账",
+      "counterparty": "借款人",
+      "description": "借款人-转账",
+      "status": "支付成功",
+      "time": "2024-12-31 12:51:48",
+      "type": "支出"
+    },
+    {
+      "amount": 28.62,
+      "category": "商户消费",
+      "counterparty": "水果摊",
+      "description": "水果摊-买早餐",
+      "status": "支付成功",
+      "time": "2024-12-31 09:49:14",
+      "type": "支出"
+    },
+    {
+      "amount": 42.44,
+      "category": "餐饮美食",
+      "counterparty": "海底捞",
+      "description": "海底捞-外卖订单",
+      "status": "支付成功",
+      "time": "2024-12-30 20:12:12",
+      "type": "支出"
+    },
+    {
+      "amount": 4.35,
+      "category": "扫二维码付款",
+      "counterparty": "路边摊",
+      "description": "路边摊-付款",
+      "status": "支付成功",
+      "time": "2024-12-30 19:37:42",
+      "type": "支出"
+    },
+    {
+      "amount": 106.47,
+      "category": "其他",
+      "counterparty": "水果摊",
+      "description": "水果摊-买水果",
+      "status": "支付成功",
+      "time": "2024-12-30 17:05:49",
+      "type": "支出"
+    },
+    {
+      "amount": 182.98,
+      "category": "住房物业",
+      "counterparty": "万科物业",
+      "description": "万科物业-宽带费",
+      "status": "支付成功",
+      "time": "2024-12-30 11:27:12",
+      "type": "支出"
+    },
+    {
+      "amount": 103.3,
+      "category": "餐饮美食",
+      "counterparty": "沙县小吃",
+      "description": "沙县小吃-下午茶",
+      "status": "支付成功",
+      "time": "2024-12-29 16:07:27",
+      "type": "支出"
+    },
+    {
+      "amount": 61.21,
+      "category": "群收款",
+      "counterparty": "聚餐群",
+      "description": "聚餐群-AA分摊",
+      "status": "支付成功",
+      "time": "2024-12-29 13:31:15",
+      "type": "支出"
+    },
+    {
+      "amount": 1681.32,
+      "category": "服饰装扮",
+      "counterparty": "H&M",
+      "description": "H&M-运动装备",
+      "status": "支付成功",
+      "time": "2024-12-29 09:54:33",
+      "type": "支出"
+    },
+    {
+      "amount": 32.4,
+      "category": "餐饮美食",
+      "counterparty": "喜茶",
+      "description": "喜茶-夜宵",
+      "status": "支付成功",
+      "time": "2024-12-29 09:16:00",
+      "type": "支出"
+    },
+    {
+      "amount": 10.34,
+      "category": "扫二维码付款",
+      "counterparty": "出租车",
+      "description": "出租车-付款",
+      "status": "支付成功",
+      "time": "2024-12-28 18:04:58",
+      "type": "支出"
+    },
+    {
+      "amount": 44.77,
+      "category": "餐饮美食",
+      "counterparty": "麦当劳",
+      "description": "麦当劳-工作餐",
+      "status": "支付成功",
+      "time": "2024-12-28 13:26:52",
+      "type": "支出"
+    },
+    {
+      "amount": 28.79,
+      "category": "扫二维码付款",
+      "counterparty": "路边摊",
+      "description": "路边摊-付款",
+      "status": "支付成功",
+      "time": "2024-12-28 11:33:59",
+      "type": "支出"
+    },
+    {
+      "amount": 69.33,
+      "category": "亲子",
+      "counterparty": "家乐福",
+      "description": "家乐福-零食饮料",
+      "status": "支付成功",
+      "time": "2024-12-28 11:28:54",
+      "type": "支出"
+    },
+    {
+      "amount": 19.57,
+      "category": "交通出行",
+      "counterparty": "中国石油",
+      "description": "中国石油-停车费",
+      "status": "支付成功",
+      "time": "2024-12-28 11:12:16",
+      "type": "支出"
+    },
+    {
+      "amount": 149.58,
+      "category": "商户消费",
+      "counterparty": "便利店",
+      "description": "便利店-买水果",
+      "status": "支付成功",
+      "time": "2024-12-27 20:02:16",
+      "type": "支出"
+    },
+    {
+      "amount": 895.75,
+      "category": "数码电器",
+      "counterparty": "小米之家",
+      "description": "小米之家-耳机",
+      "status": "支付成功",
+      "time": "2024-12-27 16:44:31",
+      "type": "支出"
+    },
+    {
+      "amount": 167.57,
+      "category": "群收款",
+      "counterparty": "聚餐群",
+      "description": "聚餐群-AA分摊",
+      "status": "支付成功",
+      "time": "2024-12-27 14:35:54",
+      "type": "支出"
+    },
+    {
+      "amount": 29.99,
+      "category": "餐饮美食",
+      "counterparty": "兰州拉面",
+      "description": "兰州拉面-夜宵",
+      "status": "支付成功",
+      "time": "2024-12-26 14:37:49",
+      "type": "支出"
+    },
+    {
+      "amount": 59.23,
+      "category": "充值缴费",
+      "counterparty": "中国电信",
+      "description": "中国电信-会员订阅",
+      "status": "支付成功",
+      "time": "2024-12-26 12:45:47",
+      "type": "支出"
+    },
+    {
+      "amount": 157.38,
+      "category": "转账",
+      "counterparty": "房东",
+      "description": "房东-房租",
+      "status": "支付成功",
+      "time": "2024-12-26 11:41:35",
+      "type": "支出"
+    },
+    {
+      "amount": 905.42,
+      "category": "文化休闲",
+      "counterparty": "猫眼电影",
+      "description": "猫眼电影-看电影",
+      "status": "支付成功",
+      "time": "2024-12-26 11:38:21",
+      "type": "支出"
+    },
+    {
+      "amount": 368.66,
+      "category": "交通出行",
+      "counterparty": "中国石油",
+      "description": "中国石油-打车上班",
+      "status": "支付成功",
+      "time": "2024-12-25 20:45:05",
+      "type": "支出"
+    },
+    {
+      "amount": 12.05,
+      "category": "扫二维码付款",
+      "counterparty": "小吃店",
+      "description": "小吃店-扫码支付",
+      "status": "支付成功",
+      "time": "2024-12-25 19:42:38",
+      "type": "支出"
+    },
+    {
+      "amount": 71.4,
+      "category": "日用百货",
+      "counterparty": "京东超市",
+      "description": "京东超市-纸巾湿巾",
+      "status": "支付成功",
+      "time": "2024-12-25 14:23:14",
+      "type": "支出"
+    },
+    {
+      "amount": 151.43,
+      "category": "日用百货",
+      "counterparty": "7-11便利店",
+      "description": "7-11便利店-超市购物",
+      "status": "支付成功",
+      "time": "2024-12-25 12:53:31",
+      "type": "支出"
+    },
+    {
+      "amount": 41.92,
+      "category": "日用百货",
+      "counterparty": "家乐福",
+      "description": "家乐福-洗漱用品",
+      "status": "支付成功",
+      "time": "2024-12-25 11:00:47",
+      "type": "支出"
+    },
+    {
+      "amount": 15.98,
+      "category": "餐饮美食",
+      "counterparty": "兰州拉面",
+      "description": "兰州拉面-早餐",
+      "status": "支付成功",
+      "time": "2024-12-24 20:35:22",
+      "type": "支出"
+    },
+    {
+      "amount": 146.68,
+      "category": "转账",
+      "counterparty": "朋友",
+      "description": "朋友-转账",
+      "status": "支付成功",
+      "time": "2024-12-24 17:02:28",
+      "type": "支出"
+    },
+    {
+      "amount": 23.63,
+      "category": "住房物业",
+      "counterparty": "万科物业",
+      "description": "万科物业-物业费",
+      "status": "支付成功",
+      "time": "2024-12-24 10:12:52",
+      "type": "支出"
+    },
+    {
+      "amount": 2.93,
+      "category": "商户消费",
+      "counterparty": "菜市场",
+      "description": "菜市场-零钱支付",
+      "status": "支付成功",
+      "time": "2024-12-23 19:29:28",
+      "type": "支出"
+    },
+    {
+      "amount": 103.65,
+      "category": "充值缴费",
+      "counterparty": "腾讯视频",
+      "description": "腾讯视频-流量包",
+      "status": "支付成功",
+      "time": "2024-12-23 05:54:55",
+      "type": "支出"
+    },
+    {
+      "amount": 3.22,
+      "category": "交通出行",
+      "counterparty": "滴滴出行",
+      "description": "滴滴出行-回家车票",
+      "status": "支付成功",
+      "time": "2024-12-22 21:43:42",
+      "type": "支出"
+    },
+    {
+      "amount": 38.88,
+      "category": "日用百货",
+      "counterparty": "全家FamilyMart",
+      "description": "全家FamilyMart-洗漱用品",
+      "status": "支付成功",
+      "time": "2024-12-22 15:20:16",
+      "type": "支出"
+    },
+    {
+      "amount": 94.12,
+      "category": "转账红包",
+      "counterparty": "赵六",
+      "description": "赵六-AA收款",
+      "status": "支付成功",
+      "time": "2024-12-22 13:48:34",
+      "type": "支出"
+    },
+    {
+      "amount": 40.59,
+      "category": "住房物业",
+      "counterparty": "碧桂园服务",
+      "description": "碧桂园服务-水费",
+      "status": "支付成功",
+      "time": "2024-12-22 12:48:55",
+      "type": "支出"
+    },
+    {
+      "amount": 190.44,
+      "category": "餐饮美食",
+      "counterparty": "星巴克",
+      "description": "星巴克-聚餐",
+      "status": "支付成功",
+      "time": "2024-12-22 09:05:30",
+      "type": "支出"
+    },
+    {
+      "amount": 112.97,
+      "category": "餐饮美食",
+      "counterparty": "麦当劳",
+      "description": "麦当劳-聚餐",
+      "status": "支付成功",
+      "time": "2024-12-21 20:32:44",
+      "type": "支出"
+    },
+    {
+      "amount": 796.88,
+      "category": "餐饮美食",
+      "counterparty": "必胜客",
+      "description": "必胜客-周末改善伙食",
+      "status": "支付成功",
+      "time": "2024-12-21 17:53:21",
+      "type": "支出"
+    },
+    {
+      "amount": 24.66,
+      "category": "餐饮美食",
+      "counterparty": "必胜客",
+      "description": "必胜客-外卖订单",
+      "status": "支付成功",
+      "time": "2024-12-21 15:43:23",
+      "type": "支出"
+    },
+    {
+      "amount": 166.22,
+      "category": "住房物业",
+      "counterparty": "万科物业",
+      "description": "万科物业-电费",
+      "status": "支付成功",
+      "time": "2024-12-21 12:50:08",
+      "type": "支出"
+    },
+    {
+      "amount": 12.59,
+      "category": "餐饮美食",
+      "counterparty": "沙县小吃",
+      "description": "沙县小吃-夜宵",
+      "status": "支付成功",
+      "time": "2024-12-21 11:40:05",
+      "type": "支出"
+    },
+    {
+      "amount": 31.48,
+      "category": "餐饮美食",
+      "counterparty": "美团外卖",
+      "description": "美团外卖-周末改善伙食",
+      "status": "支付成功",
+      "time": "2024-12-20 17:07:13",
+      "type": "支出"
+    },
+    {
+      "amount": 157.29,
+      "category": "餐饮美食",
+      "counterparty": "蜜雪冰城",
+      "description": "蜜雪冰城-周末改善伙食",
+      "status": "支付成功",
+      "time": "2024-12-20 16:49:33",
+      "type": "支出"
+    },
+    {
+      "amount": 703.07,
+      "category": "商户消费",
+      "counterparty": "小卖部",
+      "description": "小卖部-买水果",
+      "status": "支付成功",
+      "time": "2024-12-20 12:06:15",
+      "type": "支出"
+    },
+    {
+      "amount": 93.66,
+      "category": "服饰装扮",
+      "counterparty": "唯品会",
+      "description": "唯品会-鞋子",
+      "status": "支付成功",
+      "time": "2024-12-20 11:48:38",
+      "type": "支出"
+    },
+    {
+      "amount": 1345.33,
+      "category": "酒店旅游",
+      "counterparty": "华住会",
+      "description": "华住会-机票",
+      "status": "支付成功",
+      "time": "2024-12-19 10:56:42",
+      "type": "支出"
+    },
+    {
+      "amount": 151.41,
+      "category": "文化休闲",
+      "counterparty": "万达影城",
+      "description": "万达影城-演唱会门票",
+      "status": "支付成功",
+      "time": "2024-12-19 10:11:29",
+      "type": "支出"
+    },
+    {
+      "amount": 41.79,
+      "category": "餐饮美食",
+      "counterparty": "兰州拉面",
+      "description": "兰州拉面-早餐",
+      "status": "支付成功",
+      "time": "2024-12-18 19:00:55",
+      "type": "支出"
+    }
+  ]
+}

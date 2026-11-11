@@ -9,6 +9,30 @@ use serde_json::Value;
 
 const EXPECTED: &str = include_str!("../../../fixtures/expected/available_years.json");
 
+fn request(path: &str, query: &[(&str, &str)]) -> ApiRequest {
+    let query: std::collections::BTreeMap<String, String> = query
+        .iter()
+        .map(|(key, value)| ((*key).to_owned(), (*value).to_owned()))
+        .collect();
+    serde_json::from_value(serde_json::json!({
+        "method": "GET",
+        "path": path,
+        "query": query,
+    }))
+    .expect("构造请求")
+}
+
+fn compare(path: &str, query: &[(&str, &str)], expected: &str) {
+    let dir = tempfile::tempdir().expect("临时目录");
+    let paths = DataPaths::new(dir.path().to_path_buf());
+    paths.ensure_layout().expect("创建布局");
+    let runtime = Runtime::with_dataset(paths, demo_dataset().expect("演示数据"));
+
+    let actual = handle(&runtime, &request(path, query)).expect("处理成功");
+    let expected: Value = serde_json::from_str(expected).expect("期望 JSON 合法");
+    assert_close(&actual, &expected, path);
+}
+
 #[test]
 fn available_years_matches_python_golden() {
     let dir = tempfile::tempdir().expect("临时目录");
@@ -63,4 +87,76 @@ fn comparator_rejects_different_lengths() {
     let right = serde_json::json!({"years": [2024, 2023]});
     let result = std::panic::catch_unwind(|| assert_close(&left, &right, "$"));
     assert!(result.is_err(), "长度不同必须断言失败");
+}
+
+#[test]
+fn yearly_analysis_matches_python_golden() {
+    compare(
+        "/yearly_analysis",
+        &[("year", "2024")],
+        include_str!("../../../fixtures/expected/yearly_analysis_2024.json"),
+    );
+}
+
+#[test]
+fn monthly_analysis_matches_python_golden() {
+    compare(
+        "/monthly_analysis",
+        &[("year", "2024"), ("month", "12")],
+        include_str!("../../../fixtures/expected/monthly_analysis_2024_12.json"),
+    );
+}
+
+#[test]
+fn category_analysis_matches_python_golden() {
+    compare(
+        "/category_analysis",
+        &[("year", "2024")],
+        include_str!("../../../fixtures/expected/category_analysis_2024.json"),
+    );
+}
+
+#[test]
+fn transactions_match_python_golden() {
+    compare(
+        "/transactions",
+        &[("type", "支出"), ("per_page", "50")],
+        include_str!("../../../fixtures/expected/transactions_expense.json"),
+    );
+}
+
+#[test]
+fn analysis_matches_python_golden() {
+    compare(
+        "/analysis",
+        &[("year", "2024")],
+        include_str!("../../../fixtures/expected/analysis_2024.json"),
+    );
+}
+
+#[test]
+fn yearly_data_matches_python_golden() {
+    compare(
+        "/yearly_data",
+        &[("year", "2024")],
+        include_str!("../../../fixtures/expected/yearly_data_2024.json"),
+    );
+}
+
+#[test]
+fn monthly_data_matches_python_golden() {
+    compare(
+        "/monthly_data",
+        &[("year", "2024"), ("month", "12")],
+        include_str!("../../../fixtures/expected/monthly_data_2024_12.json"),
+    );
+}
+
+#[test]
+fn filtered_monthly_analysis_matches_python_golden() {
+    compare(
+        "/filtered_monthly_analysis",
+        &[],
+        include_str!("../../../fixtures/expected/filtered_monthly_analysis_all.json"),
+    );
 }
