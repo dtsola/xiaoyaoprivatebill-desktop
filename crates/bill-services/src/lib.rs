@@ -1,5 +1,6 @@
 //! 业务服务层：数据集加载、文件管理、统计与图表数据。
 
+pub mod analysis;
 pub mod dataset;
 pub mod files;
 

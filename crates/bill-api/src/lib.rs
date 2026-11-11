@@ -6,6 +6,7 @@ use std::path::PathBuf;
 use std::sync::RwLock;
 
 use bill_core::{DataPaths, Dataset};
+use bill_services::analysis::{yearly_analysis, YearlyQuery};
 use bill_services::dataset::{demo_dataset, load_dataset};
 use bill_services::files::{clear_data, delete_file, import_paths, list_files};
 use serde::Deserialize;
@@ -91,6 +92,9 @@ pub fn handle(runtime: &Runtime, req: &ApiRequest) -> Result<Value, String> {
             "success": true,
             "years": runtime.dataset().available_years()
         })),
+        ("GET", "/yearly_analysis") => Ok(handle_yearly(runtime, &req.query)),
+        ("GET", "/available_dates") => Ok(handle_available_dates(runtime)),
+        ("GET", "/categories") => Ok(handle_categories(runtime)),
         ("GET", "/files") => Ok(handle_list(runtime)),
         ("POST", "/upload") => Ok(handle_upload(runtime, &req.body)),
         ("POST", "/clear_data") => Ok(handle_clear(runtime)),
@@ -106,6 +110,58 @@ pub fn handle(runtime: &Runtime, req: &ApiRequest) -> Result<Value, String> {
             }))
         }
     }
+}
+
+fn handle_yearly(runtime: &Runtime, query: &std::collections::BTreeMap<String, String>) -> Value {
+    let year = query
+        .get("year")
+        .and_then(|value| value.parse::<i32>().ok());
+    let min_amount = query
+        .get("min_amount")
+        .and_then(|value| value.parse::<f64>().ok());
+    let max_amount = query
+        .get("max_amount")
+        .and_then(|value| value.parse::<f64>().ok());
+
+    let data = yearly_analysis(
+        &runtime.dataset(),
+        &YearlyQuery {
+            year,
+            min_amount,
+            max_amount,
+        },
+    );
+    json!({ "success": true, "data": data })
+}
+
+fn handle_available_dates(runtime: &Runtime) -> Value {
+    let dataset = runtime.dataset();
+    let mut months: Vec<String> = dataset
+        .transactions
+        .iter()
+        .map(|row| row.month.clone())
+        .collect();
+    months.sort_by(|left, right| right.cmp(left));
+    months.dedup();
+
+    json!({
+        "success": true,
+        "months": months,
+        "years": dataset.available_years(),
+    })
+}
+
+fn handle_categories(runtime: &Runtime) -> Value {
+    let dataset = runtime.dataset();
+    let mut categories: Vec<String> = dataset
+        .transactions
+        .iter()
+        .map(|row| row.category.clone())
+        .collect();
+    categories.sort();
+    categories.dedup();
+
+    json!({ "success": true, "categories": categories })
 }
 
 fn handle_list(runtime: &Runtime) -> Value {
