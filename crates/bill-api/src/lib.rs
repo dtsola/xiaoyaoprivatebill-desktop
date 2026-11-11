@@ -9,6 +9,7 @@ use bill_core::{DataPaths, Dataset};
 use bill_services::analysis::{yearly_analysis, YearlyQuery};
 use bill_services::dataset::{demo_dataset, load_dataset};
 use bill_services::files::{clear_data, delete_file, import_paths, list_files};
+use bill_services::transactions::{list_transactions, TransactionQuery};
 use serde::Deserialize;
 use serde_json::{json, Value};
 
@@ -93,6 +94,7 @@ pub fn handle(runtime: &Runtime, req: &ApiRequest) -> Result<Value, String> {
             "years": runtime.dataset().available_years()
         })),
         ("GET", "/yearly_analysis") => Ok(handle_yearly(runtime, &req.query)),
+        ("GET", "/transactions") => Ok(handle_transactions(runtime, &req.query)),
         ("GET", "/available_dates") => Ok(handle_available_dates(runtime)),
         ("GET", "/categories") => Ok(handle_categories(runtime)),
         ("GET", "/files") => Ok(handle_list(runtime)),
@@ -132,6 +134,27 @@ fn handle_yearly(runtime: &Runtime, query: &std::collections::BTreeMap<String, S
         },
     );
     json!({ "success": true, "data": data })
+}
+
+fn handle_transactions(
+    runtime: &Runtime,
+    query: &std::collections::BTreeMap<String, String>,
+) -> Value {
+    let number = |key: &str| query.get(key).and_then(|value| value.parse::<f64>().ok());
+    let query = TransactionQuery {
+        page: number("page").map(|value| value as usize).unwrap_or(1),
+        per_page: number("per_page").map(|value| value as usize).unwrap_or(0),
+        year: number("year").map(|value| value as i32),
+        month: number("month").map(|value| value as u32),
+        date: query.get("date").cloned(),
+        hour: number("hour").map(|value| value as u32),
+        category: query.get("category").cloned(),
+        min_amount: number("min_amount"),
+        max_amount: number("max_amount"),
+        r#type: query.get("type").cloned(),
+        search: query.get("search").cloned(),
+    };
+    list_transactions(&runtime.dataset(), &query)
 }
 
 fn handle_available_dates(runtime: &Runtime) -> Value {

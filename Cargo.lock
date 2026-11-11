@@ -348,6 +348,7 @@ dependencies = [
  "bill-parsers",
  "chrono",
  "csv",
+ "regex",
  "serde",
  "serde_json",
  "tempfile",
