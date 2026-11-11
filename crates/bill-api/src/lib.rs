@@ -13,9 +13,21 @@ use bill_services::analysis::{
 use bill_services::category::{
     category_analysis, category_available_dates, category_detail, category_expenses, category_trend,
 };
+use bill_services::charts::{
+    analyze_sankey, generate_boxplot_data, generate_chord_data, generate_funnel_data,
+    generate_heatmap_data, generate_pareto_data, generate_quadrant_data, generate_radar_data,
+    generate_themeriver_data, generate_wordcloud_data,
+};
 use bill_services::dataset::{demo_dataset, load_dataset};
 use bill_services::files::{clear_data, delete_file, import_paths, list_files};
+use bill_services::insights::{
+    analyze_brand_loyalty, analyze_engel_coefficient, analyze_habits, analyze_inflation,
+    analyze_latte_factor, analyze_merchants, analyze_nighttime_spending, analyze_payment_methods,
+    analyze_scenarios, analyze_subscriptions, analyze_weekend_vs_monday, generate_smart_tags,
+    generate_story_data,
+};
 use bill_services::transactions::{list_transactions, TransactionQuery};
+use chrono::Datelike;
 use serde::Deserialize;
 use serde_json::{json, Value};
 
@@ -142,6 +154,7 @@ pub fn handle(runtime: &Runtime, req: &ApiRequest) -> Result<Value, String> {
             let filter = req.query.get("filter").map(String::as_str).unwrap_or("all");
             time_analysis(&runtime.dataset(), year, filter)
         }),
+        ("GET", "/analysis") => Ok(handle_analysis(runtime, &req.query)),
         ("GET", "/transactions") => Ok(handle_transactions(runtime, &req.query)),
         ("GET", "/available_dates") => Ok(handle_available_dates(runtime)),
         ("GET", "/categories") => Ok(handle_categories(runtime)),
@@ -207,6 +220,66 @@ fn handle_yearly(runtime: &Runtime, query: &std::collections::BTreeMap<String, S
         },
     );
     json!({ "success": true, "data": data })
+}
+
+fn handle_analysis(runtime: &Runtime, query: &std::collections::BTreeMap<String, String>) -> Value {
+    // 与 Web 版一致：`if year:` / `if min_amount:` 视 0 为未设置。
+    let year = query
+        .get("year")
+        .and_then(|value| value.parse::<i32>().ok())
+        .filter(|value| *value != 0);
+    let min_amount = query
+        .get("min_amount")
+        .and_then(|value| value.parse::<f64>().ok())
+        .filter(|value| *value != 0.0);
+    let max_amount = query
+        .get("max_amount")
+        .and_then(|value| value.parse::<f64>().ok())
+        .filter(|value| *value != 0.0);
+
+    let dataset = runtime.dataset();
+    let filtered = Dataset {
+        transactions: dataset
+            .transactions
+            .iter()
+            .filter(|row| {
+                year.is_none_or(|value| row.time.year() == value)
+                    && min_amount.is_none_or(|value| row.amount >= value)
+                    && max_amount.is_none_or(|value| row.amount < value)
+            })
+            .cloned()
+            .collect(),
+        files: dataset.files.clone(),
+    };
+
+    json!({
+        "success": true,
+        "data": {
+            "merchant_analysis": analyze_merchants(&filtered),
+            "scenario_analysis": analyze_scenarios(&filtered),
+            "habit_analysis": analyze_habits(&filtered),
+            "latte_factor": analyze_latte_factor(&filtered),
+            "nighttime_analysis": analyze_nighttime_spending(&filtered),
+            "subscription_analysis": analyze_subscriptions(&filtered),
+            "inflation_analysis": analyze_inflation(&filtered),
+            "brand_loyalty": analyze_brand_loyalty(&filtered),
+            "sankey_data": analyze_sankey(&filtered),
+            "engel_coefficient": analyze_engel_coefficient(&filtered),
+            "weekend_monday": analyze_weekend_vs_monday(&filtered),
+            "story_data": generate_story_data(&filtered),
+            "tags": generate_smart_tags(&filtered),
+            "payment_analysis": analyze_payment_methods(&filtered),
+            "chord_data": generate_chord_data(&filtered),
+            "funnel_data": generate_funnel_data(&filtered),
+            "quadrant_data": generate_quadrant_data(&filtered),
+            "radar_data": generate_radar_data(&filtered),
+            "wordcloud_data": generate_wordcloud_data(&filtered),
+            "themeriver_data": generate_themeriver_data(&filtered),
+            "boxplot_data": generate_boxplot_data(&filtered),
+            "heatmap_data": generate_heatmap_data(&filtered),
+            "pareto_data": generate_pareto_data(&filtered),
+        }
+    })
 }
 
 fn handle_monthly(runtime: &Runtime, query: &std::collections::BTreeMap<String, String>) -> Value {

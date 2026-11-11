@@ -484,6 +484,375 @@ pub fn analyze_payment_methods(dataset: &Dataset) -> Value {
     Value::Array(items)
 }
 
+/// 智能标签：消费画像。
+pub fn generate_smart_tags(dataset: &Dataset) -> Value {
+    let rows = expenses(dataset);
+    let total: f64 = rows.iter().map(|row| row.amount).sum();
+
+    let mut tags: Vec<String> = Vec::new();
+
+    let mut by_hour: BTreeMap<u32, usize> = BTreeMap::new();
+    for row in &rows {
+        *by_hour.entry(row.time.hour()).or_insert(0) += 1;
+    }
+    let time_pattern = if rows.is_empty() {
+        "您的消费时间比较规律，集中在日间"
+    } else {
+        // 只看出现过的时段：均值 = 总笔数 / 小时种类数。
+        let mean = rows.len() as f64 / by_hour.len() as f64;
+        let peaks: Vec<u32> = by_hour
+            .iter()
+            .filter(|(_, count)| **count as f64 > mean)
+            .map(|(hour, _)| *hour)
+            .collect();
+        if peaks.contains(&22) || peaks.contains(&23) || peaks.contains(&0) {
+            tags.push("夜间消费达人".into());
+            "您偏好在夜间消费，要注意作息哦"
+        } else if peaks.contains(&6) || peaks.contains(&7) {
+            tags.push("早起达人".into());
+            "您是个早起消费的生活达人"
+        } else {
+            "您的消费时间比较规律，集中在日间"
+        }
+    };
+
+    let mut category_sums: BTreeMap<&str, f64> = BTreeMap::new();
+    for row in &rows {
+        *category_sums.entry(row.category.as_str()).or_insert(0.0) += row.amount;
+    }
+    let mut preference_desc = Vec::new();
+    for (category, amount) in &category_sums {
+        let ratio = amount / total;
+        if ratio > 0.15 {
+            tags.push(format!("{category}控"));
+            preference_desc.push(format!("{category}({:.1}%)", ratio * 100.0));
+        }
+    }
+    let spending_preference = if preference_desc.is_empty() {
+        "消费比较均衡".to_owned()
+    } else {
+        format!("最常消费的品类是{}", preference_desc.join(", "))
+    };
+
+    let mut daily: BTreeMap<&str, f64> = BTreeMap::new();
+    for row in &rows {
+        *daily.entry(row.date.as_str()).or_insert(0.0) += row.amount;
+    }
+    let daily_values: Vec<f64> = daily.values().copied().collect();
+    let daily_mean = if daily_values.is_empty() {
+        f64::NAN
+    } else {
+        daily_values.iter().sum::<f64>() / daily_values.len() as f64
+    };
+
+    // pandas `std()` 为样本标准差，单日为 NaN，分支全部落空。
+    let cv = if daily_values.len() >= 2 {
+        sample_std(&daily_values) / daily_mean
+    } else {
+        f64::NAN
+    };
+    let spending_pattern = if cv < 0.5 {
+        tags.push("消费稳健派".into());
+        "您的消费非常有规律，是个理性消费者"
+    } else if cv < 0.8 {
+        tags.push("平衡消费派".into());
+        "您的消费较为均衡，适度有波动"
+    } else {
+        tags.push("随性消费派".into());
+        "您的消费比较随性，波动较大"
+    };
+
+    let daily_avg = if daily_mean.is_nan() { 0.0 } else { daily_mean };
+    let spending_power = if daily_avg < 50.0 {
+        format!("日均消费{daily_avg:.0}元，属于理性消费人群")
+    } else if daily_avg < 100.0 {
+        format!("日均消费{daily_avg:.0}元，属于中等消费人群")
+    } else {
+        format!("日均消费{daily_avg:.0}元，属于高消费人群")
+    };
+
+    json!({
+        "tags": tags,
+        "time_pattern": time_pattern,
+        "spending_preference": spending_preference,
+        "spending_pattern": spending_pattern,
+        "spending_power": spending_power,
+    })
+}
+
+/// 年度账单故事数据。
+pub fn generate_story_data(dataset: &Dataset) -> Value {
+    let rows = expenses(dataset);
+    if rows.is_empty() {
+        return Value::Null;
+    }
+
+    let mut daily: BTreeMap<&str, f64> = BTreeMap::new();
+    let mut monthly: BTreeMap<&str, f64> = BTreeMap::new();
+    let mut categories: BTreeMap<&str, f64> = BTreeMap::new();
+    let mut merchants: BTreeMap<&str, usize> = BTreeMap::new();
+    let mut hours: BTreeMap<u32, usize> = BTreeMap::new();
+    let mut seasons: BTreeMap<&str, f64> = BTreeMap::new();
+
+    for row in &rows {
+        *daily.entry(row.date.as_str()).or_insert(0.0) += row.amount;
+        *monthly.entry(row.month.as_str()).or_insert(0.0) += row.amount;
+        *categories.entry(row.category.as_str()).or_insert(0.0) += row.amount;
+        *merchants.entry(row.counterparty.as_str()).or_insert(0) += 1;
+        *hours.entry(row.time.hour()).or_insert(0) += 1;
+        *seasons.entry(season_of(row.time.month())).or_insert(0.0) += row.amount;
+    }
+
+    let (max_day, max_day_amount) = first_max(&daily);
+    let (max_month, max_month_amount) = first_max(&monthly);
+    let (top_category, top_category_amount) = first_max(&categories);
+
+    // 最晚的一笔：优先 00:00-04:59，没有则退回全量。
+    let late: Vec<&Transaction> = rows
+        .iter()
+        .copied()
+        .filter(|row| row.time.hour() <= 4)
+        .collect();
+    let candidates = if late.is_empty() { &rows } else { &late };
+    let mut latest = candidates[0];
+    for row in candidates.iter().skip(1) {
+        let left = row.time.time();
+        let right = latest.time.time();
+        if left > right {
+            latest = row;
+        }
+    }
+
+    let min_time = rows.iter().map(|row| row.time).min().expect("非空");
+    let max_time = rows.iter().map(|row| row.time).max().expect("非空");
+    let total_days = (max_time.date() - min_time.date()).num_days() + 1;
+
+    let coffee = keyword_stats(&rows, &COFFEE_KEYWORDS);
+    let takeout = keyword_stats(&rows, &TAKEOUT_KEYWORDS);
+
+    let night_rows: Vec<&Transaction> = rows
+        .iter()
+        .copied()
+        .filter(|row| row.time.hour() >= 22 || row.time.hour() <= 4)
+        .collect();
+    let night_total: f64 = night_rows.iter().map(|row| row.amount).sum();
+    let night_avg = if night_rows.is_empty() {
+        0.0
+    } else {
+        night_total / night_rows.len() as f64
+    };
+
+    let weekday_rows: Vec<&&Transaction> = rows
+        .iter()
+        .filter(|row| row.time.weekday().num_days_from_monday() < 5)
+        .collect();
+    let weekend_rows: Vec<&&Transaction> = rows
+        .iter()
+        .filter(|row| row.time.weekday().num_days_from_monday() >= 5)
+        .collect();
+    let weekday_avg = mean_of(&weekday_rows);
+    let weekend_avg = mean_of(&weekend_rows);
+
+    // 最常出现的商家（按笔数），取前 3 与后 3 笔比较价格。
+    let (top_merchant, _) = first_max_count(&merchants);
+    let mut merchant_rows: Vec<&Transaction> = rows
+        .iter()
+        .copied()
+        .filter(|row| row.counterparty == top_merchant)
+        .collect();
+    merchant_rows.sort_by_key(|row| row.time);
+
+    let inflation = if merchant_rows.len() > 5 {
+        let start_price = merchant_rows[..3].iter().map(|row| row.amount).sum::<f64>() / 3.0;
+        let tail = &merchant_rows[merchant_rows.len() - 3..];
+        let end_price = tail.iter().map(|row| row.amount).sum::<f64>() / 3.0;
+        let trend = if end_price > start_price * 1.1 {
+            "up"
+        } else if end_price < start_price * 0.9 {
+            "down"
+        } else {
+            "stable"
+        };
+        json!({
+            "merchant": top_merchant,
+            "start_price": start_price,
+            "end_price": end_price,
+            "trend": trend,
+        })
+    } else {
+        json!({
+            "merchant": top_merchant,
+            "start_price": 0,
+            "end_price": 0,
+            "trend": "stable",
+        })
+    };
+
+    let mut first_tx = rows[0];
+    for row in rows.iter().skip(1) {
+        if row.time < first_tx.time {
+            first_tx = row;
+        }
+    }
+
+    let mut peak_hour = 0u32;
+    let mut peak_count = 0usize;
+    for (hour, count) in &hours {
+        if *count > peak_count {
+            peak_count = *count;
+            peak_hour = *hour;
+        }
+    }
+
+    let (top_season, _) = first_max(&seasons);
+    let top_season = match top_season {
+        "Winter" => "冬",
+        "Spring" => "春",
+        "Summer" => "夏",
+        "Autumn" => "秋",
+        _ => "全年",
+    };
+
+    json!({
+        "max_day": {
+            "date": format_date(max_day),
+            "amount": max_day_amount,
+        },
+        "max_month": {
+            "month": max_month,
+            "amount": max_month_amount,
+        },
+        "latest_tx": {
+            "time": latest.time.format("%H:%M").to_string(),
+            "merchant": latest.counterparty,
+            "amount": latest.amount,
+        },
+        "top_category": {
+            "name": top_category,
+            "amount": top_category_amount,
+        },
+        "summary": {
+            "total_days": total_days,
+            "tx_count": rows.len(),
+            "total_amount": rows.iter().map(|row| row.amount).sum::<f64>(),
+        },
+        "features": {
+            "coffee": { "count": coffee.0, "amount": coffee.1 },
+            "night": {
+                "avg": night_avg,
+                "total": night_total,
+                "count": night_rows.len(),
+            },
+            "weekend": {
+                "weekday_avg": weekday_avg,
+                "weekend_avg": weekend_avg,
+            },
+            "inflation": inflation,
+            "first_tx": {
+                "date": first_tx.time.format("%Y-%m-%d %H:%M").to_string(),
+                "merchant": first_tx.counterparty,
+                "amount": first_tx.amount,
+                "product": first_tx.description,
+            },
+            "peak_hour": peak_hour,
+            "takeout": { "count": takeout.0, "amount": takeout.1 },
+            "top_season": top_season,
+        }
+    })
+}
+
+/// 咖啡相关关键词。
+const COFFEE_KEYWORDS: [&str; 8] = [
+    "咖啡",
+    "luckin",
+    "starbucks",
+    "瑞幸",
+    "星巴克",
+    "manner",
+    "tim hortons",
+    "皮爷",
+];
+
+/// 外卖相关关键词。
+const TAKEOUT_KEYWORDS: [&str; 5] = ["美团", "饿了么", "外卖", "肯德基", "麦当劳"];
+
+/// 统计「商品说明或交易对方包含任一关键词」的笔数与金额。
+fn keyword_stats(rows: &[&Transaction], keywords: &[&str]) -> (usize, f64) {
+    let mut count = 0;
+    let mut amount = 0.0;
+    for row in rows {
+        let description = row.description.to_lowercase();
+        let counterparty = row.counterparty.to_lowercase();
+        let hit = keywords.iter().any(|keyword| {
+            let keyword = keyword.to_lowercase();
+            description.contains(&keyword) || counterparty.contains(&keyword)
+        });
+        if hit {
+            count += 1;
+            amount += row.amount;
+        }
+    }
+    (count, amount)
+}
+
+fn mean_of(rows: &[&&Transaction]) -> f64 {
+    if rows.is_empty() {
+        0.0
+    } else {
+        rows.iter().map(|row| row.amount).sum::<f64>() / rows.len() as f64
+    }
+}
+
+fn season_of(month: u32) -> &'static str {
+    match month {
+        12 | 1 | 2 => "Winter",
+        3..=5 => "Spring",
+        6..=8 => "Summer",
+        _ => "Autumn",
+    }
+}
+
+fn format_date(date: &str) -> String {
+    let parts: Vec<&str> = date.split('-').collect();
+    if parts.len() == 3 {
+        format!("{}年{}月{}日", parts[0], parts[1], parts[2])
+    } else {
+        date.to_owned()
+    }
+}
+
+/// 取首个最大值（键已按字典序排列，与 pandas `idxmax` 一致）。
+fn first_max<'a>(map: &BTreeMap<&'a str, f64>) -> (&'a str, f64) {
+    let mut best = ("", 0.0);
+    for (name, value) in map {
+        if *value > best.1 {
+            best = (name, *value);
+        }
+    }
+    best
+}
+
+fn first_max_count<'a>(map: &BTreeMap<&'a str, usize>) -> (&'a str, usize) {
+    let mut best = ("", 0);
+    for (name, value) in map {
+        if *value > best.1 {
+            best = (name, *value);
+        }
+    }
+    best
+}
+
+/// 样本标准差（ddof=1）。
+fn sample_std(values: &[f64]) -> f64 {
+    let mean = values.iter().sum::<f64>() / values.len() as f64;
+    let variance = values
+        .iter()
+        .map(|value| (value - mean).powi(2))
+        .sum::<f64>()
+        / (values.len() - 1) as f64;
+    variance.sqrt()
+}
+
 fn period_of(hour: u32) -> &'static str {
     match hour {
         6..=8 => "清晨(6-9点)",
@@ -767,5 +1136,103 @@ mod tests {
         assert_eq!(items[1]["method"], json!("支付宝"));
         assert_eq!(items[1]["amount"], json!(1215.0));
         assert_eq!(items[1]["count"], json!(15));
+    }
+
+    // ===== 单元 4 =====
+
+    fn story_dataset() -> Dataset {
+        let mut data = unit2_dataset();
+        // 给深夜食堂加一条「外卖」说明，覆盖外卖关键词分支。
+        data.transactions[10].description = "外卖".into();
+        data
+    }
+
+    #[test]
+    fn story_data_matches_web_reference() {
+        let data = generate_story_data(&story_dataset());
+        assert_eq!(
+            data["max_day"],
+            json!({"date": "2024年04月15日", "amount": 500.0})
+        );
+        assert_eq!(
+            data["max_month"],
+            json!({"month": "2024-04", "amount": 500.0})
+        );
+        assert_eq!(
+            data["latest_tx"],
+            json!({"time": "02:00", "merchant": "凌晨超市", "amount": 50.0})
+        );
+        assert_eq!(
+            data["top_category"],
+            json!({"name": "购物", "amount": 920.0})
+        );
+        assert_eq!(
+            data["summary"],
+            json!({"total_days": 141, "tx_count": 24, "total_amount": 1705.0})
+        );
+
+        let features = &data["features"];
+        assert_eq!(features["coffee"], json!({"count": 6, "amount": 120.0}));
+        assert_eq!(
+            features["night"],
+            json!({"avg": 60.0, "total": 180.0, "count": 3})
+        );
+        assert_eq!(
+            features["weekend"],
+            json!({"weekday_avg": 75.0, "weekend_avg": 61.42857142857143})
+        );
+        assert_eq!(
+            features["inflation"],
+            json!({"merchant": "咖啡店", "start_price": 20.0, "end_price": 20.0, "trend": "stable"})
+        );
+        assert_eq!(
+            features["first_tx"],
+            json!({"date": "2024-01-01 08:00", "merchant": "视频会员", "amount": 15.0, "product": ""})
+        );
+        assert_eq!(features["peak_hour"], json!(8));
+        assert_eq!(features["takeout"], json!({"count": 1, "amount": 100.0}));
+        assert_eq!(features["top_season"], json!("冬"));
+    }
+
+    #[test]
+    fn story_data_is_null_without_expenses() {
+        let data = generate_story_data(&Dataset {
+            transactions: Vec::new(),
+            files: Vec::new(),
+        });
+        assert!(data.is_null());
+    }
+
+    #[test]
+    fn smart_tags_match_web_reference() {
+        let data = generate_smart_tags(&story_dataset());
+        assert_eq!(
+            data,
+            json!({
+                "tags": ["娱乐控", "购物控", "餐饮美食控", "随性消费派"],
+                "time_pattern": "您的消费时间比较规律，集中在日间",
+                "spending_preference": "最常消费的品类是娱乐(27.9%), 购物(54.0%), 餐饮美食(18.2%)",
+                "spending_pattern": "您的消费比较随性，波动较大",
+                "spending_power": "日均消费81元，属于中等消费人群",
+            })
+        );
+    }
+
+    #[test]
+    fn smart_tags_empty_dataset_keeps_python_fallback() {
+        let data = generate_smart_tags(&Dataset {
+            transactions: Vec::new(),
+            files: Vec::new(),
+        });
+        assert_eq!(
+            data,
+            json!({
+                "tags": ["随性消费派"],
+                "time_pattern": "您的消费时间比较规律，集中在日间",
+                "spending_preference": "消费比较均衡",
+                "spending_pattern": "您的消费比较随性，波动较大",
+                "spending_power": "日均消费0元，属于理性消费人群",
+            })
+        );
     }
 }
