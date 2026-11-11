@@ -191,3 +191,28 @@ fn time_analysis_buckets_hours_and_weekend() {
         json!(70.0)
     );
 }
+
+#[test]
+fn daily_data_groups_dates_and_computes_quantiles() {
+    let dataset = Dataset {
+        transactions: vec![
+            tx((2024, 1, 10), "支出", 10.0, "餐饮", false),
+            tx((2024, 1, 10), "支出", 20.0, "交通", false),
+            tx((2024, 1, 11), "支出", 30.0, "餐饮", false),
+            tx((2024, 1, 11), "收入", 100.0, "工资", false),
+        ],
+        files: Vec::new(),
+    };
+    let data = bill_services::analysis::daily_data(&dataset, Some(2024), "all");
+
+    assert_eq!(
+        data["expense"],
+        json!([["2024-01-10", 30.0], ["2024-01-11", 30.0]])
+    );
+    assert_eq!(data["income"], json!([["2024-01-11", 100.0]]));
+    assert_eq!(
+        data["transaction"],
+        json!([["2024-01-10", 2], ["2024-01-11", 2]])
+    );
+    assert_eq!(data["expense_quantiles"], json!([30.0, 30.0, 30.0, 30.0]));
+}

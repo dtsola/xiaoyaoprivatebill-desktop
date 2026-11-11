@@ -414,3 +414,90 @@ fn round1(value: f64) -> f64 {
 fn round2(value: f64) -> f64 {
     (value * 100.0).round() / 100.0
 }
+
+/// 热力图数据：每日收支与分位数。
+pub fn daily_data(dataset: &Dataset, year: Option<i32>, filter_type: &str) -> Value {
+    let rows: Vec<&Transaction> = dataset
+        .transactions
+        .iter()
+        .filter(|row| match filter_type {
+            "large" => row.amount > 1000.0,
+            "small" => row.amount <= 1000.0,
+            _ => true,
+        })
+        .filter(|row| year.is_none_or(|value| row.time.year() == value))
+        .filter(|row| row.direction == "收入" || row.direction == "支出")
+        .collect();
+
+    let mut grouped: BTreeMap<(String, String), (f64, usize)> = BTreeMap::new();
+    for row in &rows {
+        let entry = grouped
+            .entry((row.date.clone(), row.direction.clone()))
+            .or_insert((0.0, 0));
+        entry.0 += row.amount;
+        entry.1 += 1;
+    }
+
+    let dates: Vec<String> = {
+        let mut values: Vec<String> = grouped.keys().map(|(date, _)| date.clone()).collect();
+        values.dedup();
+        values
+    };
+
+    let mut expense = Vec::new();
+    let mut income = Vec::new();
+    let mut transaction = Vec::new();
+    for date in &dates {
+        let mut count = 0usize;
+        if let Some((amount, rows)) = grouped.get(&(date.clone(), "支出".into())) {
+            expense.push(json!([date, amount]));
+            count += rows;
+        }
+        if let Some((amount, rows)) = grouped.get(&(date.clone(), "收入".into())) {
+            income.push(json!([date, amount]));
+            count += rows;
+        }
+        transaction.push(json!([date, count]));
+    }
+
+    let expense_amounts: Vec<f64> = expense
+        .iter()
+        .filter_map(|item| item.get(1).and_then(Value::as_f64))
+        .collect();
+    let income_amounts: Vec<f64> = income
+        .iter()
+        .filter_map(|item| item.get(1).and_then(Value::as_f64))
+        .collect();
+
+    json!({
+        "expense": expense,
+        "income": income,
+        "transaction": transaction,
+        "expense_quantiles": quantiles(&expense_amounts),
+        "income_quantiles": quantiles(&income_amounts),
+    })
+}
+
+/// numpy.quantile 的线性插值口径，取 0.2/0.4/0.6/0.8。
+fn quantiles(values: &[f64]) -> Vec<f64> {
+    if values.is_empty() {
+        return Vec::new();
+    }
+    let mut sorted = values.to_vec();
+    sorted.sort_by(|left, right| left.total_cmp(right));
+    [0.2, 0.4, 0.6, 0.8]
+        .iter()
+        .map(|q| {
+            let position = q * (sorted.len() - 1) as f64;
+            let lower = position.floor() as usize;
+            let upper = position.ceil() as usize;
+            let weight = position - lower as f64;
+            let value = if lower == upper {
+                sorted[lower]
+            } else {
+                sorted[lower] + (sorted[upper] - sorted[lower]) * weight
+            };
+            round2(value)
+        })
+        .collect()
+}
