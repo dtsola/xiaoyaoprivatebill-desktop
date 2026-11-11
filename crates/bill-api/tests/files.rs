@@ -84,7 +84,7 @@ fn files_lists_uploaded_files_with_size_formatted() {
     let files = response["files"].as_array().expect("files 数组");
     assert_eq!(files.len(), 1);
     assert_eq!(files[0]["name"], "alipay.csv");
-    assert_eq!(files[0]["source"], "支付宝");
+    assert_eq!(files[0]["source"], "alipay");
     assert_eq!(files[0]["size"], ALIPAY.len());
     assert!(files[0]["size_formatted"].as_str().is_some());
 }

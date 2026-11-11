@@ -94,10 +94,30 @@ export function installTauriMock() {
       const path = req.path ?? ''
       if (path.startsWith('/category_detail/')) return []
       if (path.startsWith('/category_trend/')) return {}
+      if (path === '/upload') {
+        const paths = req.body?.paths ?? []
+        const provider = req.body?.provider ?? 'alipay'
+        const added = paths.map((item) => {
+          const name = String(item).split(/[\/]/).pop()
+          return { name, size: 1024, size_formatted: '1.0 KB', source: provider }
+        })
+        routes['/files'].files.push(...added)
+        return { success: true, filename: added[0]?.name ?? '', message: '文件上传成功' }
+      }
+      if (path === '/clear_data') {
+        routes['/files'].files = []
+        return { success: true, message: '数据已清除' }
+      }
+      if (req.method === 'DELETE' && path.startsWith('/files/')) {
+        const name = decodeURIComponent(path.slice('/files/'.length))
+        routes['/files'].files = routes['/files'].files.filter((file) => file.name !== name)
+        return { success: true }
+      }
       return routes[path] ?? { success: false, error: `接口不存在: ${path}` }
     }
     if (cmd === 'plugin:event|listen') return 1
     if (cmd === 'plugin:event|unlisten') return null
+    if (cmd === 'plugin:dialog|open') return window.__TAURI_TEST_DIALOG ?? null
     return null
   }
 

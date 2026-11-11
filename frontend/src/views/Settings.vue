@@ -26,28 +26,19 @@
         </div>
 
         <!-- 支付宝上传区域 -->
-        <label
+        <div
           class="file-upload"
           :class="{ dragover: alipayDragging }"
-          @dragover.prevent="alipayDragging = true"
-          @dragleave.prevent="alipayDragging = false"
-          @drop.prevent="handleAlipayDrop"
+          @click="pickFiles('alipay')"
         >
-          <input
-            ref="alipayInput"
-            type="file"
-            accept=".csv"
-            multiple
-            @change="handleAlipayFileSelect"
-          />
           <div class="upload-icon">
             <i class="fas fa-file-csv"></i>
           </div>
           <div class="upload-text">
-            点击或拖拽<br />支付宝 CSV 文件
+            点击选择或拖拽<br />支付宝 CSV 文件
             <br /><span style="font-size: 12px; opacity: 0.7;">最大 16MB</span>
           </div>
-        </label>
+        </div>
 
         <!-- 支付宝文件列表 -->
         <div class="file-list-container">
@@ -86,20 +77,11 @@
         </div>
 
         <!-- 微信上传区域 -->
-        <label
+        <div
           class="file-upload"
           :class="{ dragover: wechatDragging }"
-          @dragover.prevent="wechatDragging = true"
-          @dragleave.prevent="wechatDragging = false"
-          @drop.prevent="handleWechatDrop"
+          @click="pickFiles('wechat')"
         >
-          <input
-            ref="wechatInput"
-            type="file"
-            accept=".xlsx,.csv"
-            multiple
-            @change="handleWechatFileSelect"
-          />
           <div class="upload-icon">
             <i class="fas fa-file-invoice"></i>
           </div>
@@ -107,7 +89,7 @@
             点击或拖拽<br />微信 XLSX/CSV 文件
             <br /><span style="font-size: 12px; opacity: 0.7;">最大 16MB</span>
           </div>
-        </label>
+        </div>
 
         <!-- 微信文件列表 -->
         <div class="file-list-container">
@@ -159,7 +141,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { open } from '@tauri-apps/plugin-dialog'
+import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { useSessionStore } from '@/stores/session'
 import { useUiStore } from '@/stores/ui'
 import api from '@/api/client'
@@ -175,19 +159,62 @@ const wechatFiles = ref([])
 const alipayDragging = ref(false)
 const wechatDragging = ref(false)
 
-// 文件输入引用
-const alipayInput = ref(null)
-const wechatInput = ref(null)
+let unlistenDragDrop = null
 
 // 总文件数
 const totalFileCount = computed(() => alipayFiles.value.length + wechatFiles.value.length)
 
-// 最大文件大小 16MB
-const MAX_FILE_SIZE = 16 * 1024 * 1024
-
 onMounted(async () => {
   await loadFiles()
+  await listenDragDrop()
 })
+
+onUnmounted(() => {
+  if (unlistenDragDrop) {
+    unlistenDragDrop()
+    unlistenDragDrop = null
+  }
+})
+
+// 监听系统拖拽事件：路径由 Tauri 提供，统一交给后端按内容识别来源
+async function listenDragDrop() {
+  try {
+    const webview = getCurrentWebview()
+    unlistenDragDrop = await webview.onDragDropEvent((event) => {
+      const type = event.payload.type
+      if (type === 'over') {
+        alipayDragging.value = true
+        wechatDragging.value = true
+      } else if (type === 'drop') {
+        alipayDragging.value = false
+        wechatDragging.value = false
+        handlePaths(event.payload.paths || [])
+      } else {
+        alipayDragging.value = false
+        wechatDragging.value = false
+      }
+    })
+  } catch (error) {
+    console.warn('[Settings] 拖拽监听不可用:', error)
+  }
+}
+
+// 打开系统文件对话框
+async function pickFiles(provider) {
+  if (!checkDemoMode()) return
+
+  const filters = provider === 'wechat'
+    ? [{ name: '微信账单', extensions: ['xlsx', 'csv'] }]
+    : [{ name: '支付宝账单', extensions: ['csv'] }]
+
+  try {
+    const selected = await open({ multiple: true, filters })
+    if (!selected) return
+    await handlePaths(Array.isArray(selected) ? selected : [selected], provider)
+  } catch (error) {
+    uiStore.showError('打开文件选择器失败: ' + error.message)
+  }
+}
 
 // 加载已上传文件
 async function loadFiles() {
@@ -231,15 +258,6 @@ function sortFileList(fileList) {
   })
 }
 
-// 检查文件大小
-function checkFileSize(file) {
-  if (file.size > MAX_FILE_SIZE) {
-    uiStore.showError(`文件 ${file.name} 超过大小限制（16MB）`)
-    return false
-  }
-  return true
-}
-
 // 检查是否在演示模式
 function checkDemoMode() {
   if (sessionStore.isDemo) {
@@ -249,90 +267,31 @@ function checkDemoMode() {
   return true
 }
 
-// 处理支付宝文件选择
-async function handleAlipayFileSelect(event) {
-  const files = Array.from(event.target.files)
-  if (files.length > 0) {
-    await handleFiles(files, '.csv', 'alipay')
-  }
-  // 重置 input
-  event.target.value = ''
-}
-
-// 处理微信文件选择
-async function handleWechatFileSelect(event) {
-  const files = Array.from(event.target.files)
-  if (files.length > 0) {
-    await handleFiles(files, '.xlsx,.csv', 'wechat')
-  }
-  // 重置 input
-  event.target.value = ''
-}
-
-// 处理支付宝拖放
-async function handleAlipayDrop(event) {
-  alipayDragging.value = false
-  const files = Array.from(event.dataTransfer.files).filter(file =>
-    file.name.toLowerCase().endsWith('.csv')
-  )
-  if (files.length > 0) {
-    await handleFiles(files, '.csv', 'alipay')
-  }
-}
-
-// 处理微信拖放
-async function handleWechatDrop(event) {
-  wechatDragging.value = false
-  const files = Array.from(event.dataTransfer.files).filter(file =>
-    file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.csv')
-  )
-  if (files.length > 0) {
-    await handleFiles(files, '.xlsx,.csv', 'wechat')
-  }
-}
-
-// 处理文件上传
-async function handleFiles(files, allowedExt, provider) {
+// 按路径上传（桌面端）
+async function handlePaths(paths, provider = 'alipay') {
   if (!checkDemoMode()) return
 
-  const allowedExtensions = allowedExt.split(',').map(e => e.trim().toLowerCase())
+  const allowed = paths.filter(path => {
+    const lower = path.toLowerCase()
+    return lower.endsWith('.csv') || lower.endsWith('.xlsx')
+  })
+  if (allowed.length === 0) {
+    uiStore.showError('请上传 .csv 或 .xlsx 格式的账单文件')
+    return
+  }
 
-  for (const file of files) {
-    const fileName = file.name.toLowerCase()
-    const isAllowed = allowedExtensions.some(ext => fileName.endsWith(ext))
-
-    if (!isAllowed) {
-      uiStore.showError(`请上传 ${allowedExt} 格式的文件`)
-      continue
-    }
-
-    if (!checkFileSize(file)) continue
-
-    try {
-      uiStore.setGlobalLoading(true)
-      const formData = new FormData()
-      formData.append('file', file)
-
-      const result = await api.uploadFile(formData)
-
-      // 添加到对应的文件列表
-      const newFile = { name: result.filename || file.name, source: provider }
-      if (provider === 'wechat') {
-        wechatFiles.value.push(newFile)
-        sortFileList(wechatFiles.value)
-      } else {
-        alipayFiles.value.push(newFile)
-        sortFileList(alipayFiles.value)
-      }
-
-      uiStore.showSuccess('文件上传成功')
-    } catch (error) {
-      uiStore.showError('上传失败: ' + error.message)
-    } finally {
-      uiStore.setGlobalLoading(false)
-    }
+  try {
+    uiStore.setGlobalLoading(true)
+    await api.uploadPaths(allowed, provider)
+    uiStore.showSuccess('文件上传成功')
+    await loadFiles()
+  } catch (error) {
+    uiStore.showError('上传失败: ' + error.message)
+  } finally {
+    uiStore.setGlobalLoading(false)
   }
 }
+
 
 // 删除文件
 async function deleteFile(filename) {

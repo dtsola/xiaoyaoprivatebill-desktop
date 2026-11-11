@@ -118,7 +118,7 @@ fn handle_list(runtime: &Runtime) -> Value {
                         "name": file.name,
                         "size": file.size,
                         "size_formatted": format_size(file.size),
-                        "source": file.source,
+                        "source": source_code(&file.source),
                     })
                 })
                 .collect();
@@ -170,6 +170,15 @@ fn handle_clear(runtime: &Runtime) -> Value {
             json!({ "success": true, "message": "数据已清除" })
         }
         Err(error) => json!({ "success": false, "error": error.to_string() }),
+    }
+}
+
+/// 与 Web 版 `detect_file_source` 的返回码保持一致。
+fn source_code(source: &str) -> &str {
+    match source {
+        "微信" => "wechat",
+        "支付宝" => "alipay",
+        _ => "unknown",
     }
 }
 
