@@ -297,6 +297,14 @@ export function installTauriMock() {
       return { close_to_tray: closeToTray }
     }
     if (cmd === 'open_data_dir') return null
+    if (cmd === 'storage_status') {
+      return {
+        trash_count: 2,
+        snapshot_count: 1,
+        audit_bytes: 2048,
+        audit_path: 'C:/Users/demo/AppData/Roaming/xiaoyaobill-desktop/audit.jsonl'
+      }
+    }
     if (cmd === 'mcp_status') return mcpStatus()
     if (cmd === 'mcp_set_enabled') {
       mcpEnabled = Boolean(args?.enabled)

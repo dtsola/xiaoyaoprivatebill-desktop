@@ -15,6 +15,9 @@ test('设置页展示数据目录并可切换关闭行为', async ({ page }) => 
   await page.goto('/#/settings')
   await expect(page.locator('.desktop-card')).toBeVisible()
   await expect(page.locator('.desktop-card .mcp-endpoint')).toContainText('xiaoyaobill-desktop')
+  await expect(page.locator('.desktop-card')).toContainText('2 个条目')
+  await expect(page.locator('.desktop-card')).toContainText('1 个')
+  await expect(page.locator('.desktop-card')).toContainText('2.0 KB')
 
   const toggle = page.locator('.desktop-row .mcp-btn').last()
   await expect(toggle).toHaveText('关闭窗口时最小化到托盘')

@@ -67,7 +67,8 @@ pub fn run() {
             commands::mcp_rotate_token,
             commands::desktop_settings,
             commands::set_close_to_tray,
-            commands::open_data_dir
+            commands::open_data_dir,
+            commands::storage_status
         ])
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {

@@ -112,3 +112,29 @@ pub async fn open_data_dir(
         .open_path(state.data_dir(), None::<&str>)
         .map_err(|error| error.to_string())
 }
+
+/// 存储概览：回收站条目、快照数、审计日志大小。
+#[tauri::command]
+pub async fn storage_status(state: State<'_, McpState>) -> Result<Value, String> {
+    let paths = &state.runtime.paths;
+    let count_entries = |dir: std::path::PathBuf| {
+        std::fs::read_dir(dir)
+            .map(|entries| {
+                entries
+                    .filter_map(|entry| entry.ok())
+                    .filter(|entry| entry.path().is_dir())
+                    .count()
+            })
+            .unwrap_or(0)
+    };
+    let audit_bytes = std::fs::metadata(paths.audit_file())
+        .map(|meta| meta.len())
+        .unwrap_or(0);
+
+    Ok(json!({
+        "trash_count": count_entries(paths.trash_dir()),
+        "snapshot_count": count_entries(paths.snapshots_dir()),
+        "audit_bytes": audit_bytes,
+        "audit_path": paths.audit_file().display().to_string(),
+    }))
+}

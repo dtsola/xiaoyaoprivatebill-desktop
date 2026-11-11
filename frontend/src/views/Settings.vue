@@ -148,6 +148,18 @@
           <button class="mcp-btn" @click="openDataDir">打开</button>
         </div>
         <div class="desktop-row">
+          <span class="mcp-label">回收站</span>
+          <span class="storage-value">{{ storage.trash_count }} 个条目</span>
+        </div>
+        <div class="desktop-row">
+          <span class="mcp-label">快照</span>
+          <span class="storage-value">{{ storage.snapshot_count }} 个</span>
+        </div>
+        <div class="desktop-row">
+          <span class="mcp-label">审计日志</span>
+          <span class="storage-value">{{ auditSizeText }}</span>
+        </div>
+        <div class="desktop-row">
           <span class="mcp-label">关闭行为</span>
           <button class="mcp-btn" @click="toggleCloseToTray">
             {{ desktop.close_to_tray ? '关闭窗口时最小化到托盘' : '关闭窗口时直接退出' }}
@@ -215,6 +227,12 @@ const desktop = ref({
   data_dir: ''
 })
 
+const storage = ref({
+  trash_count: 0,
+  snapshot_count: 0,
+  audit_bytes: 0
+})
+
 // MCP 服务状态
 const mcp = ref({
   enabled: false,
@@ -234,6 +252,7 @@ onMounted(async () => {
   await listenDragDrop()
   await loadMcp()
   await loadDesktop()
+  await loadStorage()
 })
 
 onUnmounted(() => {
@@ -244,6 +263,21 @@ onUnmounted(() => {
 })
 
 // ==================== 桌面设置 ====================
+
+const auditSizeText = computed(() => {
+  const bytes = storage.value.audit_bytes
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+})
+
+async function loadStorage() {
+  try {
+    storage.value = { ...storage.value, ...(await api.storageStatus()) }
+  } catch (error) {
+    console.error('[Settings] 读取存储概览失败:', error)
+  }
+}
 
 async function loadDesktop() {
   try {
@@ -936,5 +970,10 @@ async function handleClearAllData() {
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
+}
+
+.storage-value {
+  color: #111827;
+  font-size: 13px;
 }
 </style>

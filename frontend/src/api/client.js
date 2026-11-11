@@ -35,6 +35,7 @@ export const api = {
   desktopSettings: () => invoke('desktop_settings'),
   setCloseToTray: (enabled) => invoke('set_close_to_tray', { enabled }),
   openDataDir: () => invoke('open_data_dir'),
+  storageStatus: () => invoke('storage_status'),
 
   // ==================== MCP 服务 ====================
   mcpStatus: () => invoke('mcp_status'),
