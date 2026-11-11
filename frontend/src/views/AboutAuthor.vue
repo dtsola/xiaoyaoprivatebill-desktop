@@ -112,7 +112,7 @@
             数据完全本地处理，不上传任何服务器。支持支付宝和微信账单的自动解析和多维度数据可视化分析。
           </p>
           <div class="project-links">
-            <a href="https://github.com/dtsola/xiaoyaoprivatebill" target="_blank" rel="noopener noreferrer" class="project-link" @click.prevent="openExternal('https://github.com/dtsola/xiaoyaoprivatebill')">
+            <a href="https://github.com/dtsola/xiaoyaoprivatebill-desktop" target="_blank" rel="noopener noreferrer" class="project-link" @click.prevent="openExternal('https://github.com/dtsola/xiaoyaoprivatebill-desktop')">
               <Github :size="'1em'" />
               <span>GitHub 仓库</span>
             </a>

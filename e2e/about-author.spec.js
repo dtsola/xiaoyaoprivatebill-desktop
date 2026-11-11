@@ -33,7 +33,7 @@ test('关于页外链交给系统浏览器打开', async ({ page }) => {
   await page.locator('.project-link').click()
   await expect
     .poll(() => page.evaluate(() => window.__TAURI_TEST_OPENED))
-    .toBe('https://github.com/dtsola/xiaoyaoprivatebill')
+    .toBe('https://github.com/dtsola/xiaoyaoprivatebill-desktop')
 
   expect(errors, `控制台错误:\n${errors.join('\n')}`).toEqual([])
 })
@@ -64,4 +64,13 @@ test('扫码联系三张图尺寸统一且不溢出容器', async ({ page }) => 
     expect(img.x).toBeGreaterThanOrEqual(layout.containerLeft)
     expect(img.x + img.width).toBeLessThanOrEqual(layout.containerRight)
   }
+})
+
+test('GitHub 仓库指向桌面版仓库', async ({ page }) => {
+  await page.goto('/#/about-author')
+
+  await page.locator('.project-link', { hasText: 'GitHub 仓库' }).click()
+  await expect
+    .poll(() => page.evaluate(() => window.__TAURI_TEST_OPENED))
+    .toBe('https://github.com/dtsola/xiaoyaoprivatebill-desktop')
 })
