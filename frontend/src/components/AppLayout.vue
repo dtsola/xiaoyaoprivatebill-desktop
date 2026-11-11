@@ -331,8 +331,9 @@ onMounted(async () => {
 }
 
 .logo-icon {
-  width: 64px;
-  height: 64px;
+  /* 头部圆形头像：44px 与 20px 字号的「小遥账单」视觉重量更匹配 */
+  width: 44px;
+  height: 44px;
   margin-right: 12px;
   object-fit: contain;
 }

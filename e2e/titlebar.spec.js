@@ -64,4 +64,9 @@ test('侧边栏 LOGO 已替换为新版本', async ({ page }) => {
   await expect
     .poll(() => logo.evaluate((img) => (img.complete ? img.naturalWidth : 0)))
     .toBe(128)
+
+  // 9 个页面的侧边栏统一头像尺寸：44×44，避免压过文字
+  const box = await logo.boundingBox()
+  expect(box.width).toBe(44)
+  expect(box.height).toBe(44)
 })
