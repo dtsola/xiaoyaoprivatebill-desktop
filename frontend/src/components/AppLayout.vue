@@ -404,7 +404,8 @@ onMounted(async () => {
 
 /* 页面头部是全局 sticky(top:0)，滚动容器换了以后需要抵消内容区 20px 内边距，
    否则滚动时标题栏与页面头部之间会露出 20px 间隙。 */
-.content :deep(.page-header) {
+.content :deep(.page-header),
+.content :deep(.category-page-header) {
   top: -20px;
 }
 

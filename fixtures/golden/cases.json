@@ -245,6 +245,17 @@
       "query": {},
       "expected": "delete_file.json",
       "path": "/api/files/alipay_record.csv"
+    },
+    {
+      "name": "category_analysis_2024_food",
+      "method": "GET",
+      "endpoint": "/category_analysis",
+      "dataset": "demo",
+      "query": {
+        "year": 2024,
+        "category": "餐饮美食"
+      },
+      "expected": "category_analysis_2024_food.json"
     }
   ]
 }

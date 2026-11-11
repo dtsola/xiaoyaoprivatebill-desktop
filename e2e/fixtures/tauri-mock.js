@@ -6,7 +6,7 @@
  *
  * 注意：本函数由 page.addInitScript 序列化到浏览器执行，所有数据必须定义在函数体内。
  */
-export function installTauriMock() {
+export function installTauriMock(fixtures = {}) {
   const hourly = Array.from({ length: 24 }, (_, hour) => ({
     hour,
     amount: 0,
@@ -272,6 +272,9 @@ export function installTauriMock() {
     '/demo/exit': { success: true }
   }
 
+  // 可选：用 fixtures/expected 的真实演示数据覆盖默认桩（页面级视觉验收用）
+  Object.assign(routes, fixtures)
+
   const callbacks = new Map()
   const eventListeners = new Map()
   let nextCallbackId = 1
@@ -350,6 +353,14 @@ export function installTauriMock() {
         })
         routes['/files'].files.push(...added)
         return { success: true, filename: added[0]?.name ?? '', message: '文件上传成功' }
+      }
+      // /category_analysis 有两种形态：无 category 返回分类清单，有 category 返回单分类详情
+      if (
+        path === '/category_analysis' &&
+        req.query?.category &&
+        routes['/category_analysis_detail']
+      ) {
+        return routes['/category_analysis_detail']
       }
       if (path === '/clear_data') {
         routes['/files'].files = []
