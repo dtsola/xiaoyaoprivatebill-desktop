@@ -1,5 +1,5 @@
 <template>
-  <div class="app-shell" :class="{ 'platform-mac': isMac }">
+  <div class="app-shell" :class="{ 'platform-mac': isMac, 'sidebar-collapsed': collapsed }">
     <!-- 顶部拖拽条：只覆盖内容区，侧边栏从窗口最顶开始（对齐 xiaoyaotime） -->
     <div class="drag-strip" data-tauri-drag-region @dblclick="toggleMaximize"></div>
 
@@ -42,6 +42,15 @@
             data-tauri-drag-region
           />
           <span data-tauri-drag-region>小遥账单</span>
+          <button
+            class="sidebar-toggle"
+            :aria-label="collapsed ? '展开侧边栏' : '收起侧边栏'"
+            :title="collapsed ? '展开侧边栏' : '收起侧边栏'"
+            @click="toggleSidebar"
+          >
+            <PanelLeftOpen v-if="collapsed" :size="16" />
+            <PanelLeftClose v-else :size="16" />
+          </button>
         </div>
         <nav class="nav-menu">
           <router-link to="/" class="nav-item" :class="{ active: $route.path === '/' }">
@@ -95,7 +104,7 @@
   </div>
 
   <!-- 筛选菜单 (独立于侧边栏) -->
-  <div class="floating-menu">
+  <div class="floating-menu" :class="{ collapsed }">
     <button
       class="filter-btn"
       :class="{ active: filterStore.currentFilter === 'all' }"
@@ -138,7 +147,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
@@ -156,6 +165,8 @@ import {
   Lightbulb,
   List,
   Minus,
+  PanelLeftClose,
+  PanelLeftOpen,
   Receipt,
   Settings,
   Square,
@@ -179,6 +190,42 @@ let unlistenCloseHint = null
 // macOS 保留原生红绿灯，只需留出左侧空间。
 const isMac = typeof navigator !== 'undefined' && /Mac/i.test(navigator.userAgent)
 const isMaximized = ref(false)
+
+// —— 侧边栏折叠：宽窗口听持久偏好，窄窗口自动折叠、可本次会话手动展开 ——
+const SIDEBAR_STORAGE_KEY = 'xiaoyaobill.sidebar'
+const SIDEBAR_AUTO_COLLAPSE_WIDTH = 1100
+const preferred = ref(
+  typeof localStorage !== 'undefined' &&
+    localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'collapsed'
+    ? 'collapsed'
+    : 'expanded'
+)
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1280)
+const sessionExpanded = ref(false)
+const collapsed = computed(() =>
+  windowWidth.value < SIDEBAR_AUTO_COLLAPSE_WIDTH
+    ? !sessionExpanded.value
+    : preferred.value === 'collapsed'
+)
+
+function toggleSidebar() {
+  if (windowWidth.value < SIDEBAR_AUTO_COLLAPSE_WIDTH) {
+    // 窄窗口只影响本次会话，不覆盖持久偏好
+    sessionExpanded.value = !sessionExpanded.value
+    return
+  }
+  preferred.value = collapsed.value ? 'expanded' : 'collapsed'
+  localStorage.setItem(SIDEBAR_STORAGE_KEY, preferred.value)
+}
+
+function syncWindowWidth() {
+  windowWidth.value = window.innerWidth
+}
+
+// 写到 <html data-sidebar>，供全局 CSS 变量（内容区/浮动菜单等）使用
+watchEffect(() => {
+  document.documentElement.dataset.sidebar = collapsed.value ? 'collapsed' : 'expanded'
+})
 let appWindow = null
 let unlistenResize = null
 
@@ -224,6 +271,7 @@ async function syncMaximized() {
 }
 
 onMounted(async () => {
+  window.addEventListener('resize', syncWindowWidth)
   unlistenCloseHint = await listen('desktop://close-to-tray-hint', () => {
     uiStore.showSuccess('已最小化到托盘，可从托盘菜单退出')
   })
@@ -237,6 +285,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  window.removeEventListener('resize', syncWindowWidth)
   if (unlistenCloseHint) {
     unlistenCloseHint()
     unlistenCloseHint = null
@@ -274,6 +323,15 @@ onMounted(async () => {
 <style scoped>
 /* 完全复制老前端的样式 */
 /* 应用外壳：固定视口高度；顶部 36px 留给拖拽条与窗口按钮 */
+/* 侧边栏当前宽度：展开 240 / 收起 64，写在 html 上供固定定位元素共用 */
+:global(html) {
+  --sb-current-width: var(--sidebar-width);
+}
+
+:global(html[data-sidebar="collapsed"]) {
+  --sb-current-width: 64px;
+}
+
 .app-shell {
   position: relative;
   height: 100vh;
@@ -287,7 +345,7 @@ onMounted(async () => {
 .drag-strip {
   position: absolute;
   top: 0;
-  left: var(--sidebar-width);
+  left: var(--sb-current-width);
   right: 96px;
   height: 36px;
   z-index: 2000;
@@ -353,10 +411,11 @@ onMounted(async () => {
   top: 0;
   left: 0;
   bottom: 0;
-  width: var(--sidebar-width);
+  width: var(--sb-current-width);
   height: 100%;
   display: flex;
   flex-direction: column;
+  transition: width 0.22s ease;
   /* 比卡片白底略灰，避免整块侧栏发白 */
   background: #F2F2F4;
   border-right: 1px solid var(--border-color);
@@ -389,6 +448,82 @@ onMounted(async () => {
   height: 44px;
   margin-right: 12px;
   object-fit: contain;
+}
+
+.sidebar-toggle {
+  margin-left: auto;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--secondary-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-toggle:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-color);
+}
+
+/* —— 收起态：64px 图标栏 —— */
+.sidebar-collapsed .logo {
+  flex-direction: column;
+  justify-content: center;
+  height: 96px;
+  padding: 10px 0 6px;
+  gap: 6px;
+}
+
+.sidebar-collapsed .logo-icon {
+  width: 32px;
+  height: 32px;
+  margin-right: 0;
+}
+
+.sidebar-collapsed .logo span {
+  display: none;
+}
+
+.sidebar-collapsed .sidebar-toggle {
+  margin-left: 0;
+}
+
+.sidebar-collapsed .nav-item {
+  justify-content: center;
+  padding: 12px 0;
+}
+
+.sidebar-collapsed .nav-item span {
+  display: none;
+}
+
+.sidebar-collapsed .nav-icon {
+  margin-right: 0;
+}
+
+.floating-menu.collapsed {
+  padding: 0 8px;
+}
+
+.floating-menu.collapsed .filter-btn {
+  justify-content: center;
+  padding: 12px 0;
+}
+
+.floating-menu.collapsed .filter-btn span {
+  display: none;
+}
+
+/* macOS 收起态仍要给左上角红绿灯留位置 */
+.platform-mac.sidebar-collapsed .logo {
+  padding-top: 30px;
+  height: 108px;
 }
 
 .nav-menu {
@@ -450,8 +585,9 @@ onMounted(async () => {
   flex: 1;
   min-width: 0;
   /* 侧边栏改为绝对定位，内容区让出它的宽度 */
-  margin-left: var(--sidebar-width);
+  margin-left: var(--sb-current-width);
   min-height: 0;
+  transition: margin-left 0.22s ease;
   padding: 20px;
   background: var(--bg-color);
   overflow-y: auto;
@@ -459,7 +595,7 @@ onMounted(async () => {
 
 /* 演示模式横幅 */
 .demo-banner {
-  margin-left: var(--sidebar-width);
+  margin-left: var(--sb-current-width);
   background: #FFF8E1;
   color: #F57F17;
   padding: 10px 20px;
@@ -502,7 +638,7 @@ onMounted(async () => {
 .global-loader {
   position: fixed;
   top: 36px;
-  left: var(--sidebar-width);
+  left: var(--sb-current-width);
   right: 0;
   height: 3px;
   overflow: hidden;
@@ -572,12 +708,14 @@ onMounted(async () => {
   position: fixed;
   left: 0;
   bottom: 24px;
-  width: var(--sidebar-width);
+  width: var(--sb-current-width);
   padding: 0 12px;
+  transition: width 0.22s ease;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  z-index: 1200;
+  /* 高于侧边栏，否则会被全高侧栏盖住 */
+  z-index: 2600;
 }
 
 .filter-btn {
