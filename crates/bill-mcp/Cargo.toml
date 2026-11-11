@@ -16,7 +16,7 @@ rmcp = { version = "3.9", default-features = false, features = [
     "macros",
     "transport-streamable-http-server",
 ] }
-tokio = { version = "1", features = ["net", "rt-multi-thread", "macros"] }
+tokio = { version = "1", features = ["net", "rt-multi-thread", "macros", "sync", "time"] }
 getrandom = "0.3"
 
 [dev-dependencies]

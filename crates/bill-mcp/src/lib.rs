@@ -4,6 +4,7 @@
 //! P4 再接入 14 个工具、Bearer Token 鉴权与审计。
 
 pub mod auth;
+pub mod lifecycle;
 pub mod token;
 
 use std::sync::Arc;
