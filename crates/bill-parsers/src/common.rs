@@ -13,13 +13,20 @@ const TIME_FORMATS: [&str; 5] = [
     "%Y/%m/%d %H:%M",
 ];
 
-/// 支付宝：GBK 优先，解码出错回退 UTF-8。
+/// 支付宝：先尝试 UTF-8，失败再按 GBK 解码。
+///
+/// 与 Python 的「GBK 优先」顺序相反：WHATWG GBK（encoding_rs）会把部分 UTF-8
+/// 字节序列当作合法 GBK 并解出乱码，而 Python 的 gbk codec 会直接报错。
+/// 真实支付宝导出是 GBK，不可能是合法 UTF-8，因此 UTF-8 优先不会误判。
 pub(crate) fn decode_gbk_or_utf8(bytes: &[u8]) -> Result<String, ParseError> {
+    if let Ok(text) = std::str::from_utf8(bytes) {
+        return Ok(text.trim_start_matches('\u{feff}').to_owned());
+    }
     let (gbk_text, _, gbk_failed) = GBK.decode(bytes);
     if !gbk_failed {
         return Ok(gbk_text.into_owned());
     }
-    decode_utf8_sig(bytes)
+    Err(ParseError::Decode)
 }
 
 /// 微信：UTF-8（自动去除 BOM）。
