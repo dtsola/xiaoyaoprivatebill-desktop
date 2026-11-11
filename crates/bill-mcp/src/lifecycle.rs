@@ -1,14 +1,15 @@
 //! MCP 生命周期：回环监听、优雅停止、端口占用处理。
 
 use std::fmt;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use bill_api::Runtime;
 use tokio::net::TcpListener;
 use tokio::sync::oneshot;
 use tokio::task::JoinHandle;
 
-use crate::{router_with_token, DEFAULT_PORT};
+use crate::router_with_token;
 
 /// 停止服务的最长等待时间。
 pub const SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(3);
@@ -41,20 +42,16 @@ struct McpHandle {
 
 /// MCP 服务管理器：固定端口、重复启动幂等、停止后释放端口。
 pub struct McpManager {
+    runtime: Arc<Runtime>,
     port: u16,
     running: Mutex<Option<McpHandle>>,
 }
 
-impl Default for McpManager {
-    fn default() -> Self {
-        Self::new(DEFAULT_PORT)
-    }
-}
-
 impl McpManager {
-    /// 以指定端口构造（测试用 `0` 表示由系统分配）。
-    pub fn new(port: u16) -> Self {
+    /// 以共享运行时与指定端口构造（测试用 `0` 表示由系统分配）。
+    pub fn new(runtime: Arc<Runtime>, port: u16) -> Self {
         Self {
+            runtime,
             port,
             running: Mutex::new(None),
         }
@@ -101,7 +98,7 @@ impl McpManager {
             .map_err(|error| McpStartError::Server(error.to_string()))?
             .port();
 
-        let app = router_with_token(token);
+        let app = router_with_token(self.runtime.clone(), token);
         let (shutdown, receiver) = oneshot::channel();
         let join = tokio::spawn(async move {
             let _ = axum::serve(listener, app)

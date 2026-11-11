@@ -7,6 +7,18 @@ use serde_json::json;
 use tower::ServiceExt;
 
 const LOOPBACK_HOST: &str = "127.0.0.1:17650";
+fn runtime() -> std::sync::Arc<bill_api::Runtime> {
+    let dir = tempfile::tempdir().expect("临时目录");
+    let paths = bill_core::DataPaths::new(dir.path().to_path_buf());
+    paths.ensure_layout().expect("创建布局");
+    // 运行期需要目录持续存在，测试进程结束时由系统回收。
+    std::mem::forget(dir);
+    std::sync::Arc::new(bill_api::Runtime::with_dataset(
+        paths,
+        bill_core::Dataset::default(),
+    ))
+}
+
 const TOKEN: &str = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 
 fn mcp_request(token: Option<&str>, origin: Option<&str>) -> Request<Body> {
@@ -37,7 +49,7 @@ fn mcp_request(token: Option<&str>, origin: Option<&str>) -> Request<Body> {
 
 #[tokio::test]
 async fn missing_authorization_is_rejected() {
-    let response = router_with_token(TOKEN)
+    let response = router_with_token(runtime(), TOKEN)
         .oneshot(mcp_request(None, None))
         .await
         .expect("响应");
@@ -47,7 +59,7 @@ async fn missing_authorization_is_rejected() {
 
 #[tokio::test]
 async fn wrong_token_is_rejected() {
-    let response = router_with_token(TOKEN)
+    let response = router_with_token(runtime(), TOKEN)
         .oneshot(mcp_request(Some("deadbeef"), None))
         .await
         .expect("响应");
@@ -57,7 +69,7 @@ async fn wrong_token_is_rejected() {
 
 #[tokio::test]
 async fn foreign_origin_is_forbidden_even_with_valid_token() {
-    let response = router_with_token(TOKEN)
+    let response = router_with_token(runtime(), TOKEN)
         .oneshot(mcp_request(Some(TOKEN), Some("https://evil.example")))
         .await
         .expect("响应");
@@ -67,7 +79,7 @@ async fn foreign_origin_is_forbidden_even_with_valid_token() {
 
 #[tokio::test]
 async fn loopback_origin_and_valid_token_pass() {
-    let response = router_with_token(TOKEN)
+    let response = router_with_token(runtime(), TOKEN)
         .oneshot(mcp_request(Some(TOKEN), Some("http://127.0.0.1:3000")))
         .await
         .expect("响应");
@@ -77,7 +89,7 @@ async fn loopback_origin_and_valid_token_pass() {
 
 #[tokio::test]
 async fn native_client_without_origin_passes() {
-    let response = router_with_token(TOKEN)
+    let response = router_with_token(runtime(), TOKEN)
         .oneshot(mcp_request(Some(TOKEN), None))
         .await
         .expect("响应");

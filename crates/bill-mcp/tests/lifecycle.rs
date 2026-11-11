@@ -5,11 +5,23 @@ use std::time::Duration;
 
 use bill_mcp::lifecycle::{McpManager, McpStartError};
 
+fn runtime() -> std::sync::Arc<bill_api::Runtime> {
+    let dir = tempfile::tempdir().expect("临时目录");
+    let paths = bill_core::DataPaths::new(dir.path().to_path_buf());
+    paths.ensure_layout().expect("创建布局");
+    // 运行期需要目录持续存在，测试进程结束时由系统回收。
+    std::mem::forget(dir);
+    std::sync::Arc::new(bill_api::Runtime::with_dataset(
+        paths,
+        bill_core::Dataset::default(),
+    ))
+}
+
 const TOKEN: &str = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 
 #[tokio::test]
 async fn start_accepts_connections_and_stop_releases_port() {
-    let manager = McpManager::new(0);
+    let manager = McpManager::new(runtime(), 0);
     manager.start(TOKEN).await.expect("启动");
 
     assert!(manager.is_running());
@@ -47,7 +59,7 @@ async fn occupied_port_returns_chinese_error_without_panic() {
     let occupied = TcpListener::bind(("127.0.0.1", 0)).expect("占位端口");
     let port = occupied.local_addr().expect("地址").port();
 
-    let manager = McpManager::new(port);
+    let manager = McpManager::new(runtime(), port);
     let error = manager.start(TOKEN).await.expect_err("端口占用应失败");
 
     assert_eq!(error, McpStartError::PortInUse(port));
@@ -57,7 +69,7 @@ async fn occupied_port_returns_chinese_error_without_panic() {
 
 #[tokio::test]
 async fn start_is_idempotent_and_stop_without_start_is_safe() {
-    let manager = McpManager::new(0);
+    let manager = McpManager::new(runtime(), 0);
     manager.stop().await;
 
     manager.start(TOKEN).await.expect("首次启动");

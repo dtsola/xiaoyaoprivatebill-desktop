@@ -10,10 +10,22 @@ use tower::ServiceExt;
 
 const LOOPBACK_HOST: &str = "127.0.0.1:17650";
 
+fn runtime() -> std::sync::Arc<bill_api::Runtime> {
+    let dir = tempfile::tempdir().expect("临时目录");
+    let paths = bill_core::DataPaths::new(dir.path().to_path_buf());
+    paths.ensure_layout().expect("创建布局");
+    // 运行期需要目录持续存在，测试进程结束时由系统回收。
+    std::mem::forget(dir);
+    std::sync::Arc::new(bill_api::Runtime::with_dataset(
+        paths,
+        bill_core::Dataset::default(),
+    ))
+}
+
 /// GET /mcp 缺少会话与 SSE 请求头时应返回 4xx，而不是 5xx。
 #[tokio::test]
 async fn mcp_route_is_mounted() {
-    let response = router()
+    let response = router(runtime())
         .oneshot(
             Request::builder()
                 .method(Method::GET)
@@ -35,7 +47,7 @@ async fn mcp_route_is_mounted() {
 /// 未注册的路径必须 404，避免 MCP 服务意外暴露其他路由。
 #[tokio::test]
 async fn unknown_route_returns_404() {
-    let response = router()
+    let response = router(runtime())
         .oneshot(
             Request::builder()
                 .method(Method::GET)
@@ -53,7 +65,7 @@ async fn unknown_route_returns_404() {
 /// 非回环 Host 必须拒绝（防 DNS 重绑定，见技术方案 03 §13）。
 #[tokio::test]
 async fn foreign_host_is_rejected() {
-    let response = router()
+    let response = router(runtime())
         .oneshot(
             Request::builder()
                 .method(Method::GET)
@@ -72,7 +84,7 @@ async fn foreign_host_is_rejected() {
 #[tokio::test]
 async fn oversized_body_is_rejected() {
     let body = vec![b' '; 1024 * 1024 + 1];
-    let response = router()
+    let response = router(runtime())
         .oneshot(
             Request::builder()
                 .method(Method::POST)
