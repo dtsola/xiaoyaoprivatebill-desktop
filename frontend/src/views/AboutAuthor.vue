@@ -1,5 +1,10 @@
 <template>
   <div class="about-author-page">
+    <!-- 顶部标题区：与其它页面一致，固定在窗口标题栏 -->
+    <div class="page-header">
+      <h1 class="page-title">关于作者</h1>
+    </div>
+
     <!-- 页面内容 -->
     <div class="content-container">
       <div class="author-card">

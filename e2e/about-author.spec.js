@@ -14,6 +14,9 @@ test('关于页外链交给系统浏览器打开', async ({ page }) => {
 
   await page.goto('/#/about-author')
 
+  // 标题区与其它页面一致
+  await expect(page.locator('.page-title')).toHaveText('关于作者')
+
   await page.locator('.contact-item', { hasText: 'www.dtsola.com' }).click()
   await expect
     .poll(() => page.evaluate(() => window.__TAURI_TEST_OPENED))
