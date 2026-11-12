@@ -124,7 +124,7 @@ Xiaoyao Private Bill Analyzer – Desktop is a **privacy-first** personal bill a
 <td width="50%"><img src="docs/产品文档/产品截图/10-分享海报.png" alt="Share poster"></td>
 <td width="50%">
 <ul>
-<li>🖼️ Open the share poster right from the sidebar; the yearly overview also has a one-click entry</li>
+<li>🖼️ Open the share poster page right from the sidebar</li>
 <li>📐 Yearly or monthly scope, 1080×1440 portrait poster</li>
 <li>🎨 3 templates, with per-item toggles for expense, income, balance, categories, and peak amount</li>
 <li>🔒 Hide amounts before sharing so sensitive numbers never appear in the image</li>
