@@ -1,6 +1,6 @@
 # 小遥账单桌面版
 
-> 隐私优先的个人账单分析桌面应用：完全离线、数据本地持久化、可被 AI Agent 通过 MCP 调用。
+> 隐私优先的个人账单分析桌面应用：完全离线、数据本地持久化，并可通过 MCP 交给 AI Agent 分析。
 
 [![Tauri](https://img.shields.io/badge/Tauri-2.x-24C8DB.svg)](https://tauri.app/)
 [![Rust](https://img.shields.io/badge/Rust-1.95+-orange.svg)](https://www.rust-lang.org/)
@@ -13,52 +13,35 @@
 [English](README_EN.md) | 简体中文
 
 <p align="center">
-  <img src="docs/产品文档/产品截图/宣传海报图.png" alt="小遥账单桌面版宣传海报">
+  <img src="docs/产品文档/logos/logo-new-1024.png" alt="小遥账单桌面版" width="160">
 </p>
 
-> **当前状态**：设计完成，编码尚未启动（v0.1.0 开发中），安装包尚未发布。现阶段请使用「[从源码构建](#8-开发构建)」。
+> **当前状态**：v0.1.0 功能已全部实现，27 个接口通过 golden 对账，桌面端通过 Playwright 自动验收与人工测试；安装包（P6）仍在打包验证，尚未发布。当前请使用「[从源码构建](#8-开发构建)」。
+
+**产品官网**：<https://www.xiaoyaosai.com/xiaoyaoprivatebill-desktop/>
 
 ---
 
 ## 1. 简介
 
-<p align="center">
-  <img src="docs/产品文档/logos/logo.png" alt="小遥账单桌面版" width="200">
-</p>
-
-小遥账单桌面版是一个**隐私优先**的个人账单分析工具，支持支付宝和微信账单的自动解析与多维度可视化分析，并内置 MCP 服务，让 Claude Code、Cursor 等 AI Agent 可以直接查询你的账单。
+小遥账单桌面版是一个**隐私优先**的个人账单分析工具。它可以导入支付宝、微信账单，在本机完成解析、统计与可视化，不依赖任何服务器；内置 MCP 服务，可被 **小遥Claw**、Claude Code、Codex 等 AI Agent 直接调用。
 
 **核心特点**：
 
-- 🔒 **完全离线** - 不发起任何出站网络请求，无遥测、无 CDN、无自动更新
+- 🔒 **完全离线** - 应用本身不发起任何出站请求，无遥测、无 CDN、无自动更新
 - 💾 **本地持久化** - 账单保存在本机应用数据目录，随时手动清理
-- 📊 **多维度分析** - 年度、月度、分类、时间、消费洞察
-- 📁 **多格式支持** - 支付宝 CSV、微信 CSV/XLSX
-- 🤖 **Agent 可调用** - 内置 14 个 MCP 工具，自然语言查账
-- 🖥️ **桌面原生** - 系统托盘、单实例、窗口状态记忆、原生文件导入
+- 📊 **多维度分析** - 年度总览、月度分析、分类分析、时间分析、消费洞察
+- 📁 **多格式支持** - 支付宝 CSV、微信 CSV / XLSX，自动识别文件来源
+- 🤖 **Agent 可调用** - 内置 14 个 MCP 工具，用自然语言查账、做分析
+- 🖥️ **桌面原生** - 自绘标题栏、可收起侧边栏、系统托盘、单实例、窗口状态记忆、拖拽导入
 - 🗑️ **可恢复删除** - 回收站、快照、审计日志，降低误操作风险
-- 🧬 **与 Web 版同源** - 9 个页面视觉与统计口径完全一致，后端 Rust 重写
+- 🧬 **与 Web 版同源** - 视觉与统计口径一致，后端由 Rust 全量重写并按 27 个接口逐一对账
 
 ---
 
 ## 2. 功能预览
 
-> 以下界面与 Web 版保持一致；桌面版新增的设置分组、托盘与 MCP 配置截图将在发布前补齐。
-
-### 上传账单 - 一键导入
-
-<table>
-<tr>
-<td width="50%"><img src="docs/产品文档/产品截图/08-上传账单.png" alt="上传账单"></td>
-<td width="50%">
-<ul>
-<li>📤 原生文件对话框，支持多选与全窗口拖拽</li>
-<li>📋 自动识别支付宝/微信账单格式</li>
-<li>⚡ 本地解析，不上传任何服务器</li>
-</ul>
-</td>
-</tr>
-</table>
+> 以下截图均来自桌面版实机运行，演示数据共 7,396 条。
 
 ### 首页 - 功能入口
 
@@ -67,9 +50,24 @@
 <td width="50%"><img src="docs/产品文档/产品截图/01-首页.png" alt="首页"></td>
 <td width="50%">
 <ul>
-<li>🎯 支持支付宝和微信账单的一站式分析</li>
-<li>📊 4 大能力卡片：多维度分析、隐私保护、趋势追踪、智能搜索</li>
-<li>🚀 导入账单或进入演示模式</li>
+<li>🎯 支付宝与微信账单的一站式分析入口</li>
+<li>📊 多维度分析、隐私保护、趋势追踪、智能搜索四张能力卡片</li>
+<li>🚀 导入真实账单，或一键加载演示数据</li>
+</ul>
+</td>
+</tr>
+</table>
+
+### 上传账单 - 原生导入
+
+<table>
+<tr>
+<td width="50%"><img src="docs/产品文档/产品截图/08-上传账单.png" alt="上传账单"></td>
+<td width="50%">
+<ul>
+<li>📤 原生文件对话框，支持多选与全窗口拖拽</li>
+<li>📋 自动识别支付宝 / 微信账单格式与编码</li>
+<li>⚡ 本地解析，不上传任何服务器</li>
 </ul>
 </td>
 </tr>
@@ -82,9 +80,9 @@
 <td width="50%"><img src="docs/产品文档/产品截图/02-年度总览.png" alt="年度总览"></td>
 <td width="50%">
 <ul>
-<li>📊 年度收支总览</li>
-<li>📈 月度趋势与分类占比</li>
-<li>📖 年度故事回顾</li>
+<li>📊 年度收支、结余、交易笔数与同比</li>
+<li>📈 12 个月支出趋势与收入切换</li>
+<li>🥧 支出分类占比与来源分布</li>
 </ul>
 </td>
 </tr>
@@ -97,7 +95,7 @@
 <td width="50%"><img src="docs/产品文档/产品截图/03-月度分析.png" alt="月度分析"></td>
 <td width="50%">
 <ul>
-<li>📅 月度收支与环比</li>
+<li>📅 月度收支、环比与日均</li>
 <li>🗓️ 每日消费日历</li>
 <li>📉 月度对比与分类明细</li>
 </ul>
@@ -114,7 +112,7 @@
 <ul>
 <li>🏷️ 分类占比与排行</li>
 <li>📊 分类趋势与时段分布</li>
-<li>📝 分类明细列表</li>
+<li>📝 单分类明细下钻</li>
 </ul>
 </td>
 </tr>
@@ -129,7 +127,7 @@
 <ul>
 <li>⏰ 24 小时消费分布</li>
 <li>🌡️ 日历热力图</li>
-<li>📈 工作日/周末对比</li>
+<li>📈 工作日 / 周末对比</li>
 </ul>
 </td>
 </tr>
@@ -144,15 +142,13 @@
 </tr>
 <tr>
 <td width="50%"><img src="docs/产品文档/产品截图/06-消费洞察-03.png" alt="消费洞察-03"></td>
-<td width="50%">
-<ul>
-<li>💡 消费习惯与画像</li>
-<li>🔍 异常消费与拿铁因子</li>
-<li>📊 深夜消费、订阅、恩格尔系数</li>
-</ul>
-</td>
+<td width="50%"><img src="docs/产品文档/产品截图/06-消费洞察-04.png" alt="消费洞察-04"></td>
 </tr>
 </table>
+
+- 💡 消费习惯与用户画像
+- 🔍 异常消费、拿铁因子与深夜消费
+- 📊 订阅扣费、恩格尔系数与消费结构
 
 ### 交易记录 - 明细查询
 
@@ -162,22 +158,127 @@
 <td width="50%">
 <ul>
 <li>📋 完整交易明细</li>
-<li>🔍 搜索与多维筛选</li>
-<li>📄 分页浏览</li>
+<li>🔍 关键词搜索与多维筛选</li>
+<li>📄 分页浏览与快速跳转</li>
 </ul>
 </td>
 </tr>
 </table>
 
-<!-- TODO(P6): 补 09-桌面.png（设置页「桌面」分组） -->
-<!-- TODO(P6): 补 10-系统托盘.png（托盘菜单） -->
-<!-- TODO(P6): 补 11-MCP配置.png（MCP 开关与配置复制） -->
+---
+
+## 3. AI Agent 接入（以小遥Claw 为例）
+
+[小遥Claw](https://www.xiaoyaosai.com/xiaoyaoclaw/) 是「把 AI 助手装进自己电脑」的桌面 Agent。小遥账单桌面版内置标准 Streamable HTTP MCP 服务，小遥Claw 连接后即可用自然语言查询本机账单、生成分析报告。
+
+### 3.1 在应用中开启 MCP
+
+1. 打开侧边栏「**AI Agent 接入**」。
+2. 打开 MCP 开关，状态显示「运行中」。
+3. 服务固定监听 `http://127.0.0.1:17650/mcp`，仅回环地址，不对局域网或公网开放。
+4. 点击「**复制 MCP 配置**」，得到小遥Claw 可直接使用的标准 JSON。
+
+> MCP 默认关闭。开启后，本机程序可读取你的全部账单；数据是否离开本机，取决于调用方 Agent 及其所配置的模型。
+
+配置格式如下（Token 由应用生成，请以复制结果为准）：
+
+```json
+{
+  "type": "http",
+  "url": "http://127.0.0.1:17650/mcp",
+  "headers": {
+    "Authorization": "Bearer <TOKEN>"
+  }
+}
+```
+
+### 3.2 在小遥Claw 中添加服务
+
+<table>
+<tr>
+<td width="50%"><img src="docs/产品文档/产品截图/09-AIAgent使用-01-使用小遥Claw-添加MCP服务.png" alt="小遥Claw 添加 MCP 服务"></td>
+<td width="50%">
+<ol>
+<li>打开小遥Claw「设置 → 技能与 MCP」</li>
+<li>点击「添加服务器」，名称可填 <code>xiaoyaobill-mcp</code></li>
+<li>切换到「JSON」页签，粘贴上一步复制的配置</li>
+<li>点击「保存」</li>
+</ol>
+</td>
+</tr>
+</table>
+
+### 3.3 测试连接
+
+<table>
+<tr>
+<td width="50%"><img src="docs/产品文档/产品截图/09-AIAgent使用-02-使用小遥Claw-添加MCP服务完成&amp;测试通过.png" alt="小遥Claw MCP 连接正常"></td>
+<td width="50%">
+<ul>
+<li>✅ 显示「连接正常 · 14 个工具」</li>
+<li>🔑 凭据为应用生成的 Bearer Token</li>
+<li>🔄 保存后下一条消息生效，无需重启小遥Claw</li>
+</ul>
+</td>
+</tr>
+</table>
+
+### 3.4 用自然语言分析账单
+
+在小遥Claw 中直接提问，例如「帮我分析一下我的小遥账单」：
+
+<table>
+<tr>
+<td width="50%"><img src="docs/产品文档/产品截图/09-AIAgent使用-03-使用小遥Claw-进行账单分析.png" alt="小遥Claw 提问分析账单"></td>
+<td width="50%">
+<ul>
+<li>🗣️ 无需记工具名，Agent 会自动选择 MCP 工具</li>
+<li>📊 可组合总览、年度、月度、分类、洞察等多次调用</li>
+<li>📝 输出年度总览、钱花在哪、消费建议等结构化结论</li>
+</ul>
+</td>
+</tr>
+</table>
+
+<p align="center">
+  <img src="docs/产品文档/产品截图/09-AIAgent使用-04-使用小遥Claw-进行账单分析.png" alt="小遥Claw 账单分析结果" width="100%">
+</p>
+
+> 图中为演示数据。导入真实账单后，Agent 读取到的即为你本机的最新数据；若当前处于演示模式，Agent 会提示 `is_demo = true`。
+
+### 3.5 其他客户端
+
+Claude Code 可直接用命令行添加（配置格式因客户端而异，其他客户端请按其文档填写同样的 URL 与 Header）：
+
+```bash
+claude mcp add --transport http xiaoyaobill-mcp http://127.0.0.1:17650/mcp \
+  --header "Authorization: Bearer <TOKEN>"
+```
+
+### 3.6 14 个 MCP 工具
+
+| 类型 | 工具 |
+|---|---|
+| 读（10） | `list_bills`、`get_overview`、`get_summary`、`get_yearly_analysis`、`get_monthly_analysis`、`get_category_analysis`、`search_transactions`、`get_time_analysis`、`get_insights`、`get_audit_log` |
+| 写（4） | `import_bill`、`delete_bill`、`restore_bill`、`clear_data` |
+
+写操作有护栏：`import_bill` 仅接受绝对路径且 ≤16MB；`delete_bill` 软删除到回收站；`clear_data` 必须先快照；所有写操作写入审计日志。演示模式下禁止一切写操作。
+
+### 3.7 安全提示
+
+- Token 为 32 字节随机数，可在应用内重新生成；重新生成后旧连接立即失效。
+- 服务只监听 `127.0.0.1`，不监听局域网或公网。
+- 回收站、快照、审计日志**永不自动清理**，请在应用内手动清理。
+- 若不需要 Agent 访问，请保持 MCP 关闭。
+- Agent 可能把工具返回的数据发送给其所配置的大模型；请自行评估该模型的隐私边界。
 
 ---
 
-## 3. 安装
+## 4. 安装
 
-### 3.1 Windows 10 / 11（x64）
+> 安装包尚未发布。以下发布信息以 P6 打包结果为准；当前请直接[从源码构建](#8-开发构建)。
+
+### 4.1 Windows 10 / 11（x64）
 
 1. 从 [GitHub Releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases) 下载 `*-setup.exe`。
 2. 双击安装，按向导完成；安装范围为当前用户，无需管理员权限。
@@ -185,7 +286,7 @@
 
 > Windows 10 需要已安装 WebView2 运行时（Windows 11 自带）。若启动失败，请先安装 [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)。
 
-### 3.2 macOS 11+（Intel / Apple Silicon）
+### 4.2 macOS 11+（Intel / Apple Silicon）
 
 1. 从 [GitHub Releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases) 下载对应架构的 `.dmg`：
    - Intel：`*_x64.dmg`
@@ -200,7 +301,7 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 
 > 当前版本**未签名、未公证**，因此会有上述提示。后续版本将补充签名与公证。
 
-### 3.3 系统要求
+### 4.3 系统要求
 
 | 项 | 要求 |
 |---|---|
@@ -209,7 +310,7 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 | 磁盘 | 安装包约 20MB；数据目录随账单增长 |
 | 网络 | **不需要**；断网可完整使用 |
 
-### 3.4 数据目录与卸载
+### 4.4 数据目录与卸载
 
 | 平台 | 数据目录 |
 |---|---|
@@ -221,9 +322,9 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 
 ---
 
-## 4. 快速开始
+## 5. 快速开始
 
-### 4.1 获取账单文件
+### 5.1 获取账单文件
 
 **支付宝账单**：
 
@@ -238,70 +339,18 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 2. 点击「常见问题」→ 下载账单。
 3. 选择时间范围 → 输入邮箱 → 选择 CSV 或 XLSX 格式。
 
-### 4.2 导入并分析
+### 5.2 导入并分析
 
 1. 打开应用，点击「上传账单」或进入「设置」。
-2. 在支付宝/微信上传区点击选择文件，或直接把账单拖入窗口。
-3. 等待解析完成；成功后可查看年度、月度、分类、时间、洞察与明细。
-4. 如需先体验，点击「体验演示数据」加载内置 7,396 条示例数据。
+2. 在支付宝 / 微信上传区选择文件，或直接把账单拖入窗口。
+3. 等待解析完成；随后可查看年度、月度、分类、时间、洞察与明细。
+4. 如需先体验，点击「查看示例数据」加载内置 7,396 条演示数据。
 
-### 4.3 演示模式
+### 5.3 演示模式
 
-- 演示模式下可浏览全部 9 个页面。
+- 演示模式下可浏览全部分析页面。
 - 演示模式下**禁止**导入、删除、清空，以及所有 MCP 写操作。
 - 退出演示后回到真实数据。
-
----
-
-## 5. 使用 MCP
-
-### 5.1 开启服务
-
-1. 打开「设置 → 桌面 → MCP 服务」。
-2. 打开开关；状态显示「运行中」。
-3. 端点固定为 `http://127.0.0.1:17650/mcp`，仅监听本机回环地址。
-4. 点击「复制 MCP 配置」，粘贴到你的 MCP 客户端。
-
-> MCP 默认关闭。开启后，本机程序可读取你的全部账单；数据是否离开本机取决于调用方（Agent）。
-
-### 5.2 客户端配置
-
-```json
-{
-  "mcpServers": {
-    "xiaoyao-bill": {
-      "type": "http",
-      "url": "http://127.0.0.1:17650/mcp",
-      "headers": {
-        "Authorization": "Bearer <TOKEN>"
-      }
-    }
-  }
-}
-```
-
-Claude Code 也可以直接添加：
-
-```bash
-claude mcp add --transport http xiaoyao-bill http://127.0.0.1:17650/mcp \
-  --header "Authorization: Bearer <TOKEN>"
-```
-
-### 5.3 14 个工具
-
-| 类型 | 工具 |
-|---|---|
-| 读（10） | `list_bills`、`get_overview`、`get_summary`、`get_yearly_analysis`、`get_monthly_analysis`、`get_category_analysis`、`search_transactions`、`get_time_analysis`、`get_insights`、`get_audit_log` |
-| 写（4） | `import_bill`、`delete_bill`、`restore_bill`、`clear_data` |
-
-写操作有护栏：`import_bill` 仅接受绝对路径且 ≤16MB；`delete_bill` 软删除到回收站；`clear_data` 必须先快照；所有写操作写入审计日志。
-
-### 5.4 安全提示
-
-- Token 为 32 字节随机数，可在设置页重新生成；重新生成后旧连接失效。
-- 服务只监听 `127.0.0.1`，不监听局域网或公网。
-- 回收站、快照、审计日志**永不自动清理**，请在设置页手动清理。
-- 若不需要 Agent 访问，请保持 MCP 关闭。
 
 ---
 
@@ -310,7 +359,7 @@ claude mcp add --transport http xiaoyao-bill http://127.0.0.1:17650/mcp \
 | 项 | 说明 |
 |---|---|
 | 网络请求 | 应用本身不发起任何出站请求；无遥测、无崩溃上报、无自动更新 |
-| 字体与图标 | Font Awesome 本地化，不加载 CDN |
+| 字体与图标 | 字体与 Lucide 图标本地打包，不加载 CDN；支付宝 / 微信 / Bilibili 品牌图标同样本地化 |
 | 数据存储 | 仅保存在本机应用数据目录；不上传任何服务器 |
 | 数据清理 | 删除进入回收站；清空前自动快照；审计日志记录写操作；均需手动清理 |
 | 外链 | 关于作者等外链交给系统浏览器打开 |
@@ -339,7 +388,7 @@ claude mcp add --transport http xiaoyao-bill http://127.0.0.1:17650/mcp \
 | Node.js | 20 LTS 或 24 |
 | npm | 10+ |
 | Visual Studio Build Tools | 2022（Windows，含 VC Tools） |
-| WebView2 | Windows 10/11 |
+| WebView2 | Windows 10 / 11 |
 | Python | 3.10（仅 golden 对账，不进入产物） |
 
 ### 8.2 本地开发
@@ -380,13 +429,18 @@ cargo fmt --check
 cargo clippy --workspace -- -D warnings
 cargo test --workspace
 
-# golden 对账（需 Python 3.10 + 锁定依赖）
-python tools/golden/generate.py
-git diff --exit-code fixtures/expected
+# 前端单元测试 + Playwright 桌面端验收
+npm run test:unit
+npm run test:e2e
 
-# 前端冻结基线校验（只允许 8 个文件 diff）
+# golden 对账（需 Python 3.10 + Web 版 backend）
+python tools/golden/generate.py --out fixtures/expected --check --web-root <Web 仓库>/backend
+
+# 前端冻结基线校验
 node scripts/check-frontend-baseline.mjs
 ```
+
+前端只允许修改 8 个适配文件与 9 个图标迁移文件；其余页面、组件、store 与全局样式保持冻结，由基线脚本做 CI 门禁。
 
 ---
 
@@ -401,6 +455,7 @@ node scripts/check-frontend-baseline.mjs
 | [开发任务清单](docs/04-开发任务清单.md) | 61 个任务、工时、里程碑、质量门禁 |
 | [开发排期](docs/05-开发排期.md) | D1–D22、关键路径、风险 |
 | [开发进度](docs/开发进度.md) | 当前进度、Web 基线、技术债 |
+| [架构决策](docs/架构决策/) | Tauri Spikes、MCP schema 兼容等决策记录 |
 | [桌面端调研方案](docs/桌面端-调研方案/) | 可行性、PRD、原型视觉、技术方案、实施步骤（只读档案） |
 
 ---
@@ -419,13 +474,21 @@ A：右键点击应用 →「打开」；或到「系统设置 → 隐私与安�
 
 A：端口 `17650` 被其他程序占用。请关闭占用程序后重试，或暂时保持 MCP 关闭；GUI 功能不受影响。
 
+### Q：小遥Claw 显示「连接正常」，但分析结果为空？
+
+A：先确认应用已导入真实账单；如果处于演示模式，Agent 读取的是内置演示数据，并会提示 `is_demo = true`。真实数据为空时，先把支付宝 / 微信账单导入应用。
+
+### Q：小遥Claw 调用带参数的工具报 schema 错误？
+
+A：旧版本工具 schema 带了 `draft 2020-12` 声明，小遥Claw 的校验器未注册该 dialect。v0.1.0 已去掉该声明（见 [AD-20261112-001](docs/架构决策/0002-mcp-tool-schema-compat.md)）；请使用最新版本，并在修改后重新测试连接。
+
 ### Q：导入失败怎么办？
 
 A：确认：
 - 支付宝为 `.csv`，编码 GBK 或 UTF-8；
 - 微信为 `.csv` 或 `.xlsx`；
 - 单文件不超过 16MB；
-- **文件名使用英文/数字**（中文文件名可能被清洗后无法识别，这是为与 Web 版保持一致而保留的行为）。
+- **文件名使用英文 / 数字**（中文文件名可能被清洗后无法识别，这是为与 Web 版保持一致而保留的行为）。
 
 ### Q：重复导入会怎样？
 
@@ -433,15 +496,15 @@ A：不会按内容去重；同名文件会追加 `_1`、`_2`，重复交易会�
 
 ### Q：数据会上传到服务器吗？
 
-A：不会。应用本身不发起任何出站网络请求。只有你主动开启 MCP 并让 Agent 调用时，数据才可能由 Agent 带出本机。
+A：不会。应用本身不发起任何出站网络请求。只有你主动开启 MCP 并让 Agent 调用时，数据才可能由 Agent 及其模型带出本机。
 
 ### Q：如何备份或迁移数据？
 
-A：复制整个数据目录（见 [3.4](#34-数据目录与卸载)）。`bills/` 是账单真源，`trash/`、`snapshots/`、`audit.jsonl` 分别是回收站、快照与审计日志。
+A：复制整个数据目录（见 [4.4](#44-数据目录与卸载)）。`bills/` 是账单真源，`trash/`、`snapshots/`、`audit.jsonl` 分别是回收站、快照与审计日志。
 
 ### Q：支持 Linux 或手机吗？
 
-A：不支持。本期仅支持 Windows 10/11 x64 与 macOS 11+。
+A：不支持。本期仅支持 Windows 10 / 11 x64 与 macOS 11+。
 
 ---
 
@@ -449,7 +512,8 @@ A：不支持。本期仅支持 Windows 10/11 x64 与 macOS 11+。
 
 - 本项目的前端与产品设计同源于 [dtsola/xiaoyaoprivatebill](https://github.com/dtsola/xiaoyaoprivatebill)（Web 版，已冻结）。
 - Web 版最初重构自 [alipay_record_analysis](https://github.com/Hessel2333/alipay_record_analysis)，感谢原作者 **Hessel2333**。
-- 桌面端基于 [Tauri](https://tauri.app/)、[Rust](https://www.rust-lang.org/)、[Vue 3](https://vuejs.org/)、[ECharts](https://echarts.apache.org/)、[rmcp](https://github.com/modelcontextprotocol/rust-sdk)。
+- 桌面端基于 [Tauri](https://tauri.app/)、[Rust](https://www.rust-lang.org/)、[Vue 3](https://vuejs.org/)、[ECharts](https://echarts.apache.org/)、[rmcp](https://github.com/modelcontextprotocol/rust-sdk)、[Lucide](https://lucide.dev/)。
+- AI Agent 示例使用 [小遥Claw](https://www.xiaoyaosai.com/xiaoyaoclaw/)。
 
 ---
 
@@ -468,7 +532,7 @@ A：不支持。本期仅支持 Windows 10/11 x64 与 macOS 11+。
 ### 代码规范
 
 - Rust 遵循 `cargo fmt` 与 `cargo clippy -- -D warnings`。
-- 前端只允许修改 7 个基线文件，其余保持冻结。
+- 前端只允许修改 8 个适配文件与 9 个图标迁移文件，其余保持冻结。
 - 提交信息遵循 [Conventional Commits](https://www.conventionalcommits.org/)。
 - 详细规范见 [.claude/CLAUDE.md](.claude/CLAUDE.md)。
 
@@ -478,6 +542,7 @@ A：不支持。本期仅支持 Windows 10/11 x64 与 macOS 11+。
 cargo fmt --check
 cargo clippy --workspace -- -D warnings
 cargo test --workspace
+npm run test:e2e
 node scripts/check-frontend-baseline.mjs
 ```
 
@@ -497,6 +562,7 @@ node scripts/check-frontend-baseline.mjs
 
 <p align="center">
   🌐 <a href="https://www.dtsola.com">个人站点</a> &nbsp;|&nbsp;
+  🏠 <a href="https://www.xiaoyaosai.com/">小遥官网</a> &nbsp;|&nbsp;
   📺 <a href="https://space.bilibili.com/736015">B站</a> &nbsp;|&nbsp;
   💬 微信：dtsola（技术交流 | 商务合作）
 </p>
@@ -513,6 +579,8 @@ node scripts/check-frontend-baseline.mjs
   <small>微信联系 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 开发者交流群 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 用户交流群</small>
 </p>
 
+- 产品官网：[xiaoyaosai.com/xiaoyaoprivatebill-desktop](https://www.xiaoyaosai.com/xiaoyaoprivatebill-desktop/)
+- 小遥Claw：[xiaoyaosai.com/xiaoyaoclaw](https://www.xiaoyaosai.com/xiaoyaoclaw/)
 - 项目主页：[GitHub](https://github.com/dtsola/xiaoyaoprivatebill-desktop)
 - 问题反馈：[Issues](https://github.com/dtsola/xiaoyaoprivatebill-desktop/issues)
 
