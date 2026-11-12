@@ -1,0 +1,73 @@
+# 推 v* tag 或手动触发：一次构建 Windows NSIS + macOS 通用 dmg。
+# 对齐 小遥时光的发布方式：
+#   - Windows：*-setup.exe（NSIS，每用户安装，WebView2 缺失时联网补齐）
+#   - macOS：*_universal.dmg（Intel + Apple Silicon，本期未签名/未公证）
+#
+# 产物由 tauri-action 直接上传到同一个 GitHub Release。
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "要构建的 tag（例如 v0.1.0），需与 tauri.conf.json 版本一致"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-14
+            args: "--target universal-apple-darwin"
+          - platform: windows-latest
+            args: ""
+
+    runs-on: ${{ matrix.platform }}
+    env:
+      TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-14' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "./src-tauri -> target"
+          key: ${{ matrix.platform }}
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install frontend dependencies
+        run: npm --prefix frontend ci
+
+      - name: Build and upload release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ env.TAG }}
+          releaseName: "小遥账单桌面版 ${{ env.TAG }}"
+          releaseBody: "隐私优先的个人账单分析桌面应用：完全离线、本地持久化，并可通过 MCP 交给 小遥Claw 分析。"
+          releaseDraft: false
+          prerelease: ${{ contains(env.TAG, '-beta') || contains(env.TAG, '-rc') || contains(env.TAG, '-alpha') }}
+          args: ${{ matrix.args }}

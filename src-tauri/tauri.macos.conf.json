@@ -1,5 +1,23 @@
 {
-  "bundle": {
-    "targets": ["dmg", "app"]
+  "$schema": "https://schema.tauri.app/config/2",
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "小遥账单桌面版",
+        "width": 1280,
+        "height": 840,
+        "minWidth": 1024,
+        "minHeight": 700,
+        "visible": false,
+        "resizable": true,
+        "fullscreen": false,
+        "dragDropEnabled": true,
+        "shadow": true,
+        "decorations": true,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true
+      }
+    ]
   }
 }

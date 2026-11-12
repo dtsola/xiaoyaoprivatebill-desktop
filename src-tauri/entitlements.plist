@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- 小遥账单不加载本地原生模块，也不需要 JIT 写执行权限。
+       保留空 entitlements，与 小遥时光 的签名/公证接入方式保持一致；
+       后续若引入原生依赖，再按需增加最小权限。 -->
+</dict>
+</plist>
