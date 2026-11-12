@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "小遥账单桌面版",
+  "productName": "XiaoyaoBillDesktop",
   "mainBinaryName": "xiaoyao-bill-desktop",
   "version": "0.1.0",
   "identifier": "com.dtsola.xiaoyaobill.desktop",
