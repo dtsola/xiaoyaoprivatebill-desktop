@@ -305,11 +305,27 @@
 
 > **未签名提示**：当前 Windows 与 macOS 安装包均未做代码签名 / 公证，系统可能弹出安全提示。Windows 选择「更多信息 → 仍要运行」；macOS 右键应用选择「打开」，或到「系统设置 → 隐私与安全性 → 仍要打开」。这是开源项目未购买签名证书时的正常提示，不影响应用功能。
 
-> 安装包尚未发布到 GitHub Releases。以下发布信息以 P6 打包结果为准；当前请直接[从源码构建](#7-开发构建)。
+### 5.1 下载渠道
 
-### 5.1 Windows 10 / 11（x64）
+| 渠道 | 地址 | 说明 |
+|---|---|---|
+| GitHub Releases（推荐） | [dtsola/xiaoyaoprivatebill-desktop/releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases) | 始终是最新版本 |
+| 百度网盘（备用） | [pan.baidu.com/s/1H3PrTdp0ShBe7upnAO12mQ](https://pan.baidu.com/s/1H3PrTdp0ShBe7upnAO12mQ?pwd=7z69) | 提取码 `7z69`，国内下载更快 |
 
-1. 从 [GitHub Releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases) 下载 `*-setup.exe`。
+一个版本只需下载对应平台的一个文件：
+
+| 平台 | 文件名 |
+|---|---|
+| Windows x64 | `XiaoyaoBillDesktop_<版本>_x64-setup.exe` |
+| macOS（Intel + Apple Silicon 通用） | `XiaoyaoBillDesktop_<版本>_universal.dmg` |
+
+> Release 页面里的 `*.app.tar.gz` 是应用内自动更新使用的归档，不是安装包，普通用户无需下载。
+>
+> 如对第三方安装包有疑虑，可以按[开发构建](#7-开发构建)从源码自行编译。
+
+### 5.2 Windows 10 / 11（x64）
+
+1. 从上述任一渠道下载 `*-setup.exe`。
 2. 双击安装，按向导完成；安装范围为当前用户，无需管理员权限。
 3. 从开始菜单启动「XiaoyaoBillDesktop」（小遥账单桌面版）。
 
@@ -317,9 +333,9 @@
 
 > Windows 10 若未安装 WebView2，安装器会联网自动下载并安装（Windows 11 自带）。若自动安装失败，可手动安装 [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)。
 
-### 5.2 macOS 11+（Intel / Apple Silicon）
+### 5.3 macOS 11+（Intel / Apple Silicon）
 
-1. 从 [GitHub Releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases) 下载通用 `.dmg`：`*_universal.dmg`（Intel + Apple Silicon 同一包）。
+1. 从上述任一渠道下载通用 `.dmg`：`*_universal.dmg`（Intel + Apple Silicon 同一包）。
 2. 打开 dmg，将应用拖入「应用程序」。
 3. **首次打开**：右键点击应用 →「打开」；或到「系统设置 → 隐私与安全性」点击「仍要打开」。
 4. macOS 15 如仍被拦截，可在终端执行：
@@ -330,7 +346,7 @@ xattr -dr com.apple.quarantine "/Applications/XiaoyaoBillDesktop.app"
 
 > 当前版本**未签名、未公证**，因此会有上述提示。后续版本将补充签名与公证。
 
-### 5.3 系统要求
+### 5.4 系统要求
 
 | 项 | 要求 |
 |---|---|
@@ -339,7 +355,7 @@ xattr -dr com.apple.quarantine "/Applications/XiaoyaoBillDesktop.app"
 | 磁盘 | 安装包约 20MB；数据目录随账单增长 |
 | 网络 | **不需要**；断网可完整使用 |
 
-### 5.4 数据目录与卸载
+### 5.5 数据目录与卸载
 
 | 平台 | 数据目录 |
 |---|---|

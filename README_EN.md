@@ -305,11 +305,27 @@ Write operations are guarded: `import_bill` only accepts absolute paths up to 16
 
 > **Unsigned build notice**: the Windows and macOS installers are not code-signed or notarized yet, so the OS may show a security prompt. On Windows choose **More info → Run anyway**; on macOS right-click the app and choose **Open**, or use **System Settings → Privacy & Security → Open Anyway**. This is expected for an open-source project without a paid signing certificate and does not affect app functionality.
 
-> Installers are not published to GitHub Releases yet. The release information below depends on the P6 packaging result. For now, please [build from source](#7-development--build).
+### 5.1 Download
 
-### 5.1 Windows 10 / 11 (x64)
+| Source | Link | Notes |
+|---|---|---|
+| GitHub Releases (recommended) | [dtsola/xiaoyaoprivatebill-desktop/releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases) | Always the latest version |
+| Baidu Netdisk (mirror) | [pan.baidu.com/s/1H3PrTdp0ShBe7upnAO12mQ](https://pan.baidu.com/s/1H3PrTdp0ShBe7upnAO12mQ?pwd=7z69) | Code `7z69`; faster inside mainland China |
 
-1. Download `*-setup.exe` from [GitHub Releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases).
+You only need one file per version:
+
+| Platform | File |
+|---|---|
+| Windows x64 | `XiaoyaoBillDesktop_<version>_x64-setup.exe` |
+| macOS (Intel + Apple Silicon universal) | `XiaoyaoBillDesktop_<version>_universal.dmg` |
+
+> The `*.app.tar.gz` file on the Releases page is an archive for in-app auto-update, not an installer — regular users can ignore it.
+>
+> If you are unsure about third-party mirrors, you can always [build from source](#7-development--build).
+
+### 5.2 Windows 10 / 11 (x64)
+
+1. Download `*-setup.exe` from either source above.
 2. Run the installer and follow the wizard. It installs per-user and does not require administrator rights.
 3. Launch **XiaoyaoBillDesktop** from the Start menu.
 
@@ -317,9 +333,9 @@ Write operations are guarded: `import_bill` only accepts absolute paths up to 16
 
 > On Windows 10, if WebView2 is missing, the installer downloads and installs it automatically (Windows 11 includes it). If that fails, install the [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) manually.
 
-### 5.2 macOS 11+ (Intel / Apple Silicon)
+### 5.3 macOS 11+ (Intel / Apple Silicon)
 
-1. Download the universal `.dmg` from [GitHub Releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases): `*_universal.dmg` (Intel + Apple Silicon in one package).
+1. Download the universal `.dmg` from either source above: `*_universal.dmg` (Intel + Apple Silicon in one package).
 2. Open the dmg and drag the app into **Applications**.
 3. **First launch**: right-click the app → **Open**; or go to **System Settings → Privacy & Security** and click **Open Anyway**.
 4. On macOS 15, if it is still blocked, run:
@@ -330,7 +346,7 @@ xattr -dr com.apple.quarantine "/Applications/XiaoyaoBillDesktop.app"
 
 > The current build is **unsigned and not notarized**, hence the prompt above. Signing and notarization will be added in a later release.
 
-### 5.3 System Requirements
+### 5.4 System Requirements
 
 | Item | Requirement |
 |---|---|
@@ -339,7 +355,7 @@ xattr -dr com.apple.quarantine "/Applications/XiaoyaoBillDesktop.app"
 | Disk | Installer about 20MB; the data directory grows with your bills |
 | Network | **Not required**; fully usable offline |
 
-### 5.4 Data Directory and Uninstall
+### 5.5 Data Directory and Uninstall
 
 | Platform | Data directory |
 |---|---|
