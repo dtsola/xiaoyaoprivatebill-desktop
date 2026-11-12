@@ -164,3 +164,24 @@ pub async fn storage_status(state: State<'_, McpState>) -> Result<Value, String>
         "audit_path": paths.audit_file().display().to_string(),
     }))
 }
+
+/// 生成产品官网二维码（SVG），供分享海报在离线环境下绘制。
+#[tauri::command]
+pub fn share_qr_svg() -> Result<String, String> {
+    bill_core::share::qr_svg(360).map_err(|error| error.to_string())
+}
+
+/// 把前端 Canvas 导出的海报 PNG 保存到用户选择的路径。
+///
+/// 路径与 PNG 校验在 `bill_core::share` 内完成；写盘走 spawn_blocking。
+#[tauri::command]
+pub async fn save_share_poster(path: String, png_base64: String) -> Result<Value, String> {
+    let saved = tauri::async_runtime::spawn_blocking(move || {
+        bill_core::share::save_poster(&path, &png_base64)
+    })
+    .await
+    .map_err(|error| format!("保存海报失败: {error}"))?
+    .map_err(|error| error.to_string())?;
+
+    Ok(json!({ "path": saved.to_string_lossy() }))
+}

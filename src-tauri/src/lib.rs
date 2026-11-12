@@ -73,7 +73,9 @@ pub fn run() {
             commands::set_close_to_tray,
             commands::open_data_dir,
             commands::storage_status,
-            commands::open_storage_dir
+            commands::open_storage_dir,
+            commands::share_qr_svg,
+            commands::save_share_poster
         ])
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {

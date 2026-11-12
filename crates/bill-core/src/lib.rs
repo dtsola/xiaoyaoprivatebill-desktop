@@ -8,6 +8,7 @@ pub mod model;
 pub mod paths;
 pub mod session;
 pub mod settings;
+pub mod share;
 
 pub use error::CoreError;
 pub use fsutil::write_atomic;

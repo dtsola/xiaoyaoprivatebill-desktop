@@ -11,7 +11,18 @@
           <ChevronRight :size="'1em'" />
         </button>
       </div>
-      <div></div>
+      <div class="header-actions">
+        <button
+          v-if="yearlyData"
+          type="button"
+          class="share-poster-button"
+          title="生成可分享的年度账单海报"
+          @click="showSharePoster = true"
+        >
+          <Share2 :size="16" />
+          分享海报
+        </button>
+      </div>
     </div>
 
     <div v-if="uiStore.globalLoading && !yearlyData" class="page-loading">
@@ -120,17 +131,26 @@
         上传账单
       </button>
     </div>
+
+    <SharePoster
+      v-if="showSharePoster && yearlyData"
+      :data="yearlyData"
+      :year="currentYear"
+      :is-demo="sessionStore.isDemo"
+      @close="showSharePoster = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { ArrowDown, ArrowUp, ChartColumn, ChevronLeft, ChevronRight, Minus } from 'lucide-vue-next'
+import { ArrowDown, ArrowUp, ChartColumn, ChevronLeft, ChevronRight, Minus, Share2 } from 'lucide-vue-next'
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useDataStore } from '@/stores/data'
 import { useUiStore } from '@/stores/ui'
 import { useSessionStore } from '@/stores/session'
 import { useFilterStore } from '@/stores/filter'
 import { formatMoney, getCategoryColor } from '@/utils/format'
+import SharePoster from '@/components/SharePoster.vue'
 import * as echarts from 'echarts'
 
 const dataStore = useDataStore()
@@ -141,6 +161,7 @@ const filterStore = useFilterStore()
 const currentYear = ref(null)
 const yearlyData = ref(null)
 const currentType = ref('expense')
+const showSharePoster = ref(false)
 
 // 图表引用
 const trendChartRef = ref(null)
@@ -945,6 +966,38 @@ onUnmounted(() => {
 
   .chart-container {
     height: 300px;
+  }
+}
+
+.header-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.share-poster-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid rgba(0, 122, 255, 0.3);
+  border-radius: 18px;
+  background: rgba(0, 122, 255, 0.08);
+  color: var(--primary-color, #007aff);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.share-poster-button:hover {
+  background: rgba(0, 122, 255, 0.14);
+  border-color: rgba(0, 122, 255, 0.5);
+}
+
+@media (max-width: 768px) {
+  .header-actions {
+    justify-content: center;
   }
 }
 </style>

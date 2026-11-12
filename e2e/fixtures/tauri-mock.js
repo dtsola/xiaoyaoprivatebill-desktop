@@ -383,6 +383,21 @@ export function installTauriMock(fixtures = {}) {
     }
     if (cmd === 'plugin:event|unlisten') return null
     if (cmd === 'plugin:dialog|open') return window.__TAURI_TEST_DIALOG ?? null
+    if (cmd === 'plugin:dialog|save') {
+      return window.__TAURI_TEST_SAVE_PATH ?? 'C:/Users/demo/Desktop/小遥账单-2024年度账单.png'
+    }
+    if (cmd === 'share_qr_svg') {
+      return [
+        '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">',
+        '<rect width="240" height="240" fill="#FFFFFF"/>',
+        '<rect x="16" y="16" width="208" height="208" fill="#0B1B33"/>',
+        '</svg>'
+      ].join('')
+    }
+    if (cmd === 'save_share_poster') {
+      window.__TAURI_TEST_SAVED_POSTER = { path: args?.path, pngBase64: args?.pngBase64 }
+      return { path: args?.path }
+    }
     if (cmd === 'plugin:opener|open_url') {
       window.__TAURI_TEST_OPENED = args?.url ?? null
       return null

@@ -14,4 +14,7 @@ pub enum CoreError {
     /// 设置文件损坏或无法解析。
     #[error("设置文件解析失败: {0}")]
     Settings(String),
+    /// 分享海报生成或保存失败。
+    #[error("分享海报失败: {0}")]
+    Share(String),
 }

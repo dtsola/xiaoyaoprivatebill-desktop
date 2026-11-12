@@ -44,6 +44,10 @@ export const api = {
   mcpConfig: () => invoke('mcp_config'),
   mcpRotateToken: () => invoke('mcp_rotate_token'),
 
+  // ==================== 分享海报 ====================
+  shareQrSvg: () => invoke('share_qr_svg'),
+  saveSharePoster: (path, pngBase64) => invoke('save_share_poster', { path, pngBase64 }),
+
   // ==================== 会话管理 API ====================
   enterDemo: () => post('/demo/enter'),
   exitDemo: () => post('/demo/exit'),
