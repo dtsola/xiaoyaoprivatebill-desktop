@@ -107,6 +107,20 @@ async fn lists_ten_tools_and_calls_list_bills() {
     let message = parse_message(&text);
     let tools = message["result"]["tools"].as_array().expect("工具列表");
 
+    // 客户端（小遥Claw / AJV）不认识 draft 2020-12 的 $schema，
+    // 工具 schema 必须不带该声明，否则调用时报 no schema with key or ref。
+    for tool in tools {
+        for key in ["inputSchema", "outputSchema"] {
+            if let Some(schema) = tool.get(key) {
+                assert!(
+                    schema.get("$schema").is_none(),
+                    "{} 的 {key} 不应包含 $schema: {schema}",
+                    tool["name"]
+                );
+            }
+        }
+    }
+
     let mut names: Vec<&str> = tools
         .iter()
         .filter_map(|tool| tool["name"].as_str())

@@ -198,8 +198,56 @@ impl BillMcp {
     }
 }
 
+/// 去掉 schema 根部的 `$schema` 声明。
+///
+/// rmcp 基于 schemars 生成 draft 2020-12 的 `$schema` 字段，部分 MCP 客户端
+/// （如小遥Claw 内置的 AJV）未注册该 dialect，会报
+/// `no schema with key or ref "https://json-schema.org/draft/2020-12/schema"`。
+/// 本项目的工具参数都是扁平结构，去掉声明后按客户端默认 draft 校验即可。
+fn strip_schema_meta(schema: &rmcp::model::JsonObject) -> rmcp::model::JsonObject {
+    let mut map = schema.clone();
+    map.remove("$schema");
+    map
+}
+
+fn sanitize_tool(mut tool: rmcp::model::Tool) -> rmcp::model::Tool {
+    tool.input_schema = Arc::new(strip_schema_meta(&tool.input_schema));
+    if let Some(output) = &tool.output_schema {
+        tool.output_schema = Some(Arc::new(strip_schema_meta(output)));
+    }
+    tool
+}
+
 #[tool_handler]
-impl ServerHandler for BillMcp {}
+impl ServerHandler for BillMcp {
+    // 覆盖宏生成的 list_tools：把所有工具的 `$schema` 声明去掉，
+    // 兼容未注册 draft 2020-12 元 schema 的 MCP 客户端。
+    async fn list_tools(
+        &self,
+        _request: Option<rmcp::model::PaginatedRequestParams>,
+        context: rmcp::service::RequestContext<rmcp::RoleServer>,
+    ) -> Result<rmcp::model::ListToolsResult, ErrorData> {
+        let supports_cache_hints = context.protocol_version().is_some_and(|version| {
+            version >= rmcp::model::ProtocolVersion::V_2026_07_28
+        });
+        Ok(rmcp::model::ListToolsResult {
+            result_type: Some(rmcp::model::ResultType::COMPLETE),
+            tools: Self::tool_router()
+                .list_all()
+                .into_iter()
+                .map(sanitize_tool)
+                .collect(),
+            meta: None,
+            next_cursor: None,
+            ttl_ms: supports_cache_hints.then_some(0),
+            cache_scope: supports_cache_hints.then_some(rmcp::model::CacheScope::Public),
+        })
+    }
+
+    fn get_tool(&self, name: &str) -> Option<rmcp::model::Tool> {
+        Self::tool_router().get(name).cloned().map(sanitize_tool)
+    }
+}
 
 /// 构建 Streamable HTTP 服务。
 pub fn mcp_service(runtime: Arc<Runtime>) -> StreamableHttpService<BillMcp, LocalSessionManager> {
