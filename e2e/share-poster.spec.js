@@ -69,3 +69,39 @@ test('年度总览：生成、隐藏金额并保存分享海报', async ({ page 
   await expect(dialog).toHaveCount(0)
   expect(errors, `控制台错误: ${errors.join(' | ')}`).toEqual([])
 })
+
+test('侧边栏入口：分享海报位于第二项并打开独立页面', async ({ page }) => {
+  const errors = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text())
+  })
+
+  await page.addInitScript(installTauriMock, fixtures)
+  await page.setViewportSize({ width: 1280, height: 900 })
+  await page.goto('/')
+  await page.waitForTimeout(600)
+
+  const navItems = page.locator('.nav-menu .nav-item')
+  await expect(navItems.nth(1)).toContainText('分享海报')
+  await expect(navItems.nth(1)).toHaveClass(/nav-item-share/)
+
+  await navItems.nth(1).click()
+  await expect(page).toHaveURL(/#\/share$/)
+  await expect(page.locator('.page-title').first()).toHaveText('分享海报')
+  await expect(page.locator('.poster-loading')).toHaveCount(0, { timeout: 10_000 })
+
+  const canvasInfo = await page.evaluate(() => {
+    const canvas = document.querySelector('.share-poster-content canvas')
+    return { width: canvas?.width, height: canvas?.height }
+  })
+  expect(canvasInfo).toEqual({ width: 1080, height: 1440 })
+
+  await page.screenshot({ path: 'artifacts/ui/share-poster/page.png', fullPage: true })
+
+  await page.getByRole('button', { name: '保存图片' }).click()
+  const saved = await page.evaluate(() => window.__TAURI_TEST_SAVED_POSTER)
+  expect(saved?.pngBase64?.startsWith('iVBORw0KGgo')).toBe(true)
+
+  expect(errors, `控制台错误: ${errors.join(' | ')}`).toEqual([])
+})

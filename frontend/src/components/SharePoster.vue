@@ -1,8 +1,17 @@
 <template>
-  <Teleport to="body">
-    <div class="share-overlay" @click.self="close">
-      <div class="share-dialog" role="dialog" aria-modal="true" aria-label="账单分享海报">
-        <header class="share-header">
+  <Teleport to="body" :disabled="inline">
+    <div
+      :class="inline ? 'share-inline-wrap' : 'share-overlay'"
+      @click.self="!inline && close()"
+    >
+      <div
+        class="share-dialog"
+        :class="{ 'is-inline': inline }"
+        role="dialog"
+        :aria-modal="inline ? undefined : 'true'"
+        aria-label="账单分享海报"
+      >
+        <header v-if="!inline" class="share-header">
           <div>
             <h2 class="share-title">分享海报</h2>
             <p class="share-subtitle">保存后可发朋友圈、小红书，二维码指向产品官网</p>
@@ -12,15 +21,42 @@
           </button>
         </header>
 
-        <div class="share-preview">
-          <canvas ref="canvasRef" class="poster-canvas"></canvas>
-          <div v-if="!ready" class="poster-loading">
-            <div class="poster-spinner"></div>
-            <span>正在生成海报...</span>
+        <div class="share-body">
+          <div class="share-preview">
+            <canvas ref="canvasRef" class="poster-canvas"></canvas>
+            <div v-if="!ready" class="poster-loading">
+              <div class="poster-spinner"></div>
+              <span>正在生成海报...</span>
+            </div>
           </div>
+
+          <aside v-if="inline" class="share-side">
+            <h2 class="share-side-title">把这一年的账单，<br />变成一张海报</h2>
+            <p class="share-side-subtitle">1080×1440 竖版，适合发朋友圈、小红书。</p>
+
+            <ul class="share-points">
+              <li>年度收支、月度趋势与消费 TOP 5</li>
+              <li>可隐藏金额，只保留分类占比</li>
+              <li>自带产品官网二维码，扫码即可了解</li>
+            </ul>
+
+            <div class="share-actions">
+              <button type="button" class="ghost-btn" @click="toggleHideAmounts">
+                <Eye v-if="hideAmounts" :size="16" />
+                <EyeOff v-else :size="16" />
+                {{ hideAmounts ? '显示金额' : '隐藏金额' }}
+              </button>
+              <button type="button" class="primary-btn" :disabled="saving || !ready" @click="savePoster">
+                <Download :size="16" />
+                {{ saving ? '保存中...' : '保存图片' }}
+              </button>
+            </div>
+
+            <p class="share-tip">图片完全在本机生成；担心隐私时可先隐藏金额再保存。</p>
+          </aside>
         </div>
 
-        <footer class="share-actions">
+        <footer v-if="!inline" class="share-actions">
           <button type="button" class="ghost-btn" @click="toggleHideAmounts">
             <Eye v-if="hideAmounts" :size="16" />
             <EyeOff v-else :size="16" />
@@ -32,7 +68,7 @@
           </button>
         </footer>
 
-        <p class="share-tip">图片完全在本机生成；担心隐私时可先隐藏金额再保存。</p>
+        <p v-if="!inline" class="share-tip">图片完全在本机生成；担心隐私时可先隐藏金额再保存。</p>
       </div>
     </div>
   </Teleport>
@@ -55,7 +91,9 @@ import {
 const props = defineProps({
   data: { type: Object, required: true },
   year: { type: [String, Number], required: true },
-  isDemo: { type: Boolean, default: false }
+  isDemo: { type: Boolean, default: false },
+  // 页面内嵌模式：不显示遮罩与关闭按钮，由页面提供标题与年份切换
+  inline: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['close'])
@@ -114,7 +152,7 @@ function close() {
 }
 
 function handleKeydown(event) {
-  if (event.key === 'Escape') close()
+  if (event.key === 'Escape' && !props.inline) close()
 }
 
 async function savePoster() {
@@ -223,6 +261,12 @@ onUnmounted(() => {
   background: rgba(0, 0, 0, 0.06);
 }
 
+.share-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
 .share-preview {
   position: relative;
   flex: 1;
@@ -325,5 +369,116 @@ onUnmounted(() => {
   font-size: 12px;
   color: var(--secondary-text, #6e6e73);
   text-align: center;
+}
+
+/* 页面内嵌模式 */
+.share-inline-wrap {
+  width: 100%;
+}
+
+.share-dialog.is-inline {
+  width: 100%;
+  max-width: none;
+  max-height: none;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.is-inline .share-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 36px;
+  align-items: start;
+}
+
+.is-inline .share-preview {
+  background: transparent;
+  overflow: visible;
+  border-radius: 0;
+}
+
+.is-inline .poster-canvas {
+  width: auto;
+  height: min(calc(100vh - 220px), 720px);
+  max-height: none;
+  border-radius: 16px;
+  box-shadow: 0 20px 48px rgba(11, 27, 51, 0.16);
+}
+
+.share-side {
+  position: sticky;
+  top: 96px;
+  padding: 28px;
+  border-radius: 20px;
+  background: var(--card-bg, #fff);
+  box-shadow: 0 4px 20px rgba(11, 27, 51, 0.06);
+}
+
+.share-side-title {
+  margin: 0 0 10px;
+  font-size: 24px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--text-color, #1c1c1e);
+}
+
+.share-side-subtitle {
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--secondary-text, #6e6e73);
+}
+
+.share-points {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.share-points li {
+  position: relative;
+  padding-left: 24px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-color, #1c1c1e);
+}
+
+.share-points li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-weight: 700;
+  color: #007aff;
+}
+
+.is-inline .share-actions {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  padding-top: 0;
+}
+
+.is-inline .share-tip {
+  margin-top: 14px;
+  text-align: left;
+}
+
+@media (max-width: 1024px) {
+  .is-inline .share-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .share-side {
+    position: static;
+  }
+
+  .is-inline .poster-canvas {
+    height: auto;
+    width: min(100%, 460px);
+  }
 }
 </style>

@@ -22,7 +22,8 @@ export const ALLOWED_FILES = new Set([
   'frontend/src/components/common/Toast.vue',
   'frontend/src/components/common/Modal.vue',
   'frontend/src/components/common/StatCard.vue',
-  // 分享海报：新增组件与纯逻辑模块
+  // 分享海报：新增页面、组件与纯逻辑模块
+  'frontend/src/views/SharePosterPage.vue',
   'frontend/src/components/SharePoster.vue',
   'frontend/src/utils/sharePoster.js',
   // 全局字号标尺对齐 xiaoyaotime（仅 :root token、body 与 h1–h4）

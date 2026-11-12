@@ -58,6 +58,15 @@
             <House class="nav-icon icon-home" :size="18" />
             <span>首页</span>
           </router-link>
+          <router-link
+            to="/share"
+            class="nav-item nav-item-share"
+            :class="{ active: $route.path === '/share' }"
+          >
+            <Share2 class="nav-icon icon-share" :size="18" />
+            <span>分享海报</span>
+            <span class="nav-badge">NEW</span>
+          </router-link>
           <router-link to="/yearly" class="nav-item" :class="{ active: $route.path === '/yearly' }">
             <CalendarDays class="nav-icon icon-yearly" :size="18" />
             <span>年度总览</span>
@@ -182,6 +191,7 @@ import {
   PawPrint,
   Receipt,
   Settings,
+  Share2,
   Square,
   Tags,
   X
@@ -612,6 +622,43 @@ watch(
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
+/* 分享海报：侧边栏第二项，常驻高亮入口 */
+.nav-item-share {
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.14), rgba(88, 86, 214, 0.14));
+  color: #0059c9;
+  font-weight: 600;
+}
+
+.nav-item-share:hover {
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.22), rgba(88, 86, 214, 0.22));
+  color: #0047a3;
+}
+
+.nav-item-share.active {
+  background: linear-gradient(135deg, #007aff, #5856d6);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
+}
+
+.nav-item-share.active .icon-share {
+  color: #ffffff;
+}
+
+.nav-badge {
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #007aff;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.nav-item-share.active .nav-badge {
+  background: rgba(255, 255, 255, 0.22);
+}
+
 .nav-item-external {
   width: calc(100% - 16px);
   font: inherit;
@@ -635,6 +682,7 @@ watch(
 /* 为每个菜单项图标添加颜色 */
 .icon-home { color: #007AFF; }
 .icon-yearly { color: #5856D6; }
+.icon-share { color: #007AFF; }
 .icon-monthly { color: #34C759; }
 .icon-category { color: #FF9500; }
 .icon-time { color: #AF52DE; }

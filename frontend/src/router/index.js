@@ -7,6 +7,11 @@ const routes = [
     component: () => import('@/views/Home.vue')
   },
   {
+    path: '/share',
+    name: 'share',
+    component: () => import('@/views/SharePosterPage.vue')
+  },
+  {
     path: '/yearly',
     name: 'yearly',
     component: () => import('@/views/Yearly.vue')
