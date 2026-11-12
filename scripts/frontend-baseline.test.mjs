@@ -30,6 +30,13 @@ test('离线图标、测试配置与测试文件不算越界', () => {
   assert.equal(isAllowed('frontend/src/api/client.test.js'), true)
 })
 
+test('小遥Claw 实操截图放行，其他公共图片仍被拦截', () => {
+  assert.equal(isAllowed('frontend/public/images/claw/01-add-mcp.png'), true)
+  assert.deepEqual(violations(['frontend/public/images/banner.png']), [
+    'frontend/public/images/banner.png'
+  ])
+})
+
 test('品牌资源替换不算越界', () => {
   assert.equal(isAllowed('frontend/public/images/logo_128.png'), true)
   assert.equal(isAllowed('frontend/public/favicon.png'), true)

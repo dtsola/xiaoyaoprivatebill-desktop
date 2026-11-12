@@ -259,10 +259,35 @@
             </div>
           </li>
         </ol>
+        <p class="claw-shots-title">接入实操截图</p>
+        <div class="claw-shots">
+          <button
+            v-for="shot in clawShots"
+            :key="shot.src"
+            type="button"
+            class="claw-shot"
+            @click="previewShot = shot"
+          >
+            <img :src="shot.src" :alt="shot.alt" loading="lazy">
+            <span>{{ shot.caption }}</span>
+          </button>
+        </div>
         <div class="claw-guide-foot">
           <button class="mcp-btn" @click="openClawSite">打开小遥Claw 官网</button>
           <span>MCP 服务需保持「运行中」，账单数据才会被读取。</span>
         </div>
+      </div>
+
+      <div
+        v-if="previewShot"
+        class="claw-preview"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="previewShot.caption"
+        @click.self="previewShot = null"
+      >
+        <button class="claw-preview-close" aria-label="关闭预览" @click="previewShot = null">×</button>
+        <img :src="previewShot.src" :alt="previewShot.alt">
       </div>
     </div>
   </div>
@@ -315,6 +340,31 @@ const mcp = ref({
   token: '',
   last_error: null
 })
+
+// 小遥Claw 接入实操截图（点击放大）
+const clawShots = [
+  {
+    src: '/images/claw/01-add-mcp.png',
+    alt: '在小遥Claw 中添加 MCP 服务',
+    caption: '添加 MCP 服务'
+  },
+  {
+    src: '/images/claw/02-connected.png',
+    alt: '小遥Claw 显示连接正常与 14 个工具',
+    caption: '连接正常 · 14 个工具'
+  },
+  {
+    src: '/images/claw/03-ask.png',
+    alt: '在小遥Claw 中用自然语言发起账单分析',
+    caption: '用自然语言发起分析'
+  },
+  {
+    src: '/images/claw/04-analysis.png',
+    alt: '小遥Claw 生成结构化账单分析结果',
+    caption: '生成结构化账单分析'
+  }
+]
+const previewShot = ref(null)
 
 let unlistenDragDrop = null
 let unlistenMcp = null
@@ -1218,6 +1268,84 @@ async function handleClearAllData() {
   border-radius: 4px;
 }
 
+.claw-shots-title {
+  margin: 20px 0 8px;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.claw-shots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.claw-shot {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: zoom-in;
+}
+
+.claw-shot img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  background: #f5f5f7;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.claw-shot:hover img {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+}
+
+.claw-shot span {
+  color: #6b7280;
+  font-size: 12px;
+  text-align: center;
+}
+
+.claw-preview {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: rgba(15, 23, 42, 0.78);
+}
+
+.claw-preview img {
+  max-width: 92vw;
+  max-height: 84vh;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+}
+
+.claw-preview-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  width: 36px;
+  height: 36px;
+  color: #111827;
+  font-size: 22px;
+  line-height: 1;
+  background: rgba(255, 255, 255, 0.92);
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
 .claw-guide-foot {
   display: flex;
   flex-wrap: wrap;
@@ -1234,7 +1362,8 @@ async function handleClearAllData() {
 }
 
 @media (max-width: 900px) {
-  .claw-steps {
+  .claw-steps,
+  .claw-shots {
     grid-template-columns: 1fr;
   }
 }

@@ -26,7 +26,11 @@ export const ALLOWED_FILES = new Set([
   'frontend/src/assets/styles/main.css'
 ])
 
-export const ALLOWED_PREFIXES = ['frontend/public/vendor/']
+export const ALLOWED_PREFIXES = [
+  'frontend/public/vendor/',
+  // AI Agent 接入页的小遥Claw 实操截图（只读静态资源）
+  'frontend/public/images/claw/'
+]
 export const ALLOWED_EXACT = new Set([
   'frontend/package.json',
   'frontend/package-lock.json',

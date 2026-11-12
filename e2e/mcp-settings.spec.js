@@ -84,6 +84,36 @@ test('AI Agent 接入页展示小遥Claw 接入步骤与官网入口', async ({ 
   expect(errors, `控制台错误:\n${errors.join('\n')}`).toEqual([])
 })
 
+test('AI Agent 接入页展示小遥Claw 实操截图并支持放大', async ({ page }) => {
+  const errors = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text())
+  })
+
+  await page.goto('/#/agent')
+
+  const shots = page.locator('.claw-shot')
+  await expect(shots).toHaveCount(4)
+  await expect(page.locator('.claw-guide')).toContainText('添加 MCP 服务')
+  await expect(page.locator('.claw-guide')).toContainText('连接正常 · 14 个工具')
+  await expect(page.locator('.claw-guide')).toContainText('用自然语言发起分析')
+  await expect(page.locator('.claw-guide')).toContainText('生成结构化账单分析')
+
+  // 点击缩略图打开大图预览
+  await shots.first().click()
+  await expect(page.locator('.claw-preview')).toBeVisible()
+  await expect(page.locator('.claw-preview img')).toHaveAttribute(
+    'src',
+    '/images/claw/01-add-mcp.png'
+  )
+
+  await page.getByRole('button', { name: '关闭预览' }).click()
+  await expect(page.locator('.claw-preview')).toHaveCount(0)
+
+  expect(errors, `控制台错误:\n${errors.join('\n')}`).toEqual([])
+})
+
 test('侧边栏有独立菜单，设置页不再包含 MCP 区块', async ({ page }) => {
   await page.goto('/#/settings')
 
