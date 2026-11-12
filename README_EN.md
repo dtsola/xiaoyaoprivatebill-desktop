@@ -171,7 +171,7 @@ Xiaoyao Private Bill Analyzer – Desktop is a **privacy-first** personal bill a
   <a href="https://www.xiaoyaosai.com/xiaoyaoclaw/"><img src="docs/产品文档/logos/xiaoyaoclaw-logo-full.png" alt="XiaoyaoClaw" width="220"></a>
 </p>
 
-**XiaoyaoClaw** is a desktop agent that puts an AI assistant on your own computer. It runs locally, connects to local tools and data, and completes tasks for you in natural language.
+**XiaoyaoClaw** is a desktop Personal Agent that puts an AI assistant on your own computer. It runs locally, connects to local tools and data, and completes tasks for you in natural language.
 
 Xiaoyao Private Bill Analyzer – Desktop ships a standard Streamable HTTP MCP server for XiaoyaoClaw. Once enabled, just say "Analyze my Xiaoyao bills for me" and XiaoyaoClaw automatically calls the bill tools, reads yearly, monthly, category, time, and insight data, and generates a structured analysis report. Your bills stay on your computer; whether they are sent to a model is controlled by your XiaoyaoClaw configuration.
 

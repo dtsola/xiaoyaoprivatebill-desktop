@@ -171,7 +171,7 @@
   <a href="https://www.xiaoyaosai.com/xiaoyaoclaw/"><img src="docs/产品文档/logos/xiaoyaoclaw-logo-full.png" alt="小遥Claw" width="220"></a>
 </p>
 
-**小遥Claw** 是一款把 AI 助手装进你自己电脑的桌面 Agent：它在本地运行，可以连接本机工具与数据，用自然语言替你完成任务。
+**小遥Claw** 是一款把 AI 助手装进你自己电脑的桌面 Personal Agent：它在本地运行，可以连接本机工具与数据，用自然语言替你完成任务。
 
 小遥账单桌面版为小遥Claw 内置了标准 Streamable HTTP MCP 服务。开启后，你只需要对小遥Claw 说一句「帮我分析一下我的小遥账单」，它就会自动调用账单工具，读取年度、月度、分类、时间与消费洞察数据，生成结构化的分析报告。账单数据保存在你的电脑上，是否交给模型分析由你在小遥Claw 中配置决定。
 
