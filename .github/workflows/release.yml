@@ -46,8 +46,11 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.platform == 'macos-15' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      # macOS runner 是 arm64；universal 产物还需要显式安装 Intel target。
+      - name: Add Intel target for universal build
+        if: matrix.platform == 'macos-15'
+        run: rustup target add x86_64-apple-darwin
 
       - uses: Swatinem/rust-cache@v2
         with:
