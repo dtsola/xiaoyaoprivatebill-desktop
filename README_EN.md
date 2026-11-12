@@ -33,7 +33,7 @@ Xiaoyao Private Bill Analyzer – Desktop is a **privacy-first** personal bill a
 - 🤖 **Agent-callable** – 14 built-in MCP tools for natural-language bill queries and analysis
 - 🖥️ **Desktop-native** – custom title bar, collapsible sidebar, system tray, single instance, window-state memory, drag-and-drop import
 - 🗑️ **Recoverable deletes** – trash, snapshots, and an audit log reduce accidental-loss risk
-- 🧬 **Same origin as the Web edition** – identical visuals and statistics, with a Rust backend rewritten and reconciled endpoint by endpoint across 27 APIs
+- 🧬 **Same origin as the Web edition** – identical visuals and statistics as the [Web edition](https://github.com/dtsola/xiaoyaoprivatebill), with a Rust backend rewritten and reconciled endpoint by endpoint across 27 APIs
 
 ---
 
