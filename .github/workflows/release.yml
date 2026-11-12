@@ -28,9 +28,9 @@ jobs:
       matrix:
         include:
           - platform: macos-14
-            args: "--target universal-apple-darwin"
+            args: "--target universal-apple-darwin --bundles app,dmg"
           - platform: windows-latest
-            args: ""
+            args: "--bundles nsis"
 
     runs-on: ${{ matrix.platform }}
     env:
