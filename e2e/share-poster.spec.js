@@ -17,60 +17,6 @@ const fixtures = {
   '/files': read('files_empty.json')
 }
 
-test('年度总览：生成、隐藏金额并保存分享海报', async ({ page }) => {
-  const errors = []
-  page.on('pageerror', (error) => errors.push(error.message))
-  page.on('console', (message) => {
-    if (message.type() === 'error') errors.push(message.text())
-  })
-
-  await page.addInitScript(installTauriMock, fixtures)
-  await page.setViewportSize({ width: 1280, height: 900 })
-  await page.goto('/#/yearly')
-  await page.waitForTimeout(1200)
-
-  await page.getByRole('button', { name: '分享海报' }).click()
-  const dialog = page.locator('.share-dialog')
-  await expect(dialog).toBeVisible()
-  await expect(dialog.getByText('分享海报')).toBeVisible()
-  await expect(page.locator('.poster-loading')).toHaveCount(0, { timeout: 10_000 })
-
-  const canvasInfo = await page.evaluate(() => {
-    const canvas = document.querySelector('.share-dialog canvas')
-    return {
-      width: canvas?.width,
-      height: canvas?.height,
-      dataUrlLength: canvas?.toDataURL('image/png').length ?? 0
-    }
-  })
-  expect(canvasInfo.width).toBe(1080)
-  expect(canvasInfo.height).toBe(1440)
-  expect(canvasInfo.dataUrlLength).toBeGreaterThan(10_000)
-
-  await page.screenshot({ path: 'artifacts/ui/share-poster/preview.png' })
-
-  await dialog.getByRole('button', { name: '保存图片' }).click()
-  const saved = await page.evaluate(() => window.__TAURI_TEST_SAVED_POSTER)
-  expect(saved?.path).toMatch(/\.png$/)
-  expect(saved?.pngBase64?.startsWith('iVBORw0KGgo')).toBe(true)
-  expect(saved?.pngBase64?.length).toBeGreaterThan(10_000)
-
-  // 保存 1080×1440 原图，便于人工检查海报细节
-  fs.mkdirSync('artifacts/ui/share-poster', { recursive: true })
-  fs.writeFileSync(
-    'artifacts/ui/share-poster/poster.png',
-    Buffer.from(saved.pngBase64, 'base64')
-  )
-
-  await dialog.getByRole('button', { name: '隐藏金额' }).click()
-  await expect(dialog.getByRole('button', { name: '显示金额' })).toBeVisible()
-  await page.screenshot({ path: 'artifacts/ui/share-poster/preview-hidden.png' })
-
-  await page.keyboard.press('Escape')
-  await expect(dialog).toHaveCount(0)
-  expect(errors, `控制台错误: ${errors.join(' | ')}`).toEqual([])
-})
-
 test('侧边栏入口：分享海报位于第二项并打开独立页面', async ({ page }) => {
   const errors = []
   page.on('pageerror', (error) => errors.push(error.message))
@@ -103,6 +49,13 @@ test('侧边栏入口：分享海报位于第二项并打开独立页面', async
   await page.getByRole('button', { name: '保存图片' }).click()
   const saved = await page.evaluate(() => window.__TAURI_TEST_SAVED_POSTER)
   expect(saved?.pngBase64?.startsWith('iVBORw0KGgo')).toBe(true)
+
+  // 保存 1080×1440 原图，便于人工检查海报细节
+  fs.mkdirSync('artifacts/ui/share-poster', { recursive: true })
+  fs.writeFileSync(
+    'artifacts/ui/share-poster/poster.png',
+    Buffer.from(saved.pngBase64, 'base64')
+  )
 
   expect(errors, `控制台错误: ${errors.join(' | ')}`).toEqual([])
 })

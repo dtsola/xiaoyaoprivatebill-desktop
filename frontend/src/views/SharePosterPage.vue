@@ -59,7 +59,6 @@
 
     <div v-else-if="posterData" class="share-poster-content">
       <SharePoster
-        inline
         :data="posterData"
         :year="posterYear"
         :period="period"

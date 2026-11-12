@@ -1,119 +1,89 @@
 <template>
-  <Teleport to="body" :disabled="inline">
-    <div
-      :class="inline ? 'share-inline-wrap' : 'share-overlay'"
-      @click.self="!inline && close()"
-    >
-      <div
-        class="share-dialog"
-        :class="{ 'is-inline': inline }"
-        role="dialog"
-        :aria-modal="inline ? undefined : 'true'"
-        aria-label="账单分享海报"
-      >
-        <header v-if="!inline" class="share-header">
-          <div>
-            <h2 class="share-title">分享海报</h2>
-            <p class="share-subtitle">保存后可发朋友圈、小红书、微博、抖音，二维码指向产品官网</p>
-          </div>
-          <button class="share-close" aria-label="关闭" title="关闭" @click="close">
-            <X :size="18" />
-          </button>
-        </header>
-
-        <div class="share-body">
-          <div class="share-preview">
-            <canvas ref="canvasRef" class="poster-canvas"></canvas>
-            <div v-if="!ready" class="poster-loading">
-              <div class="poster-spinner"></div>
-              <span>正在生成海报...</span>
-            </div>
-          </div>
-
-          <aside v-if="inline" class="share-side">
-            <h2 class="share-side-title">把账单变成<br />一张海报</h2>
-            <p class="share-side-subtitle">
-              1080×1440 竖版<br />
-              适合朋友圈、小红书、微博、抖音、视频号
-            </p>
-
-            <section class="share-section">
-              <h3 class="share-section-title">海报模板</h3>
-              <div class="theme-grid">
-                <button
-                  v-for="theme in POSTER_THEMES"
-                  :key="theme.id"
-                  type="button"
-                  class="theme-card"
-                  :class="{ active: selectedTheme === theme.id }"
-                  :title="theme.description"
-                  @click="selectTheme(theme.id)"
-                >
-                  <span
-                    class="theme-swatch"
-                    :style="{ background: `linear-gradient(135deg, ${theme.swatch[0]}, ${theme.swatch[1]})` }"
-                  ></span>
-                  <span class="theme-name">{{ theme.name }}</span>
-                </button>
-              </div>
-            </section>
-
-            <section class="share-section">
-              <div class="share-section-head">
-                <h3 class="share-section-title">金额显示</h3>
-                <button type="button" class="link-btn" @click="toggleHideAmounts">
-                  {{ allAmountsVisible ? '全部隐藏' : '全部显示' }}
-                </button>
-              </div>
-              <p v-if="period === 'month'" class="switch-hint">月度海报默认隐藏收入与结余，可随时打开。</p>
-              <div class="amount-switches">
-                <button
-                  v-for="field in AMOUNT_FIELDS"
-                  :key="field.key"
-                  type="button"
-                  class="switch-row"
-                  :class="{ on: visibility[field.key] }"
-                  :aria-pressed="visibility[field.key]"
-                  @click="toggleAmount(field.key)"
-                >
-                  <span>{{ field.label }}</span>
-                  <span class="switch-track"><span class="switch-thumb"></span></span>
-                </button>
-              </div>
-            </section>
-
-            <div class="share-actions">
-              <button type="button" class="primary-btn block-btn" :disabled="saving || !ready" @click="savePoster">
-                <Download :size="16" />
-                {{ saving ? '保存中...' : '保存图片' }}
-              </button>
-            </div>
-
-            <p class="share-tip">图片完全在本机生成；二维码指向产品官网。</p>
-          </aside>
+  <div class="share-poster-inline" aria-label="账单分享海报">
+    <div class="share-body">
+      <div class="share-preview">
+        <canvas ref="canvasRef" class="poster-canvas"></canvas>
+        <div v-if="!ready" class="poster-loading">
+          <div class="poster-spinner"></div>
+          <span>正在生成海报...</span>
         </div>
+      </div>
 
-        <footer v-if="!inline" class="share-actions">
-          <button type="button" class="ghost-btn" @click="toggleHideAmounts">
-            <Eye v-if="allAmountsVisible" :size="16" />
-            <EyeOff v-else :size="16" />
-            {{ allAmountsVisible ? '隐藏金额' : '显示金额' }}
-          </button>
-          <button type="button" class="primary-btn" :disabled="saving || !ready" @click="savePoster">
+      <aside class="share-side">
+        <h2 class="share-side-title">把账单变成<br />一张海报</h2>
+        <p class="share-side-subtitle">
+          1080×1440 竖版<br />
+          适合朋友圈、小红书、微博、抖音、视频号
+        </p>
+
+        <section class="share-section">
+          <h3 class="share-section-title">海报模板</h3>
+          <div class="theme-grid">
+            <button
+              v-for="theme in POSTER_THEMES"
+              :key="theme.id"
+              type="button"
+              class="theme-card"
+              :class="{ active: selectedTheme === theme.id }"
+              :title="theme.description"
+              @click="selectTheme(theme.id)"
+            >
+              <span
+                class="theme-swatch"
+                :style="{ background: `linear-gradient(135deg, ${theme.swatch[0]}, ${theme.swatch[1]})` }"
+              ></span>
+              <span class="theme-name">{{ theme.name }}</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="share-section">
+          <div class="share-section-head">
+            <h3 class="share-section-title">金额显示</h3>
+            <button type="button" class="link-btn" @click="toggleHideAmounts">
+              {{ allAmountsVisible ? '全部隐藏' : '全部显示' }}
+            </button>
+          </div>
+          <p v-if="period === 'month'" class="switch-hint">
+            月度海报默认隐藏收入与结余，可随时打开。
+          </p>
+          <div class="amount-switches">
+            <button
+              v-for="field in AMOUNT_FIELDS"
+              :key="field.key"
+              type="button"
+              class="switch-row"
+              :class="{ on: visibility[field.key] }"
+              :aria-pressed="visibility[field.key]"
+              @click="toggleAmount(field.key)"
+            >
+              <span>{{ field.label }}</span>
+              <span class="switch-track"><span class="switch-thumb"></span></span>
+            </button>
+          </div>
+        </section>
+
+        <div class="share-actions">
+          <button
+            type="button"
+            class="primary-btn block-btn"
+            :disabled="saving || !ready"
+            @click="savePoster"
+          >
             <Download :size="16" />
             {{ saving ? '保存中...' : '保存图片' }}
           </button>
-        </footer>
+        </div>
 
-        <p v-if="!inline" class="share-tip">图片完全在本机生成；担心隐私时可先隐藏金额再保存。</p>
-      </div>
+        <p class="share-tip">图片完全在本机生成；二维码指向产品官网。</p>
+      </aside>
     </div>
-  </Teleport>
+  </div>
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
-import { Download, Eye, EyeOff, X } from 'lucide-vue-next'
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { Download } from 'lucide-vue-next'
 import { save } from '@tauri-apps/plugin-dialog'
 
 import api from '@/api/client'
@@ -133,12 +103,8 @@ const props = defineProps({
   year: { type: [String, Number], required: true },
   period: { type: String, default: 'year' },
   month: { type: [String, Number], default: '' },
-  isDemo: { type: Boolean, default: false },
-  // 页面内嵌模式：不显示遮罩与关闭按钮，由页面提供标题与年份切换
-  inline: { type: Boolean, default: false }
+  isDemo: { type: Boolean, default: false }
 })
-
-const emit = defineEmits(['close'])
 
 const uiStore = useUiStore()
 const canvasRef = ref(null)
@@ -214,14 +180,6 @@ function toggleAmount(key) {
   render()
 }
 
-function close() {
-  emit('close')
-}
-
-function handleKeydown(event) {
-  if (event.key === 'Escape' && !props.inline) close()
-}
-
 async function savePoster() {
   if (!ready.value || saving.value) return
   if (!qr) {
@@ -231,8 +189,12 @@ async function savePoster() {
 
   saving.value = true
   try {
+    const suffix =
+      props.period === 'month'
+        ? `${props.year}年${props.month}月账单`
+        : `${props.year}年度账单`
     const target = await save({
-      defaultPath: `小遥账单-${props.year}年度账单.png`,
+      defaultPath: `小遥账单-${suffix}.png`,
       filters: [{ name: 'PNG 图片', extensions: ['png'] }]
     })
     if (!target) return
@@ -257,7 +219,7 @@ watch(
   }
 )
 
-// 页面内嵌模式下，年份 / 月份 / 范围切换会替换 data，必须重绘画布。
+// 页面切换年份 / 月份 / 范围会替换 data，必须重绘画布。
 watch(
   () => [props.data, props.period, props.year, props.month, props.isDemo],
   () => {
@@ -266,7 +228,6 @@ watch(
 )
 
 onMounted(async () => {
-  window.addEventListener('keydown', handleKeydown)
   const [logoImage, qrImage] = await Promise.all([
     loadImage('/images/logo_128.png'),
     loadQr()
@@ -276,101 +237,35 @@ onMounted(async () => {
   await nextTick()
   render()
 })
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeydown)
-})
 </script>
 
 <style scoped>
-.share-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 3000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: rgba(11, 27, 51, 0.45);
-  backdrop-filter: blur(6px);
-}
-
-.share-dialog {
-  width: min(760px, 92vw);
-  max-height: 92vh;
-  display: flex;
-  flex-direction: column;
-  padding: 20px 24px 16px;
-  border-radius: 20px;
-  background: var(--card-bg, #fff);
-  box-shadow: 0 24px 64px rgba(11, 27, 51, 0.28);
-}
-
-.share-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 12px;
-}
-
-.share-title {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-color, #1c1c1e);
-}
-
-.share-subtitle {
-  margin: 4px 0 0;
-  font-size: 13px;
-  color: var(--secondary-text, #6e6e73);
-}
-
-.share-close {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--secondary-text, #6e6e73);
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.share-close:hover {
-  background: rgba(0, 0, 0, 0.06);
+.share-poster-inline {
+  width: 100%;
 }
 
 .share-body {
-  flex: 1;
-  min-height: 0;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 36px;
+  align-items: start;
 }
 
 .share-preview {
   position: relative;
-  flex: 1;
-  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  border-radius: 14px;
-  background: #eef3fb;
+  min-height: 320px;
 }
 
 .poster-canvas {
   display: block;
   width: auto;
-  height: 100%;
-  max-height: min(62vh, 760px);
+  height: min(calc(100vh - 220px), 720px);
   aspect-ratio: 3 / 4;
-  border-radius: 12px;
-  box-shadow: 0 12px 32px rgba(11, 27, 51, 0.16);
+  border-radius: 16px;
+  box-shadow: 0 20px 48px rgba(11, 27, 51, 0.16);
 }
 
 .poster-loading {
@@ -384,6 +279,7 @@ onUnmounted(() => {
   font-size: 13px;
   color: var(--secondary-text, #6e6e73);
   background: #eef3fb;
+  border-radius: 16px;
 }
 
 .poster-spinner {
@@ -399,95 +295,6 @@ onUnmounted(() => {
   to {
     transform: rotate(360deg);
   }
-}
-
-.share-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-top: 14px;
-}
-
-.ghost-btn,
-.primary-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 38px;
-  padding: 0 18px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.ghost-btn {
-  border: 1px solid var(--border-color, #e5e5ea);
-  background: transparent;
-  color: var(--text-color, #1c1c1e);
-}
-
-.ghost-btn:hover {
-  background: rgba(0, 0, 0, 0.04);
-}
-
-.primary-btn {
-  border: none;
-  background: #007aff;
-  color: #fff;
-}
-
-.primary-btn:hover:not(:disabled) {
-  background: #0a6fe0;
-}
-
-.primary-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.share-tip {
-  margin: 10px 0 0;
-  font-size: 12px;
-  color: var(--secondary-text, #6e6e73);
-  text-align: center;
-}
-
-/* 页面内嵌模式 */
-.share-inline-wrap {
-  width: 100%;
-}
-
-.share-dialog.is-inline {
-  width: 100%;
-  max-width: none;
-  max-height: none;
-  padding: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.is-inline .share-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
-  gap: 36px;
-  align-items: start;
-}
-
-.is-inline .share-preview {
-  background: transparent;
-  overflow: visible;
-  border-radius: 0;
-}
-
-.is-inline .poster-canvas {
-  width: auto;
-  height: min(calc(100vh - 220px), 720px);
-  max-height: none;
-  border-radius: 16px;
-  box-shadow: 0 20px 48px rgba(11, 27, 51, 0.16);
 }
 
 .share-side {
@@ -512,23 +319,6 @@ onUnmounted(() => {
   font-size: 14px;
   line-height: 1.6;
   color: var(--secondary-text, #6e6e73);
-}
-
-.share-points {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin: 0 0 24px;
-  padding: 0;
-  list-style: none;
-}
-
-.share-points li {
-  position: relative;
-  padding-left: 24px;
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--text-color, #1c1c1e);
 }
 
 .share-section {
@@ -663,33 +453,53 @@ onUnmounted(() => {
   transform: translateX(16px);
 }
 
+.share-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 10px;
+  background: #007aff;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.primary-btn:hover:not(:disabled) {
+  background: #0a6fe0;
+}
+
+.primary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .block-btn {
   width: 100%;
   justify-content: center;
 }
 
-.share-points li::before {
-  content: '✓';
-  position: absolute;
-  left: 0;
-  top: 0;
-  font-weight: 700;
-  color: #007aff;
-}
-
-.is-inline .share-actions {
-  justify-content: flex-start;
-  flex-wrap: wrap;
-  padding-top: 0;
-}
-
-.is-inline .share-tip {
-  margin-top: 14px;
+.share-tip {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--secondary-text, #6e6e73);
   text-align: left;
 }
 
 @media (max-width: 1024px) {
-  .is-inline .share-body {
+  .share-body {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -697,7 +507,7 @@ onUnmounted(() => {
     position: static;
   }
 
-  .is-inline .poster-canvas {
+  .poster-canvas {
     height: auto;
     width: min(100%, 460px);
   }
