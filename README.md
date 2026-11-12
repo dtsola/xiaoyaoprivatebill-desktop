@@ -309,7 +309,7 @@
 
 1. 从 [GitHub Releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases) 下载 `*-setup.exe`。
 2. 双击安装，按向导完成；安装范围为当前用户，无需管理员权限。
-3. 从开始菜单启动「小遥账单桌面版」。
+3. 从开始菜单启动「XiaoyaoBillDesktop」（小遥账单桌面版）。
 
 > Windows 10 若未安装 WebView2，安装器会联网自动下载并安装（Windows 11 自带）。若自动安装失败，可手动安装 [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)。
 
@@ -321,7 +321,7 @@
 4. macOS 15 如仍被拦截，可在终端执行：
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
+xattr -dr com.apple.quarantine "/Applications/XiaoyaoBillDesktop.app"
 ```
 
 > 当前版本**未签名、未公证**，因此会有上述提示。后续版本将补充签名与公证。

@@ -309,7 +309,7 @@ Write operations are guarded: `import_bill` only accepts absolute paths up to 16
 
 1. Download `*-setup.exe` from [GitHub Releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases).
 2. Run the installer and follow the wizard. It installs per-user and does not require administrator rights.
-3. Launch **Xiaoyao Private Bill Analyzer – Desktop** from the Start menu.
+3. Launch **XiaoyaoBillDesktop** from the Start menu.
 
 > On Windows 10, if WebView2 is missing, the installer downloads and installs it automatically (Windows 11 includes it). If that fails, install the [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) manually.
 
@@ -321,7 +321,7 @@ Write operations are guarded: `import_bill` only accepts absolute paths up to 16
 4. On macOS 15, if it is still blocked, run:
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
+xattr -dr com.apple.quarantine "/Applications/XiaoyaoBillDesktop.app"
 ```
 
 > The current build is **unsigned and not notarized**, hence the prompt above. Signing and notarization will be added in a later release.
