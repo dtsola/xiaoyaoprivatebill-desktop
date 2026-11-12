@@ -86,6 +86,16 @@
             <Bot class="nav-icon icon-agent" :size="18" />
             <span>AI Agent 接入</span>
           </router-link>
+          <button
+            type="button"
+            class="nav-item nav-item-external"
+            title="打开小遥Claw 官网"
+            @click="openClawSite"
+          >
+            <PawPrint class="nav-icon icon-claw" :size="18" />
+            <span>小遥Claw</span>
+            <ArrowUpRight class="nav-external" :size="13" />
+          </button>
           <router-link to="/settings" class="nav-item" :class="{ active: $route.path === '/settings' }">
             <Settings class="nav-icon icon-settings" :size="18" />
             <span>设置</span>
@@ -153,6 +163,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import {
+  ArrowUpRight,
   Bot,
   CalendarDays,
   ChartLine,
@@ -168,12 +179,14 @@ import {
   Lightbulb,
   List,
   Minus,
+  PawPrint,
   Receipt,
   Settings,
   Square,
   Tags,
   X
 } from 'lucide-vue-next'
+import { openUrl } from '@tauri-apps/plugin-opener'
 import { useUiStore } from '@/stores/ui'
 import { useSessionStore } from '@/stores/session'
 import { useFilterStore } from '@/stores/filter'
@@ -257,6 +270,14 @@ function minimizeWindow() {
   void windowHandle()
     ?.minimize()
     .catch(() => {})
+}
+
+async function openClawSite() {
+  try {
+    await openUrl('https://www.xiaoyaosai.com/xiaoyaoclaw/')
+  } catch (error) {
+    uiStore.showError('打开小遥Claw 官网失败: ' + error.message)
+  }
 }
 
 async function toggleMaximize() {
@@ -535,6 +556,10 @@ watch(
   margin-right: 0;
 }
 
+.sidebar-collapsed .nav-item .nav-external {
+  display: none;
+}
+
 .floating-menu.collapsed {
   padding: 0 8px;
 }
@@ -587,6 +612,21 @@ watch(
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
+.nav-item-external {
+  width: calc(100% - 16px);
+  font: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.nav-item-external .nav-external {
+  flex: none;
+  margin-left: auto;
+  color: #8e8e93;
+}
+
 .nav-item .nav-icon {
   margin-right: 12px;
   flex: none;
@@ -601,6 +641,7 @@ watch(
 .icon-insights { color: #FFCC00; }
 .icon-transactions { color: #30B0C7; }
 .icon-agent { color: #0A84FF; }
+.icon-claw { color: #007AFF; }
 .icon-settings { color: #8E8E93; }
 .icon-author { color: #FF2D55; }
 
@@ -830,7 +871,8 @@ watch(
     width: 240px;
   }
 
-  .nav-item span {
+  .nav-item span,
+  .nav-external {
     display: none;
   }
 
