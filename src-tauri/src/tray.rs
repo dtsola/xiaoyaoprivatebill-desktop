@@ -1,7 +1,7 @@
 //! 系统托盘。
 
 use tauri::menu::{Menu, MenuItem};
-use tauri::tray::TrayIconBuilder;
+use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{App, Emitter, Manager};
 use tauri_plugin_opener::OpenerExt;
 
@@ -27,7 +27,20 @@ pub fn create_tray(app: &App) -> tauri::Result<()> {
 
     TrayIconBuilder::new()
         .icon(icon)
+        .tooltip("小遥账单桌面版")
         .menu(&menu)
+        // 左键直接显示主窗口；右键（默认）呼出菜单，避免左键无响应。
+        .show_menu_on_left_click(false)
+        .on_tray_icon_event(|tray, event| {
+            if let TrayIconEvent::Click {
+                button: MouseButton::Left,
+                button_state: MouseButtonState::Up,
+                ..
+            } = event
+            {
+                show_main(tray.app_handle());
+            }
+        })
         .on_menu_event(move |app, event| match event.id.as_ref() {
             "show" => show_main(app),
             "data_dir" => {
