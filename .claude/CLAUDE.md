@@ -174,7 +174,7 @@ pub fn yearly_analysis(dataset: &Dataset, year: i32) -> Result<Value, ApiError> 
   7. `frontend/vite.config.js`
   8. `frontend/src/views/Home.vue`（隐私文案两处 + 首页自适应布局，见技术方案 03 §11.8）
 - 8 个之外，其余 9 个页面、3 个公共组件、4 个 Pinia store、`main.css` 保持冻结。
-- 基线脚本 `scripts/check-frontend-baseline.mjs` 额外放行六类非页面源码：`frontend/public/vendor/`（离线图标）、`vitest.config.js` / `*.test.js`（测试）、`package.json`（测试依赖）、`frontend/public/images/logo_128.png` 与 `frontend/public/favicon.png`（品牌资源）、`frontend/src/assets/styles/main.css`（仅字号/字重 token）、`frontend/public/images/claw/`（小遥Claw 接入实操截图）。
+- 基线脚本 `scripts/check-frontend-baseline.mjs` 额外放行若干类非页面源码：`frontend/public/vendor/`（离线图标）、`vitest.config.js` / `*.test.js`（测试）、`package.json`（测试依赖）、`frontend/public/images/logo_128.png` 与 `frontend/public/favicon.png`（品牌资源）、`frontend/src/assets/styles/main.css`（仅字号/字重 token）、`frontend/public/images/claw/`（小遥Claw 接入实操截图）、`frontend/src/components/SharePoster.vue` 与 `frontend/src/utils/sharePoster.js`（分享海报）。
 - 不新增前端依赖（`@tauri-apps/api`、dialog、opener、`lucide-vue-next` 除外）。
 - 新增样式写在对应 `<style scoped>` 内，不改全局主题。
 - 视觉与 Web 版保持一致；不擅自重设计。
@@ -408,7 +408,7 @@ npm run tauri build -- --bundles nsis
 - [ ] **UI 自动验收通过**（有 UI 时）：Playwright 核心路径 + 截图/日志；无 UI 时已说明并给出 API/CLI 验证结果。
 - [ ] 错误路径有中文文案，形状与 Python 一致。
 - [ ] 单元测试 / golden 对账通过。
-- [ ] 前端改动只在 7 个允许文件内。
+- [ ] 前端改动只在允许清单内（8 个适配文件 + 基线脚本登记例外）。
 - [ ] 审计覆盖新增写操作。
 - [ ] 已提交代码，提交信息包含功能范围与验收命令。
 - [ ] 已更新 `docs/04-开发任务清单.md` 与 `docs/开发进度.md`。

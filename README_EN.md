@@ -33,6 +33,7 @@ Xiaoyao Private Bill Analyzer – Desktop is a **privacy-first** personal bill a
 - 🤖 **Agent-callable** – 14 built-in MCP tools for natural-language bill queries and analysis
 - 🖥️ **Desktop-native** – custom title bar, collapsible sidebar, system tray, single instance, window-state memory, drag-and-drop import
 - 🗑️ **Recoverable deletes** – trash, snapshots, and an audit log reduce accidental-loss risk
+- 🖼️ **One-click share poster** – a 1080×1440 yearly poster with the official-site QR code, with optional amount masking
 - 🧬 **Same origin as the Web edition** – identical visuals and statistics as the [Web edition](https://github.com/dtsola/xiaoyaoprivatebill)
 
 ---
@@ -111,6 +112,21 @@ Xiaoyao Private Bill Analyzer – Desktop is a **privacy-first** personal bill a
 <li>📊 Yearly income, expense, balance, transaction count, and year-over-year change</li>
 <li>📈 12-month expense trend with income toggle</li>
 <li>🥧 Category share and source breakdown</li>
+</ul>
+</td>
+</tr>
+</table>
+
+### Share Poster - Ready to Post
+
+<table>
+<tr>
+<td width="50%"><img src="docs/产品文档/产品截图/10-分享海报.png" alt="Share poster"></td>
+<td width="50%">
+<ul>
+<li>🖼️ Generate a 1080×1440 poster from the yearly overview in one click</li>
+<li>🔒 Hide amounts before sharing so sensitive numbers never appear in the image</li>
+<li>📱 The poster carries the official-site QR code, ready for WeChat Moments or Xiaohongshu</li>
 </ul>
 </td>
 </tr>
