@@ -213,10 +213,23 @@ describe('月度模型', () => {
 })
 
 describe('模板与金额开关', () => {
-  it('内置三套模板且 id 唯一', () => {
-    expect(POSTER_THEMES).toHaveLength(3)
-    expect(new Set(POSTER_THEMES.map((theme) => theme.id)).size).toBe(3)
-    expect(POSTER_THEMES.map((theme) => theme.name)).toEqual(['晴空', '墨夜', '暖阳'])
+  it('内置八套模板且 id 唯一', () => {
+    expect(POSTER_THEMES).toHaveLength(8)
+    expect(new Set(POSTER_THEMES.map((theme) => theme.id)).size).toBe(8)
+    expect(POSTER_THEMES.map((theme) => theme.name)).toEqual([
+      '晴空',
+      '墨夜',
+      '暖阳',
+      '薄荷',
+      '樱花',
+      '深海',
+      '拿铁',
+      '极简'
+    ])
+    POSTER_THEMES.forEach((theme) => {
+      expect(theme.page).toHaveLength(3)
+      expect(theme.palette).toHaveLength(5)
+    })
   })
 
   it('金额开关覆盖全部可隐藏字段且默认全开', () => {

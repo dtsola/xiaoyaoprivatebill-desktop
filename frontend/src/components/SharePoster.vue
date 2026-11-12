@@ -355,8 +355,8 @@ onMounted(async () => {
 
 .theme-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
 }
 
 .theme-card {
@@ -364,9 +364,9 @@ onMounted(async () => {
   flex-direction: column;
   gap: 6px;
   align-items: center;
-  padding: 8px 6px 7px;
+  padding: 6px 4px 5px;
   border: 1.5px solid var(--border-color, #e5e5ea);
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--card-bg, #fff);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -383,12 +383,12 @@ onMounted(async () => {
 
 .theme-swatch {
   width: 100%;
-  height: 34px;
-  border-radius: 8px;
+  height: 28px;
+  border-radius: 7px;
 }
 
 .theme-name {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-color, #1c1c1e);
 }
 

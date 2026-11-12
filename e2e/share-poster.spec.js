@@ -46,6 +46,21 @@ test('侧边栏入口：分享海报位于第二项并打开独立页面', async
 
   await page.screenshot({ path: 'artifacts/ui/share-poster/page.png', fullPage: true })
 
+  // 8 套模板都应可切换，并保存一套深色之外的新模板供人工检查
+  for (const name of ['墨夜', '暖阳', '薄荷', '樱花', '深海', '拿铁', '极简']) {
+    await page.locator('.theme-card', { hasText: name }).click()
+    await expect(page.locator('.theme-card', { hasText: name })).toHaveClass(/active/)
+  }
+  const monoImage = await page.evaluate(() =>
+    document.querySelector('.share-poster-content canvas').toDataURL('image/png')
+  )
+  fs.mkdirSync('artifacts/ui/share-poster', { recursive: true })
+  fs.writeFileSync(
+    'artifacts/ui/share-poster/theme-mono.png',
+    Buffer.from(monoImage.split(',')[1], 'base64')
+  )
+  await page.locator('.theme-card', { hasText: '晴空' }).click()
+
   await page.getByRole('button', { name: '保存图片' }).click()
   const saved = await page.evaluate(() => window.__TAURI_TEST_SAVED_POSTER)
   expect(saved?.pngBase64?.startsWith('iVBORw0KGgo')).toBe(true)
@@ -76,7 +91,7 @@ test('分享海报：月度筛选、模板切换与单项金额开关', async ({
     document.querySelector('.share-poster-content canvas').toDataURL('image/png')
   )
 
-  await expect(page.locator('.theme-card')).toHaveCount(3)
+  await expect(page.locator('.theme-card')).toHaveCount(8)
   await page.getByRole('tab', { name: '月度账单' }).click()
   await expect(page.getByLabel('选择月份')).toHaveValue('2024-12')
   await expect(page.locator('.poster-loading')).toHaveCount(0, { timeout: 10_000 })
