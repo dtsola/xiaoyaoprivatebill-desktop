@@ -303,7 +303,7 @@ Write operations are guarded: `import_bill` only accepts absolute paths up to 16
 
 ## 5. Installation
 
-> Installers are not published yet. The release information below depends on the P6 packaging result. For now, please [build from source](#9-development--build).
+> Installers are not published yet. The release information below depends on the P6 packaging result. For now, please [build from source](#7-development--build).
 
 ### 5.1 Windows 10 / 11 (x64)
 
@@ -381,33 +381,9 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 
 ---
 
-## 7. Privacy
+## 7. Development & Build
 
-| Item | Description |
-|---|---|
-| Network requests | The app itself makes no outbound requests; no telemetry, crash reports, or auto-update |
-| Fonts and icons | Fonts and Lucide icons are bundled locally without a CDN; Alipay / WeChat / Bilibili brand icons are local too |
-| Data storage | Stored only in the local app data directory; never uploaded to a server |
-| Data cleanup | Deletes go to trash; clearing takes a snapshot first; the audit log records writes; all cleanup is manual |
-| External links | Links such as About the Author open in the system browser |
-| MCP | Disabled by default; loopback only; Bearer token; write auditing; whether data leaves the machine is up to the caller |
-| Uninstall | Does not delete the data directory; remove it manually if needed |
-
----
-
-## 8. Migrating from the Web Edition
-
-- The desktop edition is a **separate product**; it does not read or migrate the Web edition's data directory.
-- Visuals and statistical definitions are aligned, including known defects (such as Alipay refund handling).
-- To migrate, simply re-import the original bill files into the desktop edition.
-- The Web edition is frozen and receives security fixes only; new features ship in the desktop edition.
-- Web edition source: [dtsola/xiaoyaoprivatebill](https://github.com/dtsola/xiaoyaoprivatebill).
-
----
-
-## 9. Development & Build
-
-### 9.1 Prerequisites
+### 7.1 Prerequisites
 
 | Tool | Version |
 |---|---|
@@ -418,7 +394,7 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 | WebView2 | Windows 10 / 11 |
 | Python | 3.10 (golden reconciliation only; not shipped) |
 
-### 9.2 Local Development
+### 7.2 Local Development
 
 ```bash
 # 1. Clone the repository
@@ -436,7 +412,7 @@ npm run tauri dev
 npm --prefix frontend run dev
 ```
 
-### 9.3 Build Installers
+### 7.3 Build Installers
 
 ```bash
 # Build the frontend
@@ -449,7 +425,7 @@ npm run tauri build
 
 macOS builds run per architecture in GitHub Actions and produce `x86_64.dmg` and `aarch64.dmg`; the workflow is `.github/workflows/macos-build.yml`.
 
-### 9.4 Quality and Reconciliation
+### 7.4 Quality and Reconciliation
 
 ```bash
 cargo fmt --check
@@ -471,7 +447,7 @@ Only 8 adaptation files and 9 icon-migration files may change in the frontend; a
 
 ---
 
-## 10. Documentation
+## 8. Documentation
 
 | Document | Description |
 |---|---|
@@ -486,7 +462,7 @@ Only 8 adaptation files and 9 icon-migration files may change in the frontend; a
 
 ---
 
-## 11. Acknowledgments
+## 9. Acknowledgments
 
 - The frontend and product design originate from [dtsola/xiaoyaoprivatebill](https://github.com/dtsola/xiaoyaoprivatebill) (Web edition, frozen).
 - The Web edition was originally refactored from [alipay_record_analysis](https://github.com/Hessel2333/alipay_record_analysis); thanks to **Hessel2333**.
@@ -495,7 +471,7 @@ Only 8 adaptation files and 9 icon-migration files may change in the frontend; a
 
 ---
 
-## 12. Contributing
+## 10. Contributing
 
 Contributions, issue reports, and suggestions are welcome.
 
@@ -526,7 +502,7 @@ node scripts/check-frontend-baseline.mjs
 
 ---
 
-## 13. License & Contact
+## 11. License & Contact
 
 This project is licensed under the [MIT License](LICENSE).
 

@@ -303,7 +303,7 @@
 
 ## 5. 安装
 
-> 安装包尚未发布。以下发布信息以 P6 打包结果为准；当前请直接[从源码构建](#9-开发构建)。
+> 安装包尚未发布。以下发布信息以 P6 打包结果为准；当前请直接[从源码构建](#7-开发构建)。
 
 ### 5.1 Windows 10 / 11（x64）
 
@@ -381,33 +381,9 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 
 ---
 
-## 7. 隐私说明
+## 7. 开发构建
 
-| 项 | 说明 |
-|---|---|
-| 网络请求 | 应用本身不发起任何出站请求；无遥测、无崩溃上报、无自动更新 |
-| 字体与图标 | 字体与 Lucide 图标本地打包，不加载 CDN；支付宝 / 微信 / Bilibili 品牌图标同样本地化 |
-| 数据存储 | 仅保存在本机应用数据目录；不上传任何服务器 |
-| 数据清理 | 删除进入回收站；清空前自动快照；审计日志记录写操作；均需手动清理 |
-| 外链 | 关于作者等外链交给系统浏览器打开 |
-| MCP | 默认关闭；仅回环；Bearer Token；写操作审计；是否让数据离开本机由调用方决定 |
-| 卸载 | 不删除数据目录；需要时手动删除 |
-
----
-
-## 8. 从 Web 版迁移
-
-- 桌面版是**独立产品**，不读取、不迁移 Web 版的数据目录。
-- 两个版本的视觉与统计口径对齐，包括已知缺陷（如支付宝退款判定）。
-- 迁移方式：在桌面版重新导入原始账单文件即可。
-- Web 版已冻结，仅修复安全问题；新功能只进桌面版。
-- 同源 Web 版：[dtsola/xiaoyaoprivatebill](https://github.com/dtsola/xiaoyaoprivatebill)。
-
----
-
-## 9. 开发构建
-
-### 9.1 前置要求
+### 7.1 前置要求
 
 | 工具 | 版本 |
 |---|---|
@@ -418,7 +394,7 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 | WebView2 | Windows 10 / 11 |
 | Python | 3.10（仅 golden 对账，不进入产物） |
 
-### 9.2 本地开发
+### 7.2 本地开发
 
 ```bash
 # 1. 克隆仓库
@@ -436,7 +412,7 @@ npm run tauri dev
 npm --prefix frontend run dev
 ```
 
-### 9.3 构建安装包
+### 7.3 构建安装包
 
 ```bash
 # 构建前端
@@ -449,7 +425,7 @@ npm run tauri build
 
 macOS 通过 GitHub Actions 分架构构建，产物为 `x86_64.dmg` 与 `aarch64.dmg`，工作流文件为 `.github/workflows/macos-build.yml`。
 
-### 9.4 质量与对账
+### 7.4 质量与对账
 
 ```bash
 cargo fmt --check
@@ -471,7 +447,7 @@ node scripts/check-frontend-baseline.mjs
 
 ---
 
-## 10. 文档
+## 8. 文档
 
 | 文档 | 说明 |
 |---|---|
@@ -486,7 +462,7 @@ node scripts/check-frontend-baseline.mjs
 
 ---
 
-## 11. 致谢
+## 9. 致谢
 
 - 本项目的前端与产品设计同源于 [dtsola/xiaoyaoprivatebill](https://github.com/dtsola/xiaoyaoprivatebill)（Web 版，已冻结）。
 - Web 版最初重构自 [alipay_record_analysis](https://github.com/Hessel2333/alipay_record_analysis)，感谢原作者 **Hessel2333**。
@@ -495,7 +471,7 @@ node scripts/check-frontend-baseline.mjs
 
 ---
 
-## 12. 贡献指南
+## 10. 贡献指南
 
 欢迎贡献代码、报告问题或提出建议。
 
@@ -526,7 +502,7 @@ node scripts/check-frontend-baseline.mjs
 
 ---
 
-## 13. 许可证与联系
+## 11. 许可证与联系
 
 本项目采用 [MIT 许可证](LICENSE)。
 
