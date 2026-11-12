@@ -303,13 +303,17 @@
 
 ## 5. 安装
 
-> 安装包尚未发布。以下发布信息以 P6 打包结果为准；当前请直接[从源码构建](#7-开发构建)。
+> **未签名提示**：当前 Windows 与 macOS 安装包均未做代码签名 / 公证，系统可能弹出安全提示。Windows 选择「更多信息 → 仍要运行」；macOS 右键应用选择「打开」，或到「系统设置 → 隐私与安全性 → 仍要打开」。这是开源项目未购买签名证书时的正常提示，不影响应用功能。
+
+> 安装包尚未发布到 GitHub Releases。以下发布信息以 P6 打包结果为准；当前请直接[从源码构建](#7-开发构建)。
 
 ### 5.1 Windows 10 / 11（x64）
 
 1. 从 [GitHub Releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases) 下载 `*-setup.exe`。
 2. 双击安装，按向导完成；安装范围为当前用户，无需管理员权限。
 3. 从开始菜单启动「XiaoyaoBillDesktop」（小遥账单桌面版）。
+
+> **SmartScreen 提示**：若出现「Windows 已保护你的电脑」，点击「更多信息」→「仍要运行」。发布者显示为「未知发布者」属于未签名安装包的正常现象；SmartScreen 会记住该选择，后续启动不再提示。
 
 > Windows 10 若未安装 WebView2，安装器会联网自动下载并安装（Windows 11 自带）。若自动安装失败，可手动安装 [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)。
 

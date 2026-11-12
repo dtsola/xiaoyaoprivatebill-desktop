@@ -303,13 +303,17 @@ Write operations are guarded: `import_bill` only accepts absolute paths up to 16
 
 ## 5. Installation
 
-> Installers are not published yet. The release information below depends on the P6 packaging result. For now, please [build from source](#7-development--build).
+> **Unsigned build notice**: the Windows and macOS installers are not code-signed or notarized yet, so the OS may show a security prompt. On Windows choose **More info → Run anyway**; on macOS right-click the app and choose **Open**, or use **System Settings → Privacy & Security → Open Anyway**. This is expected for an open-source project without a paid signing certificate and does not affect app functionality.
+
+> Installers are not published to GitHub Releases yet. The release information below depends on the P6 packaging result. For now, please [build from source](#7-development--build).
 
 ### 5.1 Windows 10 / 11 (x64)
 
 1. Download `*-setup.exe` from [GitHub Releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases).
 2. Run the installer and follow the wizard. It installs per-user and does not require administrator rights.
 3. Launch **XiaoyaoBillDesktop** from the Start menu.
+
+> **SmartScreen notice**: if you see “Windows protected your PC”, click **More info → Run anyway**. An “Unknown publisher” label is expected for an unsigned installer; SmartScreen remembers the choice and will not prompt again.
 
 > On Windows 10, if WebView2 is missing, the installer downloads and installs it automatically (Windows 11 includes it). If that fails, install the [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) manually.
 
