@@ -37,7 +37,37 @@
 
 ---
 
-## 2. 功能预览
+## 2. 作者介绍
+
+<p align="center">
+  <img src="docs/产品文档/产品截图/作者头像.jpg" alt="dtsola" width="120" height="120" style="border-radius: 50%;">
+</p>
+
+<p align="center">
+  <b>dtsola</b> — IT 解决方案架构师 | 一人公司实践者
+</p>
+
+<p align="center">
+  🌐 <a href="https://www.dtsola.com">个人站点</a> &nbsp;|&nbsp;
+  📺 <a href="https://space.bilibili.com/736015">B站</a> &nbsp;|&nbsp;
+  💬 微信：dtsola（技术交流 | 商务合作）
+</p>
+
+<p align="center">
+  <img src="docs/产品文档/产品截图/个人二维码.png" alt="微信二维码" width="120">
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="docs/运营文档/开发者交流群图.png" alt="开发者交流群" width="120">
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="docs/运营文档/用户交流群图.png" alt="用户交流群" width="120">
+</p>
+
+<p align="center">
+  <small>微信联系 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 开发者交流群 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 用户交流群</small>
+</p>
+
+---
+
+## 3. 功能预览
 
 > 以下截图均来自桌面版实机运行，演示数据共 7,396 条。
 
@@ -165,7 +195,7 @@
 
 ---
 
-## 3. AI Agent 接入（以小遥Claw 为例）
+## 4. AI Agent 接入（以小遥Claw 为例）
 
 <p align="center">
   <a href="https://www.xiaoyaosai.com/xiaoyaoclaw/"><img src="docs/产品文档/logos/xiaoyaoclaw-logo-full.png" alt="小遥Claw" width="220"></a>
@@ -177,7 +207,7 @@
 
 **小遥Claw 官网**：<https://www.xiaoyaosai.com/xiaoyaoclaw/>
 
-### 3.1 在应用中开启 MCP
+### 4.1 在应用中开启 MCP
 
 1. 打开侧边栏「**AI Agent 接入**」。
 2. 打开 MCP 开关，状态显示「运行中」。
@@ -198,7 +228,7 @@
 }
 ```
 
-### 3.2 在小遥Claw 中添加服务
+### 4.2 在小遥Claw 中添加服务
 
 <table>
 <tr>
@@ -214,7 +244,7 @@
 </tr>
 </table>
 
-### 3.3 测试连接
+### 4.3 测试连接
 
 <table>
 <tr>
@@ -229,7 +259,7 @@
 </tr>
 </table>
 
-### 3.4 用自然语言分析账单
+### 4.4 用自然语言分析账单
 
 在小遥Claw 中直接提问，例如「帮我分析一下我的小遥账单」：
 
@@ -252,7 +282,7 @@
 
 > 图中为演示数据。导入真实账单后，Agent 读取到的即为你本机的最新数据；若当前处于演示模式，Agent 会提示 `is_demo = true`。
 
-### 3.5 14 个 MCP 工具
+### 4.5 14 个 MCP 工具
 
 | 类型 | 工具 |
 |---|---|
@@ -261,7 +291,7 @@
 
 写操作有护栏：`import_bill` 仅接受绝对路径且 ≤16MB；`delete_bill` 软删除到回收站；`clear_data` 必须先快照；所有写操作写入审计日志。演示模式下禁止一切写操作。
 
-### 3.6 安全提示
+### 4.6 安全提示
 
 - Token 为 32 字节随机数，可在应用内重新生成；重新生成后旧连接立即失效。
 - 服务只监听 `127.0.0.1`，不监听局域网或公网。
@@ -271,11 +301,11 @@
 
 ---
 
-## 4. 安装
+## 5. 安装
 
-> 安装包尚未发布。以下发布信息以 P6 打包结果为准；当前请直接[从源码构建](#8-开发构建)。
+> 安装包尚未发布。以下发布信息以 P6 打包结果为准；当前请直接[从源码构建](#9-开发构建)。
 
-### 4.1 Windows 10 / 11（x64）
+### 5.1 Windows 10 / 11（x64）
 
 1. 从 [GitHub Releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases) 下载 `*-setup.exe`。
 2. 双击安装，按向导完成；安装范围为当前用户，无需管理员权限。
@@ -283,7 +313,7 @@
 
 > Windows 10 需要已安装 WebView2 运行时（Windows 11 自带）。若启动失败，请先安装 [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)。
 
-### 4.2 macOS 11+（Intel / Apple Silicon）
+### 5.2 macOS 11+（Intel / Apple Silicon）
 
 1. 从 [GitHub Releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases) 下载对应架构的 `.dmg`：
    - Intel：`*_x64.dmg`
@@ -298,7 +328,7 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 
 > 当前版本**未签名、未公证**，因此会有上述提示。后续版本将补充签名与公证。
 
-### 4.3 系统要求
+### 5.3 系统要求
 
 | 项 | 要求 |
 |---|---|
@@ -307,7 +337,7 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 | 磁盘 | 安装包约 20MB；数据目录随账单增长 |
 | 网络 | **不需要**；断网可完整使用 |
 
-### 4.4 数据目录与卸载
+### 5.4 数据目录与卸载
 
 | 平台 | 数据目录 |
 |---|---|
@@ -319,9 +349,9 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 
 ---
 
-## 5. 快速开始
+## 6. 快速开始
 
-### 5.1 获取账单文件
+### 6.1 获取账单文件
 
 **支付宝账单**：
 
@@ -336,14 +366,14 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 2. 点击「常见问题」→ 下载账单。
 3. 选择时间范围 → 输入邮箱 → 选择 CSV 或 XLSX 格式。
 
-### 5.2 导入并分析
+### 6.2 导入并分析
 
 1. 打开应用，点击「上传账单」或进入「设置」。
 2. 在支付宝 / 微信上传区选择文件，或直接把账单拖入窗口。
 3. 等待解析完成；随后可查看年度、月度、分类、时间、洞察与明细。
 4. 如需先体验，点击「查看示例数据」加载内置 7,396 条演示数据。
 
-### 5.3 演示模式
+### 6.3 演示模式
 
 - 演示模式下可浏览全部分析页面。
 - 演示模式下**禁止**导入、删除、清空，以及所有 MCP 写操作。
@@ -351,7 +381,7 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 
 ---
 
-## 6. 隐私说明
+## 7. 隐私说明
 
 | 项 | 说明 |
 |---|---|
@@ -365,7 +395,7 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 
 ---
 
-## 7. 从 Web 版迁移
+## 8. 从 Web 版迁移
 
 - 桌面版是**独立产品**，不读取、不迁移 Web 版的数据目录。
 - 两个版本的视觉与统计口径对齐，包括已知缺陷（如支付宝退款判定）。
@@ -375,9 +405,9 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 
 ---
 
-## 8. 开发构建
+## 9. 开发构建
 
-### 8.1 前置要求
+### 9.1 前置要求
 
 | 工具 | 版本 |
 |---|---|
@@ -388,7 +418,7 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 | WebView2 | Windows 10 / 11 |
 | Python | 3.10（仅 golden 对账，不进入产物） |
 
-### 8.2 本地开发
+### 9.2 本地开发
 
 ```bash
 # 1. 克隆仓库
@@ -406,7 +436,7 @@ npm run tauri dev
 npm --prefix frontend run dev
 ```
 
-### 8.3 构建安装包
+### 9.3 构建安装包
 
 ```bash
 # 构建前端
@@ -419,7 +449,7 @@ npm run tauri build
 
 macOS 通过 GitHub Actions 分架构构建，产物为 `x86_64.dmg` 与 `aarch64.dmg`，工作流文件为 `.github/workflows/macos-build.yml`。
 
-### 8.4 质量与对账
+### 9.4 质量与对账
 
 ```bash
 cargo fmt --check
@@ -441,7 +471,7 @@ node scripts/check-frontend-baseline.mjs
 
 ---
 
-## 9. 文档
+## 10. 文档
 
 | 文档 | 说明 |
 |---|---|
@@ -456,7 +486,7 @@ node scripts/check-frontend-baseline.mjs
 
 ---
 
-## 10. 致谢
+## 11. 致谢
 
 - 本项目的前端与产品设计同源于 [dtsola/xiaoyaoprivatebill](https://github.com/dtsola/xiaoyaoprivatebill)（Web 版，已冻结）。
 - Web 版最初重构自 [alipay_record_analysis](https://github.com/Hessel2333/alipay_record_analysis)，感谢原作者 **Hessel2333**。
@@ -465,7 +495,7 @@ node scripts/check-frontend-baseline.mjs
 
 ---
 
-## 11. 贡献指南
+## 12. 贡献指南
 
 欢迎贡献代码、报告问题或提出建议。
 
@@ -496,36 +526,9 @@ node scripts/check-frontend-baseline.mjs
 
 ---
 
-## 12. 许可证与联系
+## 13. 许可证与联系
 
 本项目采用 [MIT 许可证](LICENSE)。
-
-<p align="center">
-  <img src="docs/产品文档/产品截图/作者头像.jpg" alt="dtsola" width="100" height="100" style="border-radius: 50%;">
-</p>
-
-<p align="center">
-  <b>dtsola</b> — IT 解决方案架构师 | 一人公司实践者
-</p>
-
-<p align="center">
-  🌐 <a href="https://www.dtsola.com">个人站点</a> &nbsp;|&nbsp;
-  🏠 <a href="https://www.xiaoyaosai.com/">小遥官网</a> &nbsp;|&nbsp;
-  📺 <a href="https://space.bilibili.com/736015">B站</a> &nbsp;|&nbsp;
-  💬 微信：dtsola（技术交流 | 商务合作）
-</p>
-
-<p align="center">
-  <img src="docs/产品文档/产品截图/个人二维码.png" alt="微信二维码" width="110">
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="docs/运营文档/开发者交流群图.png" alt="开发者交流群" width="110">
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="docs/运营文档/用户交流群图.png" alt="用户交流群" width="110">
-</p>
-
-<p align="center">
-  <small>微信联系 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 开发者交流群 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 用户交流群</small>
-</p>
 
 - 产品官网：[xiaoyaosai.com/xiaoyaoprivatebill-desktop](https://www.xiaoyaosai.com/xiaoyaoprivatebill-desktop/)
 - 小遥Claw：[xiaoyaosai.com/xiaoyaoclaw](https://www.xiaoyaosai.com/xiaoyaoclaw/)
