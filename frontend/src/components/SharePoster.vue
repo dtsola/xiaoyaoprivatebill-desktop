@@ -31,36 +31,69 @@
           </div>
 
           <aside v-if="inline" class="share-side">
-            <h2 class="share-side-title">把这一年的账单，<br />变成一张海报</h2>
+            <h2 class="share-side-title">把账单变成<br />一张海报</h2>
             <p class="share-side-subtitle">1080×1440 竖版，适合发朋友圈、小红书。</p>
 
-            <ul class="share-points">
-              <li>年度收支、月度趋势与消费 TOP 5</li>
-              <li>可隐藏金额，只保留分类占比</li>
-              <li>自带产品官网二维码，扫码即可了解</li>
-            </ul>
+            <section class="share-section">
+              <h3 class="share-section-title">海报模板</h3>
+              <div class="theme-grid">
+                <button
+                  v-for="theme in POSTER_THEMES"
+                  :key="theme.id"
+                  type="button"
+                  class="theme-card"
+                  :class="{ active: selectedTheme === theme.id }"
+                  :title="theme.description"
+                  @click="selectTheme(theme.id)"
+                >
+                  <span
+                    class="theme-swatch"
+                    :style="{ background: `linear-gradient(135deg, ${theme.swatch[0]}, ${theme.swatch[1]})` }"
+                  ></span>
+                  <span class="theme-name">{{ theme.name }}</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="share-section">
+              <div class="share-section-head">
+                <h3 class="share-section-title">金额显示</h3>
+                <button type="button" class="link-btn" @click="toggleHideAmounts">
+                  {{ allAmountsVisible ? '全部隐藏' : '全部显示' }}
+                </button>
+              </div>
+              <div class="amount-switches">
+                <button
+                  v-for="field in AMOUNT_FIELDS"
+                  :key="field.key"
+                  type="button"
+                  class="switch-row"
+                  :class="{ on: visibility[field.key] }"
+                  :aria-pressed="visibility[field.key]"
+                  @click="toggleAmount(field.key)"
+                >
+                  <span>{{ field.label }}</span>
+                  <span class="switch-track"><span class="switch-thumb"></span></span>
+                </button>
+              </div>
+            </section>
 
             <div class="share-actions">
-              <button type="button" class="ghost-btn" @click="toggleHideAmounts">
-                <Eye v-if="hideAmounts" :size="16" />
-                <EyeOff v-else :size="16" />
-                {{ hideAmounts ? '显示金额' : '隐藏金额' }}
-              </button>
-              <button type="button" class="primary-btn" :disabled="saving || !ready" @click="savePoster">
+              <button type="button" class="primary-btn block-btn" :disabled="saving || !ready" @click="savePoster">
                 <Download :size="16" />
                 {{ saving ? '保存中...' : '保存图片' }}
               </button>
             </div>
 
-            <p class="share-tip">图片完全在本机生成；担心隐私时可先隐藏金额再保存。</p>
+            <p class="share-tip">图片完全在本机生成；二维码指向产品官网。</p>
           </aside>
         </div>
 
         <footer v-if="!inline" class="share-actions">
           <button type="button" class="ghost-btn" @click="toggleHideAmounts">
-            <Eye v-if="hideAmounts" :size="16" />
+            <Eye v-if="allAmountsVisible" :size="16" />
             <EyeOff v-else :size="16" />
-            {{ hideAmounts ? '显示金额' : '隐藏金额' }}
+            {{ allAmountsVisible ? '隐藏金额' : '显示金额' }}
           </button>
           <button type="button" class="primary-btn" :disabled="saving || !ready" @click="savePoster">
             <Download :size="16" />
@@ -75,14 +108,17 @@
 </template>
 
 <script setup>
-import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { Download, Eye, EyeOff, X } from 'lucide-vue-next'
 import { save } from '@tauri-apps/plugin-dialog'
 
 import api from '@/api/client'
 import { useUiStore } from '@/stores/ui'
 import {
+  AMOUNT_FIELDS,
+  DEFAULT_AMOUNT_VISIBILITY,
   POSTER_HEIGHT,
+  POSTER_THEMES,
   POSTER_WIDTH,
   buildPosterModel,
   drawSharePoster
@@ -91,6 +127,8 @@ import {
 const props = defineProps({
   data: { type: Object, required: true },
   year: { type: [String, Number], required: true },
+  period: { type: String, default: 'year' },
+  month: { type: [String, Number], default: '' },
   isDemo: { type: Boolean, default: false },
   // 页面内嵌模式：不显示遮罩与关闭按钮，由页面提供标题与年份切换
   inline: { type: Boolean, default: false }
@@ -102,7 +140,11 @@ const uiStore = useUiStore()
 const canvasRef = ref(null)
 const ready = ref(false)
 const saving = ref(false)
-const hideAmounts = ref(false)
+const selectedTheme = ref(POSTER_THEMES[0].id)
+const visibility = reactive({ ...DEFAULT_AMOUNT_VISIBILITY })
+const allAmountsVisible = computed(() =>
+  AMOUNT_FIELDS.every((field) => visibility[field.key])
+)
 
 let logo = null
 let qr = null
@@ -135,15 +177,36 @@ function render() {
   const context = canvas.getContext('2d')
   drawSharePoster(
     context,
-    buildPosterModel(props.data, props.year),
+    buildPosterModel(props.data, {
+      period: props.period,
+      year: props.year,
+      month: props.month
+    }),
     { logo, qr },
-    { hideAmounts: hideAmounts.value, isDemo: props.isDemo }
+    {
+      theme: selectedTheme.value,
+      visibility,
+      isDemo: props.isDemo
+    }
   )
   ready.value = true
 }
 
 function toggleHideAmounts() {
-  hideAmounts.value = !hideAmounts.value
+  const next = !allAmountsVisible.value
+  AMOUNT_FIELDS.forEach((field) => {
+    visibility[field.key] = next
+  })
+  render()
+}
+
+function selectTheme(id) {
+  selectedTheme.value = id
+  render()
+}
+
+function toggleAmount(key) {
+  visibility[key] = !visibility[key]
   render()
 }
 
@@ -445,6 +508,136 @@ onUnmounted(() => {
   font-size: 14px;
   line-height: 1.5;
   color: var(--text-color, #1c1c1e);
+}
+
+.share-section {
+  margin-bottom: 20px;
+}
+
+.share-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.share-section-head .share-section-title {
+  margin-bottom: 0;
+}
+
+.share-section-title {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--secondary-text, #6e6e73);
+}
+
+.link-btn {
+  padding: 0;
+  border: none;
+  background: none;
+  color: #007aff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.theme-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 6px 7px;
+  border: 1.5px solid var(--border-color, #e5e5ea);
+  border-radius: 12px;
+  background: var(--card-bg, #fff);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-card:hover {
+  border-color: rgba(0, 122, 255, 0.4);
+}
+
+.theme-card.active {
+  border-color: #007aff;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.12);
+}
+
+.theme-swatch {
+  width: 100%;
+  height: 34px;
+  border-radius: 8px;
+}
+
+.theme-name {
+  font-size: 12px;
+  color: var(--text-color, #1c1c1e);
+}
+
+.theme-card.active .theme-name {
+  color: #007aff;
+  font-weight: 600;
+}
+
+.amount-switches {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 7px 2px;
+  border: none;
+  background: none;
+  font-size: 13px;
+  color: var(--text-color, #1c1c1e);
+  cursor: pointer;
+}
+
+.switch-track {
+  position: relative;
+  flex: none;
+  width: 38px;
+  height: 22px;
+  border-radius: 999px;
+  background: #e2e2e7;
+  transition: background 0.2s ease;
+}
+
+.switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.switch-row.on .switch-track {
+  background: #007aff;
+}
+
+.switch-row.on .switch-thumb {
+  transform: translateX(16px);
+}
+
+.block-btn {
+  width: 100%;
+  justify-content: center;
 }
 
 .share-points li::before {

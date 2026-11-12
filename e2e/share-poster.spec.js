@@ -13,6 +13,7 @@ const fixtures = {
   '/categories': read('categories.json'),
   '/category_available_dates': read('category_available_dates.json'),
   '/yearly_analysis': read('yearly_analysis_2024.json'),
+  '/monthly_analysis': read('monthly_analysis_2024_12.json'),
   '/files': read('files_empty.json')
 }
 
@@ -103,5 +104,38 @@ test('侧边栏入口：分享海报位于第二项并打开独立页面', async
   const saved = await page.evaluate(() => window.__TAURI_TEST_SAVED_POSTER)
   expect(saved?.pngBase64?.startsWith('iVBORw0KGgo')).toBe(true)
 
+  expect(errors, `控制台错误: ${errors.join(' | ')}`).toEqual([])
+})
+
+test('分享海报：月度筛选、模板切换与单项金额开关', async ({ page }) => {
+  const errors = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text())
+  })
+
+  await page.addInitScript(installTauriMock, fixtures)
+  await page.setViewportSize({ width: 1280, height: 900 })
+  await page.goto('/#/share')
+  await page.waitForTimeout(800)
+
+  await expect(page.locator('.theme-card')).toHaveCount(3)
+  await page.getByRole('tab', { name: '月度账单' }).click()
+  await expect(page.getByLabel('选择月份')).toHaveValue('2024-12')
+  await expect(page.locator('.poster-loading')).toHaveCount(0, { timeout: 10_000 })
+
+  await page.locator('.theme-card', { hasText: '墨夜' }).click()
+  await expect(page.locator('.theme-card', { hasText: '墨夜' })).toHaveClass(/active/)
+
+  const incomeSwitch = page.locator('.switch-row', { hasText: '收入' })
+  await incomeSwitch.click()
+  await expect(incomeSwitch).toHaveAttribute('aria-pressed', 'false')
+
+  await page.screenshot({ path: 'artifacts/ui/share-poster/page-monthly.png', fullPage: true })
+
+  await page.getByRole('button', { name: '保存图片' }).click()
+  const saved = await page.evaluate(() => window.__TAURI_TEST_SAVED_POSTER)
+  expect(saved?.path).toMatch(/\.png$/)
+  expect(saved?.pngBase64?.startsWith('iVBORw0KGgo')).toBe(true)
   expect(errors, `控制台错误: ${errors.join(' | ')}`).toEqual([])
 })
