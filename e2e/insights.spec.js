@@ -13,6 +13,9 @@ test('洞察页加载 /analysis 全量数据并渲染', async ({ page }) => {
   })
 
   await page.goto('/#/insights')
+
+  // 模板里不能残留 innerHTML 用的 ${SVG.*} 占位符
+  await expect(page.locator('.content')).not.toContainText('${SVG.')
   await expect(page.locator('.page-title')).toHaveText('消费洞察')
 
   // 常客商家按金额降序渲染

@@ -144,7 +144,7 @@
 
         <!-- 时间密码 -->
         <div class="viz-section-header">
-          <div class="section-subtitle">${SVG.clock} 时间密码</div>
+          <div class="section-subtitle"><Clock :size="'1em'" /> 时间密码</div>
         </div>
 
         <!-- 河流图 -->
