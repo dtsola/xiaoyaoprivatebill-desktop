@@ -21,13 +21,12 @@ test('AI Agent 接入页可开启、轮换 Token、关闭 MCP 服务', async ({ 
   await expect(page.locator('.mcp-token')).toHaveText('a'.repeat(64))
   await expect(page.locator('.toast-success, .toast').first()).toContainText('MCP 服务已开启')
 
-  // 小遥Claw 完整 JSON 配置：Streamable HTTP + Bearer Token
+  // 小遥Claw 标准 MCP 服务格式：http + url + Bearer Header
   const config = page.locator('.mcp-config-code')
   await expect(config).toBeVisible()
-  await expect(config).toContainText('"transport": "streamable-http"')
+  await expect(config).toContainText('"type": "http"')
   await expect(config).toContainText('"url": "http://127.0.0.1:17650/mcp"')
   await expect(config).toContainText(`"Authorization": "Bearer ${'a'.repeat(64)}"`)
-  await expect(page.locator('.mcp-config')).toContainText('~/.openclaw/openclaw.json')
 
   await page.getByRole('button', { name: '重新生成 Token' }).click()
   await expect(page.locator('.mcp-token')).toHaveText('b'.repeat(64))

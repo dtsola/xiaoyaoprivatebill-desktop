@@ -206,7 +206,7 @@
           </div>
           <pre class="mcp-config-code">{{ mcpConfigJson }}</pre>
           <p class="mcp-hint">
-            粘贴到 小遥Claw 的 ~/.openclaw/openclaw.json 中，保存后新开一个会话即可看到账单工具。
+            复制后在小遥Claw 中添加 MCP 服务（JSON 格式），保存后新开一个会话即可看到账单工具。
           </p>
         </div>
         <p v-if="mcp.last_error" class="mcp-error">{{ mcp.last_error }}</p>
@@ -409,20 +409,14 @@ async function copyToken() {
   }
 }
 
-// 小遥Claw（OpenClaw）MCP 客户端配置：Streamable HTTP + Bearer Token
+// 小遥Claw 标准 MCP 服务格式：http 传输 + Bearer Token
 const mcpConfigJson = computed(() =>
   JSON.stringify(
     {
-      mcp: {
-        servers: {
-          'xiaoyao-bill': {
-            url: mcp.value.endpoint,
-            transport: 'streamable-http',
-            headers: {
-              Authorization: `Bearer ${mcp.value.token}`
-            }
-          }
-        }
+      type: 'http',
+      url: mcp.value.endpoint,
+      headers: {
+        Authorization: `Bearer ${mcp.value.token}`
       }
     },
     null,
