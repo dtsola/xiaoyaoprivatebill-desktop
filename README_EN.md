@@ -137,7 +137,7 @@ Xiaoyao Private Bill Analyzer – Desktop is a **privacy-first** personal bill a
 <td width="50%">
 <ul>
 <li>🌙 Monthly scope: daily spending trend plus the month's top 5 categories</li>
-<li>🎨 Switch between Ink, Sunset, and Sky themes in one click</li>
+<li>🎨 8 themes: Sky, Ink, Sunset, Mint, Sakura, Ocean, Latte, and Mono</li>
 <li>🔁 Per-item amount toggles; monthly posters hide income and balance by default</li>
 <li>📅 Partial current months are labelled with the data cutoff date</li>
 </ul>
