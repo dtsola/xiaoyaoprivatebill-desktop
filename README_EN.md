@@ -16,15 +16,13 @@ English | [简体中文](README.md)
   <img src="docs/产品文档/logos/logo-new-1024.png" alt="Xiaoyao Private Bill Analyzer Desktop" width="160">
 </p>
 
-> **Current status**: all v0.1.0 features are implemented. The 27 API endpoints pass golden reconciliation, and the desktop app passes Playwright acceptance and manual testing. Installers (P6) are still being packaged and are not published yet. For now, please [build from source](#8-development--build).
-
 **Product website**: <https://www.xiaoyaosai.com/xiaoyaoprivatebill-desktop/>
 
 ---
 
 ## 1. Introduction
 
-Xiaoyao Private Bill Analyzer – Desktop is a **privacy-first** personal bill analysis tool. It imports Alipay and WeChat bills, parses, aggregates, and visualizes them locally without any server, and ships with a built-in MCP server that **XiaoyaoClaw**, Claude Code, Codex, and other AI agents can call directly.
+Xiaoyao Private Bill Analyzer – Desktop is a **privacy-first** personal bill analysis tool. It imports Alipay and WeChat bills, parses, aggregates, and visualizes them locally without any server, and ships with a built-in MCP server that **XiaoyaoClaw** can call directly for natural-language bill analysis.
 
 **Key features**:
 
@@ -169,7 +167,15 @@ Xiaoyao Private Bill Analyzer – Desktop is a **privacy-first** personal bill a
 
 ## 3. AI Agent Integration (with XiaoyaoClaw as an Example)
 
-[XiaoyaoClaw](https://www.xiaoyaosai.com/xiaoyaoclaw/) is a desktop agent that puts an AI assistant on your own computer. Xiaoyao Private Bill Analyzer – Desktop exposes a standard Streamable HTTP MCP server, so XiaoyaoClaw can query local bills and generate analysis reports in natural language.
+<p align="center">
+  <a href="https://www.xiaoyaosai.com/xiaoyaoclaw/"><img src="docs/产品文档/logos/xiaoyaoclaw-logo-full.png" alt="XiaoyaoClaw" width="220"></a>
+</p>
+
+**XiaoyaoClaw** is a desktop agent that puts an AI assistant on your own computer. It runs locally, connects to local tools and data, and completes tasks for you in natural language.
+
+Xiaoyao Private Bill Analyzer – Desktop ships a standard Streamable HTTP MCP server for XiaoyaoClaw. Once enabled, just say "Analyze my Xiaoyao bills for me" and XiaoyaoClaw automatically calls the bill tools, reads yearly, monthly, category, time, and insight data, and generates a structured analysis report. Your bills stay on your computer; whether they are sent to a model is controlled by your XiaoyaoClaw configuration.
+
+**XiaoyaoClaw website**: <https://www.xiaoyaosai.com/xiaoyaoclaw/>
 
 ### 3.1 Enable MCP in the App
 
@@ -246,16 +252,7 @@ Ask XiaoyaoClaw directly, for example: "Analyze my Xiaoyao bills for me."
 
 > The screenshot uses demo data. After importing real bills, the agent reads your latest local data; in demo mode it reports `is_demo = true`.
 
-### 3.5 Other Clients
-
-For Claude Code, add the server from the CLI (config shapes differ between clients; for other clients, use the same URL and header as documented by that client):
-
-```bash
-claude mcp add --transport http xiaoyaobill-mcp http://127.0.0.1:17650/mcp \
-  --header "Authorization: Bearer <TOKEN>"
-```
-
-### 3.6 The 14 MCP Tools
+### 3.5 The 14 MCP Tools
 
 | Type | Tools |
 |---|---|
@@ -264,7 +261,7 @@ claude mcp add --transport http xiaoyaobill-mcp http://127.0.0.1:17650/mcp \
 
 Write operations are guarded: `import_bill` only accepts absolute paths up to 16MB; `delete_bill` moves to trash; `clear_data` takes a snapshot first; every write is recorded in the audit log. All writes are rejected in demo mode.
 
-### 3.7 Security Notes
+### 3.6 Security Notes
 
 - The token is a 32-byte random value and can be regenerated in the app; old connections become invalid immediately.
 - The server binds to `127.0.0.1` only, never to the LAN or the internet.
@@ -456,59 +453,10 @@ Only 8 adaptation files and 9 icon-migration files may change in the frontend; a
 | [Development Schedule](docs/05-开发排期.md) | D1–D22, critical path, risks |
 | [Development Progress](docs/开发进度.md) | Current progress, Web baseline, technical debt |
 | [Architecture Decisions](docs/架构决策/) | Tauri spikes, MCP schema compatibility, and other decision records |
-| [Desktop Research Archive](docs/桌面端-调研方案/) | Feasibility, PRD, prototype/visuals, technical design, implementation steps (read-only) |
 
 ---
 
-## 10. FAQ
-
-### Q: Windows 10 fails to start and reports missing WebView2?
-
-A: Install the [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) and try again. Windows 11 usually includes it.
-
-### Q: macOS says the developer cannot be verified?
-
-A: Right-click the app → **Open**; or go to **System Settings → Privacy & Security** and click **Open Anyway**. You can also run the `xattr` command above.
-
-### Q: MCP fails to start and reports the port is in use?
-
-A: Port `17650` is occupied by another program. Close it and retry, or keep MCP disabled; GUI features are unaffected.
-
-### Q: XiaoyaoClaw says "Connected" but analysis results are empty?
-
-A: First check whether the app has imported real bills. In demo mode the agent reads the built-in demo data and reports `is_demo = true`. If real data is empty, import your Alipay / WeChat bills first.
-
-### Q: XiaoyaoClaw reports a schema error for tools with parameters?
-
-A: Older builds declared `draft 2020-12` in tool schemas, and XiaoyaoClaw's validator did not register that dialect. v0.1.0 removes that declaration (see [AD-20261112-001](docs/架构决策/0002-mcp-tool-schema-compat.md)); use the latest build and re-test the connection after updating.
-
-### Q: What if import fails?
-
-A: Check that:
-- Alipay files are `.csv` with GBK or UTF-8 encoding;
-- WeChat files are `.csv` or `.xlsx`;
-- each file is at most 16MB;
-- **file names use English letters / digits** (Chinese file names may be sanitized and fail detection; this behavior is kept for parity with the Web edition).
-
-### Q: What happens if I import the same bill twice?
-
-A: There is no content-based deduplication; duplicate file names get `_1`, `_2` suffixes, and duplicate transactions are counted again. This is a known behavior kept for parity with the Web edition.
-
-### Q: Is my data uploaded to a server?
-
-A: No. The app itself makes no outbound requests. Only when you enable MCP and let an agent call it can data leave your machine through that agent and its model.
-
-### Q: How do I back up or migrate data?
-
-A: Copy the entire data directory (see [4.4](#44-data-directory-and-uninstall)). `bills/` is the source of truth; `trash/`, `snapshots/`, and `audit.jsonl` hold the trash, snapshots, and audit log.
-
-### Q: Does it support Linux or mobile?
-
-A: No. This release supports Windows 10 / 11 x64 and macOS 11+ only.
-
----
-
-## 11. Acknowledgments
+## 10. Acknowledgments
 
 - The frontend and product design originate from [dtsola/xiaoyaoprivatebill](https://github.com/dtsola/xiaoyaoprivatebill) (Web edition, frozen).
 - The Web edition was originally refactored from [alipay_record_analysis](https://github.com/Hessel2333/alipay_record_analysis); thanks to **Hessel2333**.
@@ -517,7 +465,7 @@ A: No. This release supports Windows 10 / 11 x64 and macOS 11+ only.
 
 ---
 
-## 12. Contributing
+## 11. Contributing
 
 Contributions, issue reports, and suggestions are welcome.
 
@@ -548,7 +496,7 @@ node scripts/check-frontend-baseline.mjs
 
 ---
 
-## 13. License & Contact
+## 12. License & Contact
 
 This project is licensed under the [MIT License](LICENSE).
 

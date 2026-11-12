@@ -16,15 +16,13 @@
   <img src="docs/产品文档/logos/logo-new-1024.png" alt="小遥账单桌面版" width="160">
 </p>
 
-> **当前状态**：v0.1.0 功能已全部实现，27 个接口通过 golden 对账，桌面端通过 Playwright 自动验收与人工测试；安装包（P6）仍在打包验证，尚未发布。当前请使用「[从源码构建](#8-开发构建)」。
-
 **产品官网**：<https://www.xiaoyaosai.com/xiaoyaoprivatebill-desktop/>
 
 ---
 
 ## 1. 简介
 
-小遥账单桌面版是一个**隐私优先**的个人账单分析工具。它可以导入支付宝、微信账单，在本机完成解析、统计与可视化，不依赖任何服务器；内置 MCP 服务，可被 **小遥Claw**、Claude Code、Codex 等 AI Agent 直接调用。
+小遥账单桌面版是一个**隐私优先**的个人账单分析工具。它可以导入支付宝、微信账单，在本机完成解析、统计与可视化，不依赖任何服务器；内置 MCP 服务，可被 **小遥Claw** 直接调用，用自然语言完成账单分析。
 
 **核心特点**：
 
@@ -169,7 +167,15 @@
 
 ## 3. AI Agent 接入（以小遥Claw 为例）
 
-[小遥Claw](https://www.xiaoyaosai.com/xiaoyaoclaw/) 是「把 AI 助手装进自己电脑」的桌面 Agent。小遥账单桌面版内置标准 Streamable HTTP MCP 服务，小遥Claw 连接后即可用自然语言查询本机账单、生成分析报告。
+<p align="center">
+  <a href="https://www.xiaoyaosai.com/xiaoyaoclaw/"><img src="docs/产品文档/logos/xiaoyaoclaw-logo-full.png" alt="小遥Claw" width="220"></a>
+</p>
+
+**小遥Claw** 是一款把 AI 助手装进你自己电脑的桌面 Agent：它在本地运行，可以连接本机工具与数据，用自然语言替你完成任务。
+
+小遥账单桌面版为小遥Claw 内置了标准 Streamable HTTP MCP 服务。开启后，你只需要对小遥Claw 说一句「帮我分析一下我的小遥账单」，它就会自动调用账单工具，读取年度、月度、分类、时间与消费洞察数据，生成结构化的分析报告。账单数据保存在你的电脑上，是否交给模型分析由你在小遥Claw 中配置决定。
+
+**小遥Claw 官网**：<https://www.xiaoyaosai.com/xiaoyaoclaw/>
 
 ### 3.1 在应用中开启 MCP
 
@@ -246,16 +252,7 @@
 
 > 图中为演示数据。导入真实账单后，Agent 读取到的即为你本机的最新数据；若当前处于演示模式，Agent 会提示 `is_demo = true`。
 
-### 3.5 其他客户端
-
-Claude Code 可直接用命令行添加（配置格式因客户端而异，其他客户端请按其文档填写同样的 URL 与 Header）：
-
-```bash
-claude mcp add --transport http xiaoyaobill-mcp http://127.0.0.1:17650/mcp \
-  --header "Authorization: Bearer <TOKEN>"
-```
-
-### 3.6 14 个 MCP 工具
+### 3.5 14 个 MCP 工具
 
 | 类型 | 工具 |
 |---|---|
@@ -264,7 +261,7 @@ claude mcp add --transport http xiaoyaobill-mcp http://127.0.0.1:17650/mcp \
 
 写操作有护栏：`import_bill` 仅接受绝对路径且 ≤16MB；`delete_bill` 软删除到回收站；`clear_data` 必须先快照；所有写操作写入审计日志。演示模式下禁止一切写操作。
 
-### 3.7 安全提示
+### 3.6 安全提示
 
 - Token 为 32 字节随机数，可在应用内重新生成；重新生成后旧连接立即失效。
 - 服务只监听 `127.0.0.1`，不监听局域网或公网。
@@ -456,59 +453,10 @@ node scripts/check-frontend-baseline.mjs
 | [开发排期](docs/05-开发排期.md) | D1–D22、关键路径、风险 |
 | [开发进度](docs/开发进度.md) | 当前进度、Web 基线、技术债 |
 | [架构决策](docs/架构决策/) | Tauri Spikes、MCP schema 兼容等决策记录 |
-| [桌面端调研方案](docs/桌面端-调研方案/) | 可行性、PRD、原型视觉、技术方案、实施步骤（只读档案） |
 
 ---
 
-## 10. 常见问题
-
-### Q：Windows 10 启动失败，提示缺少 WebView2？
-
-A：安装 [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) 后重试。Windows 11 通常自带。
-
-### Q：macOS 提示「无法验证开发者」？
-
-A：右键点击应用 →「打开」；或到「系统设置 → 隐私与安全性」点击「仍要打开」。也可执行上文 `xattr` 命令。
-
-### Q：MCP 开启失败，提示端口被占用？
-
-A：端口 `17650` 被其他程序占用。请关闭占用程序后重试，或暂时保持 MCP 关闭；GUI 功能不受影响。
-
-### Q：小遥Claw 显示「连接正常」，但分析结果为空？
-
-A：先确认应用已导入真实账单；如果处于演示模式，Agent 读取的是内置演示数据，并会提示 `is_demo = true`。真实数据为空时，先把支付宝 / 微信账单导入应用。
-
-### Q：小遥Claw 调用带参数的工具报 schema 错误？
-
-A：旧版本工具 schema 带了 `draft 2020-12` 声明，小遥Claw 的校验器未注册该 dialect。v0.1.0 已去掉该声明（见 [AD-20261112-001](docs/架构决策/0002-mcp-tool-schema-compat.md)）；请使用最新版本，并在修改后重新测试连接。
-
-### Q：导入失败怎么办？
-
-A：确认：
-- 支付宝为 `.csv`，编码 GBK 或 UTF-8；
-- 微信为 `.csv` 或 `.xlsx`；
-- 单文件不超过 16MB；
-- **文件名使用英文 / 数字**（中文文件名可能被清洗后无法识别，这是为与 Web 版保持一致而保留的行为）。
-
-### Q：重复导入会怎样？
-
-A：不会按内容去重；同名文件会追加 `_1`、`_2`，重复交易会重复计入统计。这是与 Web 版一致的已知行为。
-
-### Q：数据会上传到服务器吗？
-
-A：不会。应用本身不发起任何出站网络请求。只有你主动开启 MCP 并让 Agent 调用时，数据才可能由 Agent 及其模型带出本机。
-
-### Q：如何备份或迁移数据？
-
-A：复制整个数据目录（见 [4.4](#44-数据目录与卸载)）。`bills/` 是账单真源，`trash/`、`snapshots/`、`audit.jsonl` 分别是回收站、快照与审计日志。
-
-### Q：支持 Linux 或手机吗？
-
-A：不支持。本期仅支持 Windows 10 / 11 x64 与 macOS 11+。
-
----
-
-## 11. 致谢
+## 10. 致谢
 
 - 本项目的前端与产品设计同源于 [dtsola/xiaoyaoprivatebill](https://github.com/dtsola/xiaoyaoprivatebill)（Web 版，已冻结）。
 - Web 版最初重构自 [alipay_record_analysis](https://github.com/Hessel2333/alipay_record_analysis)，感谢原作者 **Hessel2333**。
@@ -517,7 +465,7 @@ A：不支持。本期仅支持 Windows 10 / 11 x64 与 macOS 11+。
 
 ---
 
-## 12. 贡献指南
+## 11. 贡献指南
 
 欢迎贡献代码、报告问题或提出建议。
 
@@ -548,7 +496,7 @@ node scripts/check-frontend-baseline.mjs
 
 ---
 
-## 13. 许可证与联系
+## 12. 许可证与联系
 
 本项目采用 [MIT 许可证](LICENSE)。
 
