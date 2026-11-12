@@ -344,7 +344,7 @@
 xattr -dr com.apple.quarantine "/Applications/XiaoyaoBillDesktop.app"
 ```
 
-> 当前版本**未签名、未公证**，因此会有上述提示。后续版本将补充签名与公证。
+> 当前版本**未签名、未公证**，因此会出现上述提示；这在未购买签名证书的开源项目中很常见。
 
 ### 5.4 系统要求
 

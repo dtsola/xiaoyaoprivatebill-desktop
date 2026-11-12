@@ -344,7 +344,7 @@ You only need one file per version:
 xattr -dr com.apple.quarantine "/Applications/XiaoyaoBillDesktop.app"
 ```
 
-> The current build is **unsigned and not notarized**, hence the prompt above. Signing and notarization will be added in a later release.
+> The current build is **unsigned and not notarized**, hence the prompt above; this is common for open-source projects without a paid signing certificate.
 
 ### 5.4 System Requirements
 
