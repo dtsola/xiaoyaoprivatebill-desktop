@@ -128,7 +128,7 @@ Xiaoyao Private Bill Analyzer – Desktop is a **privacy-first** personal bill a
 <li>📐 Yearly or monthly scope, 1080×1440 portrait poster</li>
 <li>🎨 3 templates, with per-item toggles for expense, income, balance, categories, and peak amount</li>
 <li>🔒 Hide amounts before sharing so sensitive numbers never appear in the image</li>
-<li>📱 The poster carries the official-site QR code, ready for WeChat Moments or Xiaohongshu</li>
+<li>📱 The poster carries the official-site QR code, ready for WeChat Moments, Xiaohongshu, Weibo, or Douyin</li>
 </ul>
 </td>
 </tr>
