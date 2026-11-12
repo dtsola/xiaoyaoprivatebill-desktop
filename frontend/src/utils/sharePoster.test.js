@@ -8,6 +8,7 @@ import {
   POSTER_WIDTH,
   PRODUCT_SITE_URL,
   buildPosterModel,
+  defaultAmountVisibility,
   displayAmount,
   formatCompactYuan,
   formatYuan
@@ -165,6 +166,42 @@ describe('月度模型', () => {
     expect(model.topCategories[0].ratio).toBeCloseTo(65.7, 1)
   })
 
+  it('当月数据未覆盖月末时给出截至日期', () => {
+    const partial = {
+      stats: { total_expense: 500, total_income: 0 },
+      daily_data: {
+        expense: {
+          dates: Array.from({ length: 31 }, (_, index) => `2024-12-${String(index + 1).padStart(2, '0')}`),
+          amounts: Array.from({ length: 31 }, (_, index) => (index < 12 ? 10 : 0))
+        },
+        income: { dates: [], amounts: [] }
+      }
+    }
+    const current = buildPosterModel(partial, {
+      period: 'month',
+      year: 2024,
+      month: 12,
+      today: new Date(2024, 11, 12)
+    })
+    expect(current.asOfLabel).toBe('数据截至 12 日')
+
+    const past = buildPosterModel(partial, {
+      period: 'month',
+      year: 2024,
+      month: 12,
+      today: new Date(2025, 0, 5)
+    })
+    expect(past.asOfLabel).toBe('')
+
+    const full = buildPosterModel(monthly, {
+      period: 'month',
+      year: 2024,
+      month: 12,
+      today: new Date(2024, 11, 31)
+    })
+    expect(full.asOfLabel).toBe('')
+  })
+
   it('没有每日数据时降级为空趋势', () => {
     const empty = buildPosterModel(
       { stats: { total_expense: 100 } },
@@ -191,6 +228,15 @@ describe('模板与金额开关', () => {
       'peak'
     ])
     expect(Object.values(DEFAULT_AMOUNT_VISIBILITY).every(Boolean)).toBe(true)
+  })
+
+  it('月度默认隐藏收入与结余，年度全部显示', () => {
+    expect(defaultAmountVisibility('year')).toEqual(DEFAULT_AMOUNT_VISIBILITY)
+    expect(defaultAmountVisibility('month')).toEqual({
+      ...DEFAULT_AMOUNT_VISIBILITY,
+      income: false,
+      balance: false
+    })
   })
 
   it('导出常量与官网地址', () => {

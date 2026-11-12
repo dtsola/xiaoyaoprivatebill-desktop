@@ -105,6 +105,18 @@ export const DEFAULT_AMOUNT_VISIBILITY = AMOUNT_FIELDS.reduce((result, field) =>
   return result
 }, {})
 
+/**
+ * 各范围的金额默认显示策略。
+ *
+ * 月度海报更常出现在朋友圈等公开场合，默认隐藏收入与结余，用户可逐项打开。
+ */
+export function defaultAmountVisibility(period = 'year') {
+  return {
+    ...DEFAULT_AMOUNT_VISIBILITY,
+    ...(period === 'month' ? { income: false, balance: false } : {})
+  }
+}
+
 const toNumber = (value) => {
   const number = Number(value)
   return Number.isFinite(number) ? number : 0
@@ -163,6 +175,27 @@ function aggregateCategories(data) {
       ratio: total > 0 ? Math.round((amount / total) * 1000) / 10 : 0
     }))
     .sort((a, b) => b.amount - a.amount)
+}
+
+function computeAsOfLabel(data, period, year, month, today) {
+  if (period !== 'month' || !(today instanceof Date) || Number.isNaN(today.getTime())) {
+    return ''
+  }
+  if (Number(year) !== today.getFullYear() || Number(month) !== today.getMonth() + 1) {
+    return ''
+  }
+
+  const expenses = data?.daily_data?.expense?.amounts ?? []
+  const incomes = data?.daily_data?.income?.amounts ?? []
+  const days = Math.max(expenses.length, incomes.length)
+  let lastActive = 0
+  for (let index = 0; index < days; index += 1) {
+    if (toNumber(expenses[index]) > 0 || toNumber(incomes[index]) > 0) {
+      lastActive = index + 1
+    }
+  }
+  if (lastActive === 0 || lastActive >= days) return ''
+  return `数据截至 ${lastActive} 日`
 }
 
 function buildChart(data, period) {
@@ -230,6 +263,7 @@ export function buildPosterModel(data, options = {}) {
     period,
     year,
     month,
+    asOfLabel: computeAsOfLabel(data, period, year, month, options.today ?? new Date()),
     titleSuffix: period === 'month' ? '月度账单' : '年度账单',
     periodLabel: period === 'month' ? `${year} 年 ${month} 月` : `${year} 年`,
     heroLabel: period === 'month' ? '本月支出' : '年度支出',
@@ -316,6 +350,13 @@ function drawHeader(ctx, model, theme, options) {
   ctx.fillStyle = theme.muted
   ctx.font = font(400, 24)
   ctx.fillText('每一笔支出，都是这一年的注脚', 236, 192)
+
+  if (model.asOfLabel) {
+    ctx.textAlign = 'right'
+    ctx.fillStyle = theme.muted
+    ctx.font = font(400, 20)
+    ctx.fillText(model.asOfLabel, 968, 194)
+  }
 
   const pill = `${model.periodLabel}${options.isDemo ? ' · 示例' : ''}`
   ctx.font = font(500, 24)

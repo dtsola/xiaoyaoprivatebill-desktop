@@ -65,6 +65,7 @@
                   {{ allAmountsVisible ? '全部隐藏' : '全部显示' }}
                 </button>
               </div>
+              <p v-if="period === 'month'" class="switch-hint">月度海报默认隐藏收入与结余，可随时打开。</p>
               <div class="amount-switches">
                 <button
                   v-for="field in AMOUNT_FIELDS"
@@ -119,11 +120,11 @@ import api from '@/api/client'
 import { useUiStore } from '@/stores/ui'
 import {
   AMOUNT_FIELDS,
-  DEFAULT_AMOUNT_VISIBILITY,
   POSTER_HEIGHT,
   POSTER_THEMES,
   POSTER_WIDTH,
   buildPosterModel,
+  defaultAmountVisibility,
   drawSharePoster
 } from '@/utils/sharePoster'
 
@@ -144,7 +145,7 @@ const canvasRef = ref(null)
 const ready = ref(false)
 const saving = ref(false)
 const selectedTheme = ref(POSTER_THEMES[0].id)
-const visibility = reactive({ ...DEFAULT_AMOUNT_VISIBILITY })
+const visibility = reactive(defaultAmountVisibility(props.period))
 const allAmountsVisible = computed(() =>
   AMOUNT_FIELDS.every((field) => visibility[field.key])
 )
@@ -246,6 +247,15 @@ async function savePoster() {
     saving.value = false
   }
 }
+
+// 切换年度 / 月度时套用该范围的默认金额开关（月度默认隐藏收入与结余）。
+watch(
+  () => props.period,
+  (next) => {
+    Object.assign(visibility, defaultAmountVisibility(next))
+    if (ready.value) render()
+  }
+)
 
 // 页面内嵌模式下，年份 / 月份 / 范围切换会替换 data，必须重绘画布。
 watch(
@@ -595,6 +605,13 @@ onUnmounted(() => {
 .theme-card.active .theme-name {
   color: #007aff;
   font-weight: 600;
+}
+
+.switch-hint {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--secondary-text, #6e6e73);
 }
 
 .amount-switches {
