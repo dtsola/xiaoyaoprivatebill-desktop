@@ -13,7 +13,7 @@
 [English](README_EN.md) | 简体中文
 
 <p align="center">
-  <img src="docs/产品文档/logos/logo-new-1024.png" alt="小遥账单桌面版" width="160">
+  <img src="docs/产品文档/产品截图/宣传海报图.png" alt="小遥账单桌面版宣传海报">
 </p>
 
 **产品官网**：<https://www.xiaoyaosai.com/xiaoyaoprivatebill-desktop/>

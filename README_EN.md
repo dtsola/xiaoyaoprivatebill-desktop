@@ -13,7 +13,7 @@
 English | [简体中文](README.md)
 
 <p align="center">
-  <img src="docs/产品文档/logos/logo-new-1024.png" alt="Xiaoyao Private Bill Analyzer Desktop" width="160">
+  <img src="docs/产品文档/产品截图/宣传海报图-英文.png" alt="Xiaoyao Private Bill Analyzer Desktop poster">
 </p>
 
 **Product website**: <https://www.xiaoyaosai.com/xiaoyaoprivatebill-desktop/>
