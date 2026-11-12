@@ -108,7 +108,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { Download, Eye, EyeOff, X } from 'lucide-vue-next'
 import { save } from '@tauri-apps/plugin-dialog'
 
@@ -243,6 +243,14 @@ async function savePoster() {
     saving.value = false
   }
 }
+
+// 页面内嵌模式下，年份 / 月份 / 范围切换会替换 data，必须重绘画布。
+watch(
+  () => [props.data, props.period, props.year, props.month, props.isDemo],
+  () => {
+    if (ready.value) render()
+  }
+)
 
 onMounted(async () => {
   window.addEventListener('keydown', handleKeydown)

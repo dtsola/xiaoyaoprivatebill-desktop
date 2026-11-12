@@ -119,10 +119,21 @@ test('分享海报：月度筛选、模板切换与单项金额开关', async ({
   await page.goto('/#/share')
   await page.waitForTimeout(800)
 
+  const annualImage = await page.evaluate(() =>
+    document.querySelector('.share-poster-content canvas').toDataURL('image/png')
+  )
+
   await expect(page.locator('.theme-card')).toHaveCount(3)
   await page.getByRole('tab', { name: '月度账单' }).click()
   await expect(page.getByLabel('选择月份')).toHaveValue('2024-12')
   await expect(page.locator('.poster-loading')).toHaveCount(0, { timeout: 10_000 })
+  await page.waitForTimeout(300)
+
+  // 切到月度后画布必须重绘为月度内容，而不是保留年度海报
+  const monthlyImage = await page.evaluate(() =>
+    document.querySelector('.share-poster-content canvas').toDataURL('image/png')
+  )
+  expect(monthlyImage).not.toBe(annualImage)
 
   await page.locator('.theme-card', { hasText: '墨夜' }).click()
   await expect(page.locator('.theme-card', { hasText: '墨夜' })).toHaveClass(/active/)
