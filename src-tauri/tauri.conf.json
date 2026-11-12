@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "XiaoyaoBillDesktop",
   "mainBinaryName": "xiaoyao-bill-desktop",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "identifier": "com.dtsola.xiaoyaobill.desktop",
   "build": {
     "frontendDist": "../frontend/dist",
