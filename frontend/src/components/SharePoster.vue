@@ -14,7 +14,7 @@
         <header v-if="!inline" class="share-header">
           <div>
             <h2 class="share-title">分享海报</h2>
-            <p class="share-subtitle">保存后可发朋友圈、小红书，二维码指向产品官网</p>
+            <p class="share-subtitle">保存后可发朋友圈、小红书、微博、抖音，二维码指向产品官网</p>
           </div>
           <button class="share-close" aria-label="关闭" title="关闭" @click="close">
             <X :size="18" />
@@ -32,7 +32,10 @@
 
           <aside v-if="inline" class="share-side">
             <h2 class="share-side-title">把账单变成<br />一张海报</h2>
-            <p class="share-side-subtitle">1080×1440 竖版，适合发朋友圈、小红书。</p>
+            <p class="share-side-subtitle">
+              1080×1440 竖版<br />
+              适合朋友圈、小红书、微博、抖音、视频号
+            </p>
 
             <section class="share-section">
               <h3 class="share-section-title">海报模板</h3>
