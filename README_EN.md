@@ -416,12 +416,12 @@ npm --prefix frontend run dev
 # Build the frontend
 npm --prefix frontend run build
 
-# Build the desktop installer (Windows NSIS)
+# Local debug build (Windows NSIS)
 npm run tauri build -- --bundles nsis
 # Output: target/release/bundle/nsis/*-setup.exe
 ```
 
-macOS builds a universal dmg (Intel + Apple Silicon) in GitHub Actions, sharing `.github/workflows/release.yml` with Windows NSIS; the output is `*_universal.dmg`.
+Official releases are built in GitHub Actions: `.github/workflows/release.yml` builds both the Windows NSIS installer and the macOS universal dmg (Intel + Apple Silicon) on a `v*` tag or manual dispatch. Outputs are `*_x64-setup.exe` and `*_universal.dmg`.
 
 ### 7.4 Quality and Reconciliation
 

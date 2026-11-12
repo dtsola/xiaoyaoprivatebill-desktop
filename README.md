@@ -416,12 +416,12 @@ npm --prefix frontend run dev
 # 构建前端
 npm --prefix frontend run build
 
-# 构建桌面安装包（Windows NSIS）
+# 本机调试构建（Windows NSIS）
 npm run tauri build -- --bundles nsis
 # 产物：target/release/bundle/nsis/*-setup.exe
 ```
 
-macOS 通过 GitHub Actions 构建 universal dmg（Intel + Apple Silicon），与 Windows NSIS 共用 `.github/workflows/release.yml`，产物为 `*_universal.dmg`。
+正式发布统一走 GitHub Actions：`.github/workflows/release.yml` 同时构建 Windows NSIS 与 macOS universal dmg（Intel + Apple Silicon），推送 `v*` tag 或手动触发。产物分别为 `*_x64-setup.exe` 与 `*_universal.dmg`。
 
 ### 7.4 质量与对账
 
