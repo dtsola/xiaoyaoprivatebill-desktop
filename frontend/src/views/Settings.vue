@@ -4,7 +4,7 @@
     <div class="page-header" :class="{ 'page-header-agent': agentOnly }">
       <h1 class="page-title">{{ agentOnly ? 'AI Agent 接入' : '设置' }}</h1>
       <p v-if="agentOnly" class="page-subtitle">
-        通过 MCP 服务让 小遥Claw、Claude Code、Codex 等 Agent 读取本机账单数据。
+        通过 MCP 服务让 小遥Claw 读取本机账单数据，用自然语言完成账单分析。
       </p>
     </div>
 
@@ -220,6 +220,50 @@
           仅监听 127.0.0.1，默认关闭；开启后请在客户端配置 Bearer Token。
         </p>
       </div>
+
+      <div class="claw-guide">
+        <div class="claw-guide-head">
+          <div>
+            <h3>小遥Claw 接入方式</h3>
+            <p>小遥Claw 是把 AI 助手装进自己电脑的桌面 Personal Agent，连接后一句话就能分析账单。</p>
+          </div>
+          <span class="claw-badge">推荐</span>
+        </div>
+        <ol class="claw-steps">
+          <li class="claw-step">
+            <span class="claw-step-num">1</span>
+            <div class="claw-step-body">
+              <strong>打开「技能与 MCP」</strong>
+              <p>在小遥Claw 中进入 设置 → 技能与 MCP。</p>
+            </div>
+          </li>
+          <li class="claw-step">
+            <span class="claw-step-num">2</span>
+            <div class="claw-step-body">
+              <strong>添加服务器</strong>
+              <p>点击「添加服务器」，名称填写 <code>xiaoyaobill-mcp</code>。</p>
+            </div>
+          </li>
+          <li class="claw-step">
+            <span class="claw-step-num">3</span>
+            <div class="claw-step-body">
+              <strong>粘贴配置并保存</strong>
+              <p>切换到「JSON」，粘贴上方复制的配置，点击「保存」。</p>
+            </div>
+          </li>
+          <li class="claw-step">
+            <span class="claw-step-num">4</span>
+            <div class="claw-step-body">
+              <strong>测试并开始分析</strong>
+              <p>测试显示「连接正常 · 14 个工具」即成功；新开会话问「帮我分析一下我的小遥账单」。</p>
+            </div>
+          </li>
+        </ol>
+        <div class="claw-guide-foot">
+          <button class="mcp-btn" @click="openClawSite">打开小遥Claw 官网</button>
+          <span>MCP 服务需保持「运行中」，账单数据才会被读取。</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -228,6 +272,7 @@
 import { ChartLine, FileSpreadsheet, FileText, Trash2 } from 'lucide-vue-next'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { open } from '@tauri-apps/plugin-dialog'
+import { openUrl } from '@tauri-apps/plugin-opener'
 import { listen } from '@tauri-apps/api/event'
 import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { useSessionStore } from '@/stores/session'
@@ -430,6 +475,14 @@ async function copyMcpConfig() {
     uiStore.showSuccess('MCP 配置已复制')
   } catch (error) {
     uiStore.showError('复制失败: ' + error.message)
+  }
+}
+
+async function openClawSite() {
+  try {
+    await openUrl('https://www.xiaoyaosai.com/xiaoyaoclaw/')
+  } catch (error) {
+    uiStore.showError('打开小遥Claw 官网失败: ' + error.message)
   }
 }
 
@@ -1068,6 +1121,122 @@ async function handleClearAllData() {
   margin-top: 12px;
   color: #8e8e93;
   font-size: 12px;
+}
+
+/* 小遥Claw 接入引导 */
+.claw-guide {
+  margin-top: 16px;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.claw-guide-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.claw-guide-head h3 {
+  margin: 0 0 6px;
+  color: #111827;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.claw-guide-head p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.claw-badge {
+  flex: 0 0 auto;
+  padding: 4px 10px;
+  color: #007aff;
+  font-size: 12px;
+  font-weight: 600;
+  background: #eef5ff;
+  border-radius: 999px;
+}
+
+.claw-steps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.claw-step {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  background: #f7f8fa;
+  border-radius: 10px;
+}
+
+.claw-step-num {
+  display: inline-flex;
+  flex: 0 0 24px;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  background: #007aff;
+  border-radius: 50%;
+}
+
+.claw-step-body strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.claw-step-body p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.claw-step-body code {
+  padding: 1px 4px;
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+
+.claw-guide-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f1f3;
+}
+
+.claw-guide-foot span {
+  color: #8e8e93;
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .claw-steps {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* 桌面设置 */

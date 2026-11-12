@@ -59,6 +59,31 @@ test('托盘切换后 AI Agent 接入页同步显示运行状态', async ({ page
   expect(errors, `控制台错误:\n${errors.join('\n')}`).toEqual([])
 })
 
+test('AI Agent 接入页展示小遥Claw 接入步骤与官网入口', async ({ page }) => {
+  const errors = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text())
+  })
+
+  await page.goto('/#/agent')
+
+  const guide = page.locator('.claw-guide')
+  await expect(guide).toBeVisible()
+  await expect(guide.locator('h3')).toHaveText('小遥Claw 接入方式')
+  await expect(guide.locator('.claw-step')).toHaveCount(4)
+  await expect(guide).toContainText('技能与 MCP')
+  await expect(guide).toContainText('xiaoyaobill-mcp')
+  await expect(guide).toContainText('连接正常 · 14 个工具')
+
+  await guide.getByRole('button', { name: '打开小遥Claw 官网' }).click()
+  await expect
+    .poll(() => page.evaluate(() => window.__TAURI_TEST_OPENED))
+    .toBe('https://www.xiaoyaosai.com/xiaoyaoclaw/')
+
+  expect(errors, `控制台错误:\n${errors.join('\n')}`).toEqual([])
+})
+
 test('侧边栏有独立菜单，设置页不再包含 MCP 区块', async ({ page }) => {
   await page.goto('/#/settings')
 
