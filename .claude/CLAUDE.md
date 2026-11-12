@@ -192,11 +192,12 @@ pub fn yearly_analysis(dataset: &Dataset, year: i32) -> Result<Value, ApiError> 
 ### 4.1 分支策略
 
 ```
-main (稳定)
-  └── dev (开发)
-        └── feature/* (功能)
-        └── fix/* (修复)
+main (唯一开发分支，2026-11-12 起直接在 main 上开发)
+  └── feature/*（可选，按需临时分支）
+  └── fix/*（可选，按需临时分支）
 ```
+
+> 历史 `dev` 分支已于 2026-11-12 快进合并进 `main`，后续提交直接落在 `main`。
 
 ### 4.2 提交信息
 
