@@ -291,7 +291,7 @@ npm run tauri build -- --bundles nsis
 正式发布统一由 GitHub Actions 的 `.github/workflows/release.yml` 产出 Windows 与 macOS 安装包：
 
 - `windows-latest` → `--bundles nsis` → `*_x64-setup.exe`
-- `macos-14` → `--target universal-apple-darwin --bundles app,dmg` → `*_universal.dmg`（Intel + Apple Silicon 单包）
+- `macos-15` → `--target universal-apple-darwin --bundles app,dmg` → `*_universal.dmg`（Intel + Apple Silicon 单包）
 
 ### 6.2 版本
 
