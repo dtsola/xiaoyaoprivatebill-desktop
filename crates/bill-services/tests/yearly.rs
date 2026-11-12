@@ -273,7 +273,7 @@ fn overview_data_uses_latest_year_and_filters() {
     };
 
     let all = bill_services::analysis::overview_data(&dataset, None, "all");
-    assert_eq!(all["current_year"], json!(2024));
+    assert_eq!(all["current_year"], json!("2024"));
     assert_eq!(all["yearly_stats"]["total_expense"], json!(2100.0));
     assert_eq!(all["yearly_stats"]["active_days"], json!(3));
     assert_eq!(all["amounts"][0], json!(100.0));
