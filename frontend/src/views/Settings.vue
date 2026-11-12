@@ -199,6 +199,16 @@
           <code class="mcp-token">{{ mcp.token }}</code>
           <button class="mcp-btn" @click="copyToken">复制</button>
         </div>
+        <div v-if="mcp.running && mcp.token" class="mcp-config">
+          <div class="mcp-config-head">
+            <span class="mcp-label">小遥Claw 配置</span>
+            <button class="mcp-btn" @click="copyMcpConfig">复制配置</button>
+          </div>
+          <pre class="mcp-config-code">{{ mcpConfigJson }}</pre>
+          <p class="mcp-hint">
+            粘贴到 小遥Claw 的 ~/.openclaw/openclaw.json 中，保存后新开一个会话即可看到账单工具。
+          </p>
+        </div>
         <p v-if="mcp.last_error" class="mcp-error">{{ mcp.last_error }}</p>
         <div class="mcp-actions">
           <button class="mcp-btn primary" @click="toggleMcp">
@@ -394,6 +404,36 @@ async function copyToken() {
   try {
     await navigator.clipboard.writeText(mcp.value.token)
     uiStore.showSuccess('Token 已复制')
+  } catch (error) {
+    uiStore.showError('复制失败: ' + error.message)
+  }
+}
+
+// 小遥Claw（OpenClaw）MCP 客户端配置：Streamable HTTP + Bearer Token
+const mcpConfigJson = computed(() =>
+  JSON.stringify(
+    {
+      mcp: {
+        servers: {
+          'xiaoyao-bill': {
+            url: mcp.value.endpoint,
+            transport: 'streamable-http',
+            headers: {
+              Authorization: `Bearer ${mcp.value.token}`
+            }
+          }
+        }
+      }
+    },
+    null,
+    2
+  )
+)
+
+async function copyMcpConfig() {
+  try {
+    await navigator.clipboard.writeText(mcpConfigJson.value)
+    uiStore.showSuccess('MCP 配置已复制')
   } catch (error) {
     uiStore.showError('复制失败: ' + error.message)
   }
@@ -977,6 +1017,36 @@ async function handleClearAllData() {
   color: #ff3b30;
   font-size: 13px;
   margin: 8px 0;
+}
+
+.mcp-config {
+  margin: -4px 0 16px;
+}
+
+.mcp-config-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.mcp-config-head .mcp-label {
+  width: auto;
+  white-space: nowrap;
+}
+
+.mcp-config-code {
+  margin: 0 0 8px;
+  padding: 12px 14px;
+  background: #F5F5F7;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-color);
+  overflow-x: auto;
+  white-space: pre;
 }
 
 .mcp-actions {
