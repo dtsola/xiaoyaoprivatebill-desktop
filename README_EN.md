@@ -311,13 +311,11 @@ Write operations are guarded: `import_bill` only accepts absolute paths up to 16
 2. Run the installer and follow the wizard. It installs per-user and does not require administrator rights.
 3. Launch **Xiaoyao Private Bill Analyzer – Desktop** from the Start menu.
 
-> Windows 10 requires the WebView2 runtime (included in Windows 11). If startup fails, install the [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) first.
+> On Windows 10, if WebView2 is missing, the installer downloads and installs it automatically (Windows 11 includes it). If that fails, install the [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) manually.
 
 ### 5.2 macOS 11+ (Intel / Apple Silicon)
 
-1. Download the `.dmg` for your architecture from [GitHub Releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases):
-   - Intel: `*_x64.dmg`
-   - Apple Silicon: `*_aarch64.dmg`
+1. Download the universal `.dmg` from [GitHub Releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases): `*_universal.dmg` (Intel + Apple Silicon in one package).
 2. Open the dmg and drag the app into **Applications**.
 3. **First launch**: right-click the app → **Open**; or go to **System Settings → Privacy & Security** and click **Open Anyway**.
 4. On macOS 15, if it is still blocked, run:
@@ -332,7 +330,7 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 
 | Item | Requirement |
 |---|---|
-| Windows | Windows 10 / 11 x64 with WebView2 |
+| Windows | Windows 10 / 11 x64; the installer downloads WebView2 if missing |
 | macOS | macOS 11+; Intel or Apple Silicon |
 | Disk | Installer about 20MB; the data directory grows with your bills |
 | Network | **Not required**; fully usable offline |
@@ -419,11 +417,11 @@ npm --prefix frontend run dev
 npm --prefix frontend run build
 
 # Build the desktop installer (Windows NSIS)
-npm run tauri build
-# Output: src-tauri/target/release/bundle/nsis/*.exe
+npm run tauri build -- --bundles nsis
+# Output: target/release/bundle/nsis/*-setup.exe
 ```
 
-macOS builds run per architecture in GitHub Actions and produce `x86_64.dmg` and `aarch64.dmg`; the workflow is `.github/workflows/macos-build.yml`.
+macOS builds a universal dmg (Intel + Apple Silicon) in GitHub Actions, sharing `.github/workflows/release.yml` with Windows NSIS; the output is `*_universal.dmg`.
 
 ### 7.4 Quality and Reconciliation
 

@@ -462,9 +462,9 @@ claude mcp add --transport http xiaoyao-bill http://127.0.0.1:17650/mcp \
 | 项 | 指标 |
 |---|---|
 | Windows 安装包 | ≤20MB |
-| macOS 单架构安装包 | ≤25MB |
+| macOS 通用安装包 | 待 P6 实测（单架构目标 ≤25MB） |
 | 系统 | Windows 10/11 x64；macOS 11+ |
-| WebView2 | Windows 10 需已安装；Win11 自带 |
+| WebView2 | Windows 10 缺失时由安装器联网安装；Win11 自带 |
 
 ### 9.3 离线与安全
 
@@ -492,7 +492,7 @@ claude mcp add --transport http xiaoyao-bill http://127.0.0.1:17650/mcp \
 |---|---|---|
 | 窗口关闭 | 隐藏到托盘 | 隐藏到托盘；保留 Dock |
 | 退出 | 托盘「退出」 | 托盘「退出」/ Cmd+Q |
-| 安装包 | NSIS 每用户 | dmg（x86_64 / aarch64） |
+| 安装包 | NSIS 每用户 | universal dmg（Intel + Apple Silicon） |
 | 签名 | 不做 | 不做；右键打开 |
 | WebView | WebView2 | WKWebView |
 
@@ -520,7 +520,7 @@ claude mcp add --transport http xiaoyao-bill http://127.0.0.1:17650/mcp \
 ### 10.3 平台验收
 
 - [ ] Windows 10 与 Windows 11 安装、启动、卸载正常。
-- [ ] macOS 11+ 的 x86_64 / aarch64 包可启动（未签名，右键打开）。
+- [ ] macOS 11+ 的 universal dmg 可启动（未签名，右键打开）。
 - [ ] 断网状态下完整走通导入 → 分析 → MCP 调用。
 - [ ] 托盘退出后进程消失，端口释放。
 
@@ -545,7 +545,7 @@ claude mcp add --transport http xiaoyao-bill http://127.0.0.1:17650/mcp \
 | M3 可分析 | 18 个在用接口 + 9 页面 | 页面无空白/报错 |
 | M4 可对账 | 27 个接口逐字段一致 | 对账测试 100% |
 | M5 可调用 | MCP 14 工具 + 护栏 | 鉴权/写护栏/审计测试通过 |
-| M6 可发布 | NSIS + 双架构 dmg | 三平台安装验收通过 |
+| M6 可发布 | NSIS + 通用 dmg | 三平台安装验收通过 |
 
 > 里程碑与版本门槛的唯一定义在 [04-开发任务清单.md](./04-开发任务清单.md) §2.3 与 §12.3；本表只引用。
 

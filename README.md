@@ -311,13 +311,11 @@
 2. 双击安装，按向导完成；安装范围为当前用户，无需管理员权限。
 3. 从开始菜单启动「小遥账单桌面版」。
 
-> Windows 10 需要已安装 WebView2 运行时（Windows 11 自带）。若启动失败，请先安装 [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)。
+> Windows 10 若未安装 WebView2，安装器会联网自动下载并安装（Windows 11 自带）。若自动安装失败，可手动安装 [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)。
 
 ### 5.2 macOS 11+（Intel / Apple Silicon）
 
-1. 从 [GitHub Releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases) 下载对应架构的 `.dmg`：
-   - Intel：`*_x64.dmg`
-   - Apple Silicon：`*_aarch64.dmg`
+1. 从 [GitHub Releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases) 下载通用 `.dmg`：`*_universal.dmg`（Intel + Apple Silicon 同一包）。
 2. 打开 dmg，将应用拖入「应用程序」。
 3. **首次打开**：右键点击应用 →「打开」；或到「系统设置 → 隐私与安全性」点击「仍要打开」。
 4. macOS 15 如仍被拦截，可在终端执行：
@@ -332,7 +330,7 @@ xattr -dr com.apple.quarantine "/Applications/小遥账单桌面版.app"
 
 | 项 | 要求 |
 |---|---|
-| Windows | Windows 10 / 11 x64；已安装 WebView2 |
+| Windows | Windows 10 / 11 x64；WebView2 缺失时安装器自动下载 |
 | macOS | macOS 11+；Intel 或 Apple Silicon |
 | 磁盘 | 安装包约 20MB；数据目录随账单增长 |
 | 网络 | **不需要**；断网可完整使用 |
@@ -419,11 +417,11 @@ npm --prefix frontend run dev
 npm --prefix frontend run build
 
 # 构建桌面安装包（Windows NSIS）
-npm run tauri build
-# 产物：src-tauri/target/release/bundle/nsis/*.exe
+npm run tauri build -- --bundles nsis
+# 产物：target/release/bundle/nsis/*-setup.exe
 ```
 
-macOS 通过 GitHub Actions 分架构构建，产物为 `x86_64.dmg` 与 `aarch64.dmg`，工作流文件为 `.github/workflows/macos-build.yml`。
+macOS 通过 GitHub Actions 构建 universal dmg（Intel + Apple Silicon），与 Windows NSIS 共用 `.github/workflows/release.yml`，产物为 `*_universal.dmg`。
 
 ### 7.4 质量与对账
 

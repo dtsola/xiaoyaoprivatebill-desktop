@@ -284,14 +284,14 @@ node scripts/check-frontend-baseline.mjs
 
 ```bash
 npm --prefix frontend run build
-npm run tauri build
-# Windows：src-tauri/target/release/bundle/nsis/*.exe
+npm run tauri build -- --bundles nsis
+# Windows：target/release/bundle/nsis/*-setup.exe
 ```
 
-macOS 通过 GitHub Actions 分架构构建：
+macOS 通过 GitHub Actions 构建 universal dmg，与 Windows 共用 `.github/workflows/release.yml`：
 
-- `macos-13` → `x86_64-apple-darwin`
-- `macos-14` → `aarch64-apple-darwin`
+- `macos-14` → `universal-apple-darwin`
+- 产物：`*_universal.dmg`（Intel + Apple Silicon 单包）
 
 ### 6.2 版本
 
