@@ -310,7 +310,7 @@ Write operations are guarded: `import_bill` only accepts absolute paths up to 16
 | Source | Link | Notes |
 |---|---|---|
 | GitHub Releases (recommended) | [dtsola/xiaoyaoprivatebill-desktop/releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases) | Always the latest version |
-| Baidu Netdisk (mirror) | [pan.baidu.com/s/1H3PrTdp0ShBe7upnAO12mQ](https://pan.baidu.com/s/1H3PrTdp0ShBe7upnAO12mQ?pwd=7z69) | Code `7z69`; faster inside mainland China |
+| Baidu Netdisk (mirror) | [pan.baidu.com/s/1SvLc23guuKuIscDArX79QQ](https://pan.baidu.com/s/1SvLc23guuKuIscDArX79QQ?pwd=d262) | Code `d262`; faster inside mainland China |
 
 You only need one file per version:
 

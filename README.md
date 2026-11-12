@@ -310,7 +310,7 @@
 | 渠道 | 地址 | 说明 |
 |---|---|---|
 | GitHub Releases（推荐） | [dtsola/xiaoyaoprivatebill-desktop/releases](https://github.com/dtsola/xiaoyaoprivatebill-desktop/releases) | 始终是最新版本 |
-| 百度网盘（备用） | [pan.baidu.com/s/1H3PrTdp0ShBe7upnAO12mQ](https://pan.baidu.com/s/1H3PrTdp0ShBe7upnAO12mQ?pwd=7z69) | 提取码 `7z69`，国内下载更快 |
+| 百度网盘（备用） | [pan.baidu.com/s/1SvLc23guuKuIscDArX79QQ](https://pan.baidu.com/s/1SvLc23guuKuIscDArX79QQ?pwd=d262) | 提取码 `d262`，国内下载更快 |
 
 一个版本只需下载对应平台的一个文件：
 
