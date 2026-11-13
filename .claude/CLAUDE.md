@@ -174,8 +174,8 @@ pub fn yearly_analysis(dataset: &Dataset, year: i32) -> Result<Value, ApiError> 
   7. `frontend/vite.config.js`
   8. `frontend/src/views/Home.vue`（隐私文案两处 + 首页自适应布局，见技术方案 03 §11.8）
 - 8 个之外，其余 9 个页面、3 个公共组件、4 个 Pinia store、`main.css` 保持冻结。
-- 基线脚本 `scripts/check-frontend-baseline.mjs` 额外放行若干类非页面源码：`frontend/public/vendor/`（离线图标）、`vitest.config.js` / `*.test.js`（测试）、`package.json`（测试依赖）、`frontend/public/images/logo_128.png` 与 `frontend/public/favicon.png`（品牌资源）、`frontend/src/assets/styles/main.css`（仅字号/字重 token）、`frontend/public/images/claw/`（小遥Claw 接入实操截图）、`frontend/src/views/SharePosterPage.vue`、`frontend/src/components/SharePoster.vue` 与 `frontend/src/utils/sharePoster.js`（分享海报）。
-- 不新增前端依赖（`@tauri-apps/api`、dialog、opener、`lucide-vue-next` 除外）。
+- 基线脚本 `scripts/check-frontend-baseline.mjs` 额外放行若干类非页面源码：`frontend/public/vendor/`（离线图标）、`vitest.config.js` / `*.test.js`（测试）、`package.json`（测试依赖）、`frontend/public/images/logo_128.png` 与 `frontend/public/favicon.png`（品牌资源）、`frontend/src/assets/styles/main.css`（仅字号/字重 token）、`frontend/public/images/claw/`（小遥Claw 接入实操截图）、`frontend/src/views/SharePosterPage.vue`、`frontend/src/components/SharePoster.vue` 与 `frontend/src/utils/sharePoster.js`（分享海报）、`frontend/src/i18n/` 与 `frontend/src/main.js`（国际化第一批）。
+- 不新增前端依赖（`@tauri-apps/api`、dialog、opener、`lucide-vue-next`、`vue-i18n` 除外；`vue-i18n` 仅用于界面文案）。
 - 新增样式写在对应 `<style scoped>` 内，不改全局主题。
 - 视觉与 Web 版保持一致；不擅自重设计。
 
