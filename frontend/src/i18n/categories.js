@@ -69,3 +69,19 @@ export function localizeCategory(name, locale = 'zh-CN') {
   if (locale !== 'en-US') return name
   return CATEGORY_LABELS_EN[name] ?? name
 }
+
+/**
+ * 金额区间显示名：后端为「0-100元」「>5000元」，英文输出「0–100 CNY」「> 5,000 CNY」。
+ *
+ * @param {string} name 后端原始区间名
+ * @param {string} locale 当前语言
+ * @returns {string} 用于展示的区间名
+ */
+export function localizeAmountRange(name, locale = 'zh-CN') {
+  if (locale !== 'en-US' || typeof name !== 'string') return name
+  const number = (value) => Number(value.replace(/,/g, '')).toLocaleString('en-US')
+  return name
+    .replace(/([0-9][0-9,.]*)\s*[-~]\s*([0-9][0-9,.]*)\s*元/g, (_, start, end) => `${number(start)}–${number(end)} CNY`)
+    .replace(/(>=|>|≤|<)\s*([0-9][0-9,.]*)\s*元/g, (_, operator, value) => `${operator} ${number(value)} CNY`)
+    .replace(/([0-9][0-9,.]*)\s*元/g, (_, value) => `${number(value)} CNY`)
+}

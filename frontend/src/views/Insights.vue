@@ -294,7 +294,7 @@ import { useUiStore } from '@/stores/ui'
 import { useSessionStore } from '@/stores/session'
 import { useFilterStore } from '@/stores/filter'
 import { formatMoney, getCategoryColor } from '@/utils/format'
-import { localizeCategory } from '@/i18n/categories'
+import { localizeAmountRange, localizeCategory } from '@/i18n/categories'
 import * as echarts from 'echarts'
 import 'echarts-wordcloud'
 import api from '@/api/client'
@@ -717,7 +717,7 @@ function updateTags() {
 
   const tagsHtml = `
     <div class="tag-cloud">
-      ${tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+      ${tags.map(tag => `<span class="tag">${localizeTag(tag)}</span>`).join('')}
     </div>
   `
 
@@ -757,25 +757,75 @@ function updateTags() {
   profileContent.value.innerHTML = tagsHtml + detailsHtml
 }
 
-// 格式化函数（从老前端迁移）
+// 格式化函数（从老前端迁移）；英文界面同时翻译后端生成的中文文案
+const TAG_LABELS_EN = {
+  '随性消费派': 'Spontaneous spender',
+  '平衡消费派': 'Balanced spender',
+  '消费稳健派': 'Steady spender',
+  '夜间消费达人': 'Night owl',
+  '早起达人': 'Early bird'
+}
+
+function localizeTag(tag) {
+  if (locale.value !== 'en-US') return tag
+  if (TAG_LABELS_EN[tag]) return TAG_LABELS_EN[tag]
+  const categoryTag = String(tag).match(/^(.+)控$/)
+  if (categoryTag) return `${localizeCategory(categoryTag[1], 'en-US')} lover`
+  return tag
+}
+
 function formatTimePattern(text) {
   if (text === '-') return text
+  if (locale.value === 'en-US') {
+    if (text.includes('夜间')) {
+      return 'You prefer <span class="highlight">late-night</span> spending; mind your sleep schedule'
+    }
+    if (text.includes('早起')) {
+      return 'You are an <span class="highlight">early-bird</span> spender'
+    }
+    return 'Your spending is fairly regular, concentrated <span class="highlight">during the day</span>'
+  }
   return text.replace(/(夜间|早起|日间)/g, '<span class="highlight">$1</span>')
 }
 
 function formatPreference(text) {
   if (text === '-') return text
+  if (locale.value === 'en-US') {
+    if (text.includes('均衡')) return 'Spending is fairly balanced'
+    const items = text.replace(/最常消费的品类是/, '')
+    return `Top categories: ${items.replace(
+      /([^，。]+?)(\([0-9.]+%\))/g,
+      (_, name, percent) => `<span class="highlight">${localizeCategory(name.trim(), 'en-US')}</span><span class="percentage">${percent}</span>`
+    )}`
+  }
   return text.replace(/最常消费的品类是/, '')
     .replace(/([^，。]+?)(\([0-9.]+%\))/g, '<span class="highlight">$1</span><span class="percentage">$2</span>')
 }
 
 function formatPattern(text) {
   if (text === '-') return text
+  if (locale.value === 'en-US') {
+    if (text.includes('非常有规律')) {
+      return 'Your spending is very <span class="highlight">regular</span> — a rational consumer'
+    }
+    if (text.includes('较为均衡')) {
+      return 'Your spending is <span class="highlight">balanced</span> with mild fluctuations'
+    }
+    return 'Your spending is <span class="highlight">spontaneous</span> and fluctuates'
+  }
   return text.replace(/(非常有规律|理性|较为均衡|比较随性)/g, '<span class="highlight">$1</span>')
 }
 
 function formatPower(text) {
   if (text === '-') return text
+  if (locale.value === 'en-US') {
+    const match = String(text).match(/日均消费([0-9]+)元，属于(理性|中等|高)消费人群/)
+    if (match) {
+      const level = { 理性: 'budget-conscious', 中等: 'moderate', 高: 'high' }[match[2]]
+      return `Daily average <span class="amount">CNY ${match[1]}</span>, a <span class="highlight">${level}</span> spender`
+    }
+    return text
+  }
   return text.replace(
     /日均消费([0-9]+)元/g,
     '日均消费<span class="amount">$1</span>元'
@@ -1327,8 +1377,8 @@ function renderQuadrantChart(data) {
       }
     },
     grid: {
-      left: '5%',
-      right: '10%',
+      left: locale.value === 'en-US' ? '8%' : '5%',
+      right: locale.value === 'en-US' ? '16%' : '10%',
       bottom: '10%',
       top: '10%',
       containLabel: true
@@ -1438,16 +1488,18 @@ function renderChordChart(data) {
     series: [{
       type: 'graph',
       layout: 'circular',
+      center: ['50%', '55%'],
       circular: {
         rotateLabel: true
       },
       data: coloredNodes,
       links: processedLinks,
       roam: false,
-      zoom: 0.75,
+      zoom: locale.value === 'en-US' ? 0.66 : 0.75,
       label: {
         show: true,
         position: 'right',
+        fontSize: locale.value === 'en-US' ? 11 : 12,
         formatter: '{b}'
       },
       emphasis: {
@@ -1473,6 +1525,11 @@ function renderChordChart(data) {
 function renderFunnelChart(data) {
   if (!funnelChart || !data || data.length === 0) return
 
+  const funnelData = data.map(item => ({
+    ...item,
+    name: localizeAmountRange(item.name, locale.value)
+  }))
+
   const option = {
     tooltip: {
       trigger: 'item',
@@ -1488,7 +1545,7 @@ function renderFunnelChart(data) {
       bottom: 60,
       width: '80%',
       min: 0,
-      max: data[0].value,
+      max: funnelData[0].value,
       minSize: '0%',
       maxSize: '100%',
       sort: 'descending',
@@ -1502,7 +1559,7 @@ function renderFunnelChart(data) {
         borderColor: '#fff',
         borderWidth: 1
       },
-      data: data
+      data: funnelData
     }]
   }
 
@@ -1524,8 +1581,8 @@ function renderParetoChart(data) {
     },
     grid: {
       right: '10%',
-      left: '5%',
-      bottom: '10%'
+      left: locale.value === 'en-US' ? '10%' : '5%',
+      bottom: locale.value === 'en-US' ? '24%' : '10%'
     },
     legend: {
       data: [t('insights.charts.paretoAmount'), t('insights.charts.paretoShare')]
@@ -1538,7 +1595,8 @@ function renderParetoChart(data) {
       },
       axisLabel: {
         interval: 0,
-        rotate: 0,
+        rotate: locale.value === 'en-US' ? 30 : 0,
+        fontSize: locale.value === 'en-US' ? 10 : 12,
         formatter: (value) => localizeCategory(value, locale.value)
       }
     }],
@@ -1680,7 +1738,7 @@ function renderBoxPlot(data) {
     grid: {
       left: '10%',
       right: '10%',
-      bottom: '15%'
+      bottom: locale.value === 'en-US' ? '24%' : '15%'
     },
     xAxis: [{
       type: 'category',
@@ -1688,9 +1746,11 @@ function renderBoxPlot(data) {
       boundaryGap: true,
       axisLabel: {
         interval: 0,
-        rotate: 0,
+        rotate: locale.value === 'en-US' ? 30 : 0,
+        fontSize: locale.value === 'en-US' ? 10 : 12,
         formatter: (value) => {
-          return value.length > 4 ? value.substring(0, 4) + '..' : value
+          const maxLength = locale.value === 'en-US' ? 14 : 4
+          return value.length > maxLength ? value.substring(0, maxLength) + '..' : value
         }
       }
     }, {

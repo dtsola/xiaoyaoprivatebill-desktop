@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { CATEGORY_COLORS } from '../utils/format'
-import { CATEGORY_LABELS_EN, localizeCategory } from './categories'
+import { CATEGORY_LABELS_EN, localizeAmountRange, localizeCategory } from './categories'
 
 describe('分类名本地化', () => {
   it('英文返回映射名，中文保留原文', () => {
@@ -20,6 +20,13 @@ describe('分类名本地化', () => {
     expect(localizeCategory('微信', 'en-US')).toBe('WeChat')
     expect(localizeCategory('周一', 'en-US')).toBe('Mon')
     expect(localizeCategory('周末', 'en-US')).toBe('Weekend')
+  })
+
+  it('金额区间转换为英文单位', () => {
+    expect(localizeAmountRange('0-100元', 'en-US')).toBe('0–100 CNY')
+    expect(localizeAmountRange('1000-5000元', 'en-US')).toBe('1,000–5,000 CNY')
+    expect(localizeAmountRange('>5000元', 'en-US')).toBe('> 5,000 CNY')
+    expect(localizeAmountRange('0-100元', 'zh-CN')).toBe('0-100元')
   })
 
   it('所有内置分类颜色都有英文名', () => {

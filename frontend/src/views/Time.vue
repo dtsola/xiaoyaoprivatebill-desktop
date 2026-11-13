@@ -86,6 +86,7 @@ import { useI18n } from 'vue-i18n'
 import { useSessionStore } from '@/stores/session'
 import { useFilterStore } from '@/stores/filter'
 import { formatMoney } from '@/utils/format'
+import { localizeCategory } from '@/i18n/categories'
 import * as echarts from 'echarts'
 import api from '@/api/client'
 
@@ -523,7 +524,7 @@ function updateWeekdayChart() {
     },
     yAxis: {
       type: 'category',
-      data: categories,
+      data: categories.map((name) => localizeCategory(name, locale.value)),
       inverse: true,
       axisLine: { show: false },
       axisTick: { show: false },

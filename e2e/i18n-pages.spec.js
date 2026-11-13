@@ -53,7 +53,7 @@ const PAGES = [
     hash: '#/insights',
     name: 'insights',
     title: 'Insights',
-    checks: ['Money flow', 'Spending profile', 'Deep insights', 'Spending scenarios']
+    checks: ['Money flow', 'Spending profile', 'Deep insights', 'Spending scenarios', 'Housing lover', 'Top categories:', 'Daily average']
   },
   {
     hash: '#/transactions',
@@ -120,6 +120,42 @@ test('英文界面覆盖全部页面', async ({ page }) => {
         'Your yearly spending story'
       )
       await page.locator('.close-story').click()
+
+      // 漏斗图在页面中部，单独截图人工检查区间单位
+      await page.getByText('Spending funnel').scrollIntoViewIfNeeded()
+      await page.waitForTimeout(500)
+      await page.screenshot({
+        path: 'artifacts/ui/i18n/insights-funnel-en.png',
+        fullPage: true
+      })
+
+      // 截图下半部分，便于人工检查帕累托与词云
+      await page.locator('.content').evaluate((el) => {
+        el.scrollTop = el.scrollHeight
+      })
+      await page.waitForTimeout(600)
+      await page.screenshot({
+        path: 'artifacts/ui/i18n/insights-bottom-en.png',
+        fullPage: true
+      })
+      await page.locator('.content').evaluate((el) => {
+        el.scrollTop = 0
+      })
+    }
+
+    if (item.hash === '#/time') {
+      // 工作日/周末分类图在首屏下方，单独截图人工检查
+      await page.locator('.content').evaluate((el) => {
+        el.scrollTop = el.scrollHeight
+      })
+      await page.waitForTimeout(600)
+      await page.screenshot({
+        path: 'artifacts/ui/i18n/time-weekday-en.png',
+        fullPage: true
+      })
+      await page.locator('.content').evaluate((el) => {
+        el.scrollTop = 0
+      })
     }
 
     await page.screenshot({
