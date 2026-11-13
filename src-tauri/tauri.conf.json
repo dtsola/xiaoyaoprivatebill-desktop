@@ -31,7 +31,7 @@
     "security": {
       "csp": {
         "default-src": "'self'",
-        "script-src": "'self'",
+        "script-src": "'self' 'unsafe-eval'",
         "style-src": "'self' 'unsafe-inline'",
         "img-src": "'self' asset: http://asset.localhost data:",
         "font-src": "'self' data:",
