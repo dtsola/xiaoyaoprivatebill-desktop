@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { CATEGORY_COLORS } from '../utils/format'
-import { CATEGORY_LABELS_EN, localizeAmountRange, localizeCategory } from './categories'
+import { CATEGORY_LABELS_EN, localizeAmountRange, localizeCategory, localizeScenarioName } from './categories'
 
 describe('分类名本地化', () => {
   it('英文返回映射名，中文保留原文', () => {
@@ -27,6 +27,15 @@ describe('分类名本地化', () => {
     expect(localizeAmountRange('1000-5000元', 'en-US')).toBe('1,000–5,000 CNY')
     expect(localizeAmountRange('>5000元', 'en-US')).toBe('> 5,000 CNY')
     expect(localizeAmountRange('0-100元', 'zh-CN')).toBe('0-100元')
+  })
+
+  it('消费场景名称转换为英文', () => {
+    expect(localizeScenarioName('线上', 'en-US')).toBe('Online')
+    expect(localizeScenarioName('线下', 'en-US')).toBe('Offline')
+    expect(localizeScenarioName('深夜(23-6点)', 'en-US')).toBe('Late night (23–6)')
+    expect(localizeScenarioName('大额(1000+)', 'en-US')).toBe('Large (1000+)')
+    expect(localizeScenarioName('支付宝', 'en-US')).toBe('Alipay')
+    expect(localizeScenarioName('线上', 'zh-CN')).toBe('线上')
   })
 
   it('所有内置分类颜色都有英文名', () => {

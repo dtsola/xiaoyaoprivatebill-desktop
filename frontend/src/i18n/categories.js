@@ -85,3 +85,37 @@ export function localizeAmountRange(name, locale = 'zh-CN') {
     .replace(/(>=|>|≤|<)\s*([0-9][0-9,.]*)\s*元/g, (_, operator, value) => `${operator} ${number(value)} CNY`)
     .replace(/([0-9][0-9,.]*)\s*元/g, (_, value) => `${number(value)} CNY`)
 }
+
+/**
+ * 消费场景取值：渠道 / 时段 / 金额层级 / 支付方式。
+ * 后端固定输出中文，英文界面按此词典转换。
+ */
+export const SCENARIO_LABELS_EN = {
+  线上: 'Online',
+  线下: 'Offline',
+  '清晨(6-9点)': 'Early morning (6–9)',
+  '上午(9-12点)': 'Morning (9–12)',
+  '中午(12-14点)': 'Noon (12–14)',
+  '下午(14-17点)': 'Afternoon (14–17)',
+  '傍晚(17-20点)': 'Evening (17–20)',
+  '晚上(20-23点)': 'Night (20–23)',
+  '深夜(23-6点)': 'Late night (23–6)',
+  '大额(1000+)': 'Large (1000+)',
+  '中额(300-1000)': 'Medium (300–1000)',
+  '小额(100-300)': 'Small (100–300)',
+  '零花(0-100)': 'Pocket money (0–100)',
+  支付宝: 'Alipay',
+  微信: 'WeChat'
+}
+
+/**
+ * 按语言输出消费场景名称。
+ *
+ * @param {string} name 后端原始场景名
+ * @param {string} locale 当前语言
+ * @returns {string} 用于展示的场景名
+ */
+export function localizeScenarioName(name, locale = 'zh-CN') {
+  if (locale !== 'en-US') return name
+  return SCENARIO_LABELS_EN[name] ?? localizeCategory(name, locale)
+}

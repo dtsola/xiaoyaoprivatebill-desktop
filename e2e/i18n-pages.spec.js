@@ -121,6 +121,14 @@ test('英文界面覆盖全部页面', async ({ page }) => {
       )
       await page.locator('.close-story').click()
 
+      // 消费场景饼图：线上/线下等取值
+      await page.getByText('Spending scenarios').scrollIntoViewIfNeeded()
+      await page.waitForTimeout(500)
+      await page.screenshot({
+        path: 'artifacts/ui/i18n/insights-scenarios-en.png',
+        fullPage: true
+      })
+
       // 漏斗图在页面中部，单独截图人工检查区间单位
       await page.getByText('Spending funnel').scrollIntoViewIfNeeded()
       await page.waitForTimeout(500)

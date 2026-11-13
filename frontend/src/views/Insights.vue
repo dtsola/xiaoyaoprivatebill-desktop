@@ -294,7 +294,7 @@ import { useUiStore } from '@/stores/ui'
 import { useSessionStore } from '@/stores/session'
 import { useFilterStore } from '@/stores/filter'
 import { formatMoney, getCategoryColor } from '@/utils/format'
-import { localizeAmountRange, localizeCategory } from '@/i18n/categories'
+import { localizeAmountRange, localizeCategory, localizeScenarioName } from '@/i18n/categories'
 import * as echarts from 'echarts'
 import 'echarts-wordcloud'
 import api from '@/api/client'
@@ -870,12 +870,19 @@ function updateScenarioChart() {
   const scenarioData = insightsData.value.scenario_analysis || []
   const paymentData = insightsData.value.payment_analysis || []
 
+  const localizedName = (name) => localizeScenarioName(name, locale.value)
   const groupedData = {
-    'channel': scenarioData.filter(item => item.category === '渠道'),
-    'time': scenarioData.filter(item => item.category === '时段'),
-    'amount': scenarioData.filter(item => item.category === '层级'),
+    'channel': scenarioData
+      .filter(item => item.category === '渠道')
+      .map(item => ({ ...item, name: localizedName(item.name) })),
+    'time': scenarioData
+      .filter(item => item.category === '时段')
+      .map(item => ({ ...item, name: localizedName(item.name) })),
+    'amount': scenarioData
+      .filter(item => item.category === '层级')
+      .map(item => ({ ...item, name: localizedName(item.name) })),
     'payment': paymentData.map(item => ({
-      name: item.name,
+      name: localizedName(item.name),
       value: item.total_amount
     }))
   }
