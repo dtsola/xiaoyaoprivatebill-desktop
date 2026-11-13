@@ -113,6 +113,15 @@ test('英文界面覆盖全部页面', async ({ page }) => {
       await expect(body).toContainText(text, { timeout: 10_000 })
     }
 
+    if (item.hash === '#/insights') {
+      // 年度故事幻灯片是 innerHTML 模板，单独验证英文首屏
+      await page.locator('.story-entry-card').click()
+      await expect(page.locator('.slide.active h1')).toHaveText(
+        'Your yearly spending story'
+      )
+      await page.locator('.close-story').click()
+    }
+
     await page.screenshot({
       path: `artifacts/ui/i18n/${item.name}-en.png`,
       fullPage: true
