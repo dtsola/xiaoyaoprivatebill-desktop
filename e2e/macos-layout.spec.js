@@ -106,6 +106,41 @@ test.describe('macOS 标题栏', () => {
     // 「关于作者」整条都在浮动菜单上方
     expect(author.y + author.height).toBeLessThanOrEqual(floating.y)
   })
+
+  test('滚动条不占布局宽度，折叠后图标仍水平居中', async ({ page }) => {
+    // 矮窗口 + 折叠态，确保导航列表溢出并出现滚动条
+    await page.setViewportSize({ width: 1280, height: 600 })
+    await page.goto('/')
+    await page.getByRole('button', { name: '收起侧边栏' }).click()
+    await expect(page.locator('.sidebar')).toHaveCSS('width', '64px')
+
+    const nav = page.locator('.nav-menu')
+    await nav.evaluate((el) => {
+      el.scrollTop = el.scrollHeight
+    })
+    await page.waitForTimeout(200)
+
+    // 侧边栏内容区宽度 = 侧边栏宽度（扣掉 1px 右边框），滚动条不额外占位
+    const metrics = await page.evaluate(() => {
+      const sidebar = document.querySelector('.sidebar')
+      const menu = document.querySelector('.nav-menu')
+      const icon = document.querySelector('.nav-item .nav-icon')
+      const box = (el) => el.getBoundingClientRect()
+      return {
+        sidebarWidth: box(sidebar).width,
+        menuClientWidth: menu.clientWidth,
+        sidebarClientWidth: sidebar.clientWidth,
+        sidebarCenter: Math.round(box(sidebar).x + box(sidebar).width / 2),
+        iconCenter: Math.round(box(icon).x + box(icon).width / 2),
+        overflows: menu.scrollHeight > menu.clientHeight
+      }
+    })
+
+    expect(metrics.overflows).toBe(true)
+    // 滚动条不占布局：导航列表宽度等于侧边栏内容区宽度
+    expect(metrics.menuClientWidth).toBe(metrics.sidebarClientWidth)
+    expect(metrics.iconCenter).toBe(metrics.sidebarCenter)
+  })
 })
 
 test.describe('Windows 标题栏', () => {

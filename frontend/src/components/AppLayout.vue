@@ -631,20 +631,23 @@ watch(
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  /* 滚动阴影：内容溢出时上下边缘浮现淡影，滚到底自动消失。
+     滚动条已隐藏，用它提示「下面还有菜单项」。
+     local 层随内容滚动、scroll 层固定在容器边缘，两者配合实现。 */
+  background:
+    linear-gradient(#f2f2f4 30%, rgba(242, 242, 244, 0)) top / 100% 24px no-repeat local,
+    linear-gradient(rgba(242, 242, 244, 0), #f2f2f4 70%) bottom / 100% 24px no-repeat local,
+    radial-gradient(farthest-side at 50% 0, rgba(0, 0, 0, 0.13), rgba(0, 0, 0, 0)) top / 100% 8px no-repeat scroll,
+    radial-gradient(farthest-side at 50% 100%, rgba(0, 0, 0, 0.13), rgba(0, 0, 0, 0)) bottom / 100% 8px no-repeat scroll;
 }
 
-/* 导航列表溢出时才出现的滚动条：细且半透明，避免在浅灰侧栏上抢视觉 */
+/* 侧边栏导航列表隐藏滚动条。
+   WKWebView 与 WebView2 的默认滚动条都是经典样式：常驻显示并占用布局宽度，
+   会把 64px 图标栏里的图标挤离中线。侧边栏宽度固定且条目有限，
+   隐藏轨道保留滚轮/触控板滚动即可，与 macOS 侧边栏的观感一致。 */
 .nav-menu::-webkit-scrollbar {
-  width: 6px;
-}
-
-.nav-menu::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.16);
-  border-radius: 3px;
-}
-
-.nav-menu::-webkit-scrollbar-track {
-  background: transparent;
+  width: 0;
+  height: 0;
 }
 
 .nav-item {
