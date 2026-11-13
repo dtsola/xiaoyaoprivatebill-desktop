@@ -98,6 +98,7 @@ pub async fn desktop_settings(state: State<'_, McpState>) -> Result<Value, Strin
     let desktop = state.desktop_settings();
     Ok(json!({
         "close_to_tray": desktop.close_to_tray,
+        "language": desktop.language,
         "data_dir": state.data_dir(),
     }))
 }
@@ -184,4 +185,27 @@ pub async fn save_share_poster(path: String, png_base64: String) -> Result<Value
     .map_err(|error| error.to_string())?;
 
     Ok(json!({ "path": saved.to_string_lossy() }))
+}
+
+/// 保存界面语言偏好，并同步托盘菜单与窗口标题。
+#[tauri::command]
+pub async fn set_language(
+    app: tauri::AppHandle,
+    state: State<'_, McpState>,
+    preference: String,
+    locale: String,
+) -> Result<Value, String> {
+    if !matches!(preference.as_str(), "system" | "zh-CN" | "en-US") {
+        return Err("不支持的语言偏好".to_owned());
+    }
+    state.update_desktop(|desktop| desktop.language = preference.clone())?;
+    crate::tray::apply_shell_language(&app, &locale);
+    Ok(json!({ "language": preference }))
+}
+
+/// 启动时按前端解析出的系统语言刷新托盘与窗口标题（不改偏好）。
+#[tauri::command]
+pub fn apply_shell_language(app: tauri::AppHandle, locale: String) -> Result<(), String> {
+    crate::tray::apply_shell_language(&app, &locale);
+    Ok(())
 }

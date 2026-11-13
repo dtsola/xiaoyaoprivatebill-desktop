@@ -1,9 +1,9 @@
 <template>
   <div class="share-poster-page">
     <div class="page-header">
-      <h1 class="page-title">分享海报</h1>
+      <h1 class="page-title">{{ t('posterPage.title') }}</h1>
       <div class="share-filters">
-        <div class="period-tabs" role="tablist" aria-label="账单范围">
+        <div class="period-tabs" role="tablist" :aria-label="t('posterPage.scopeLabel')">
           <button
             type="button"
             class="period-tab"
@@ -12,7 +12,7 @@
             :aria-selected="period === 'year'"
             @click="setPeriod('year')"
           >
-            年度账单
+            {{ t('posterPage.scopeYear') }}
           </button>
           <button
             type="button"
@@ -22,18 +22,18 @@
             :aria-selected="period === 'month'"
             @click="setPeriod('month')"
           >
-            月度账单
+            {{ t('posterPage.scopeMonth') }}
           </button>
         </div>
 
         <select
           v-model.number="selectedYear"
           class="filter-select"
-          aria-label="选择年份"
+          :aria-label="t('posterPage.yearAria')"
           @change="handleYearChange"
         >
           <option v-for="year in availableYears" :key="year" :value="year">
-            {{ year }} 年
+            {{ t('posterPage.yearOption', { year }) }}
           </option>
         </select>
 
@@ -41,7 +41,7 @@
           v-if="period === 'month'"
           v-model="selectedMonth"
           class="filter-select"
-          aria-label="选择月份"
+          :aria-label="t('posterPage.monthAria')"
           @change="loadData"
         >
           <option v-for="month in monthOptions" :key="month.value" :value="month.value">
@@ -54,7 +54,7 @@
 
     <div v-if="loading && !posterData" class="page-loading">
       <div class="loading-spinner"></div>
-      <p>正在整理账单...</p>
+      <p>{{ t('posterPage.loading') }}</p>
     </div>
 
     <div v-else-if="posterData" class="share-poster-content">
@@ -69,10 +69,10 @@
 
     <div v-else class="empty-state">
       <ImageOff class="empty-icon" :size="'1em'" />
-      <p>还没有可生成海报的账单数据</p>
+      <p>{{ t('posterPage.empty') }}</p>
       <div class="empty-actions">
-        <button class="btn btn-primary" @click="$router.push('/settings')">上传账单</button>
-        <button class="btn" @click="enterDemoMode">查看示例数据</button>
+        <button class="btn btn-primary" @click="$router.push('/settings')">{{ t('posterPage.upload') }}</button>
+        <button class="btn" @click="enterDemoMode">{{ t('posterPage.demo') }}</button>
       </div>
     </div>
   </div>
@@ -81,6 +81,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { ImageOff } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 
 import SharePoster from '@/components/SharePoster.vue'
 import { useDataStore } from '@/stores/data'
@@ -92,6 +93,7 @@ const dataStore = useDataStore()
 const filterStore = useFilterStore()
 const sessionStore = useSessionStore()
 const uiStore = useUiStore()
+const { t } = useI18n()
 
 const period = ref('year')
 const selectedYear = ref(null)
@@ -108,7 +110,7 @@ const monthOptions = computed(() =>
     .filter((month) => String(month).startsWith(`${selectedYear.value}-`))
     .map((month) => ({
       value: month,
-      label: `${Number(String(month).split('-')[1])} 月`
+      label: t('posterPage.monthOption', { month: Number(String(month).split('-')[1]) })
     }))
 )
 
@@ -144,7 +146,7 @@ async function loadData() {
           })
   } catch (error) {
     console.error('[SharePosterPage] 加载账单数据失败:', error)
-    uiStore.showError(`加载数据失败: ${error.message}`)
+    uiStore.showError(`${t('posterPage.loadFailed')}: ${error.message}`)
   } finally {
     loading.value = false
   }
@@ -168,14 +170,14 @@ function handleYearChange() {
 async function enterDemoMode() {
   try {
     await sessionStore.enterDemoMode()
-    uiStore.showSuccess('已进入演示模式')
+    uiStore.showSuccess(t('posterPage.demoEntered'))
     await Promise.all([dataStore.loadAvailableYears(), dataStore.loadAvailableDates()])
     selectedYear.value = dataStore.availableYears?.[0] ?? null
     selectedMonth.value = firstMonthOfYear(selectedYear.value)
     await loadData()
   } catch (error) {
     console.error('[SharePosterPage] 进入演示模式失败:', error)
-    uiStore.showError(`进入演示模式失败: ${error.message}`)
+    uiStore.showError(`${t('posterPage.demoFailed')}: ${error.message}`)
   }
 }
 

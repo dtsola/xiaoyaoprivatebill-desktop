@@ -290,6 +290,7 @@ export function installTauriMock(fixtures = {}) {
   })
 
   let maximized = false
+  let language = 'system'
   window.__TAURI_TEST_INVOKES = []
 
   const invoke = async (cmd, args) => {
@@ -311,6 +312,7 @@ export function installTauriMock(fixtures = {}) {
     if (cmd === 'desktop_settings') {
       return {
         close_to_tray: closeToTray,
+        language,
         data_dir: 'C:/Users/demo/AppData/Roaming/xiaoyaobill-desktop'
       }
     }
@@ -318,6 +320,11 @@ export function installTauriMock(fixtures = {}) {
       closeToTray = Boolean(args?.enabled)
       return { close_to_tray: closeToTray }
     }
+    if (cmd === 'set_language') {
+      language = args?.preference ?? 'system'
+      return { language }
+    }
+    if (cmd === 'apply_shell_language') return null
     if (cmd === 'open_data_dir') return null
     if (cmd === 'open_storage_dir') return null
     if (cmd === 'storage_status') {
@@ -384,6 +391,7 @@ export function installTauriMock(fixtures = {}) {
     if (cmd === 'plugin:event|unlisten') return null
     if (cmd === 'plugin:dialog|open') return window.__TAURI_TEST_DIALOG ?? null
     if (cmd === 'plugin:dialog|save') {
+      window.__TAURI_TEST_SAVE_ARGS = args ?? null
       return window.__TAURI_TEST_SAVE_PATH ?? 'C:/Users/demo/Desktop/小遥账单-2024年度账单.png'
     }
     if (cmd === 'share_qr_svg') {

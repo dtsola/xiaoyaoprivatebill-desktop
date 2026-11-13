@@ -6,19 +6,19 @@
 
     <!-- 窗口按钮：26px 圆角按钮，右上角 -->
     <div class="window-controls" v-if="!isMac">
-      <button class="window-btn" aria-label="最小化" title="最小化" @click="minimizeWindow">
+      <button class="window-btn" :aria-label="t('layout.window.minimize')" :title="t('layout.window.minimize')" @click="minimizeWindow">
         <Minus :size="14" />
       </button>
       <button
         class="window-btn"
-        :aria-label="isMaximized ? '还原' : '最大化'"
-        :title="isMaximized ? '还原' : '最大化'"
+        :aria-label="isMaximized ? t('layout.window.restore') : t('layout.window.maximize')"
+        :title="isMaximized ? t('layout.window.restore') : t('layout.window.maximize')"
         @click="toggleMaximize"
       >
         <Copy v-if="isMaximized" :size="12" />
         <Square v-else :size="11" />
       </button>
-      <button class="window-btn window-close" aria-label="关闭" title="关闭" @click="closeWindow">
+      <button class="window-btn window-close" :aria-label="t('layout.window.close')" :title="t('layout.window.close')" @click="closeWindow">
         <X :size="14" />
       </button>
     </div>
@@ -27,9 +27,9 @@
     <div v-if="sessionStore.isDemo" class="demo-banner">
       <div class="demo-content">
         <FlaskConical :size="16" />
-        <span>您正在浏览示例数据（仅供演示功能预览）</span>
+        <span>{{ t('layout.demo.banner') }}</span>
       </div>
-      <button @click="exitDemoMode" class="exit-demo-btn">退出演示</button>
+      <button @click="exitDemoMode" class="exit-demo-btn">{{ t('layout.demo.exit') }}</button>
     </div>
 
     <div class="app-container">
@@ -38,15 +38,15 @@
         <div class="logo" data-tauri-drag-region @dblclick="toggleMaximize">
           <img
             src="/images/logo_128.png"
-            alt="小遥账单助手"
+            :alt="t('layout.logoAlt')"
             class="logo-icon"
             data-tauri-drag-region
           />
-          <span data-tauri-drag-region>小遥账单</span>
+          <span data-tauri-drag-region>{{ t('layout.appName') }}</span>
           <button
             class="sidebar-toggle"
-            :aria-label="collapsed ? '展开侧边栏' : '收起侧边栏'"
-            :title="collapsed ? '展开侧边栏' : '收起侧边栏'"
+            :aria-label="collapsed ? t('layout.sidebar.expand') : t('layout.sidebar.collapse')"
+            :title="collapsed ? t('layout.sidebar.expand') : t('layout.sidebar.collapse')"
             @click="toggleSidebar"
           >
             <ChevronRight v-if="collapsed" :size="15" />
@@ -56,62 +56,62 @@
         <nav class="nav-menu">
           <router-link to="/" class="nav-item" :class="{ active: $route.path === '/' }">
             <House class="nav-icon icon-home" :size="18" />
-            <span>首页</span>
+            <span>{{ t('nav.home') }}</span>
           </router-link>
           <router-link
             to="/share"
             class="nav-item nav-item-share"
-            title="生成年度 / 月度账单海报"
+            :title="t('layout.shareEntry')"
             :class="{ active: $route.path === '/share' }"
           >
             <Share2 class="nav-icon icon-share" :size="18" />
-            <span>分享海报</span>
+            <span>{{ t('nav.share') }}</span>
           </router-link>
           <router-link to="/yearly" class="nav-item" :class="{ active: $route.path === '/yearly' }">
             <CalendarDays class="nav-icon icon-yearly" :size="18" />
-            <span>年度总览</span>
+            <span>{{ t('nav.yearly') }}</span>
           </router-link>
           <router-link to="/monthly" class="nav-item" :class="{ active: $route.path === '/monthly' }">
             <ChartLine class="nav-icon icon-monthly" :size="18" />
-            <span>月度分析</span>
+            <span>{{ t('nav.monthly') }}</span>
           </router-link>
           <router-link to="/category" class="nav-item" :class="{ active: $route.path === '/category' }">
             <Tags class="nav-icon icon-category" :size="18" />
-            <span>分类分析</span>
+            <span>{{ t('nav.category') }}</span>
           </router-link>
           <router-link to="/time" class="nav-item" :class="{ active: $route.path === '/time' }">
             <Clock class="nav-icon icon-time" :size="18" />
-            <span>时间分析</span>
+            <span>{{ t('nav.time') }}</span>
           </router-link>
           <router-link to="/insights" class="nav-item" :class="{ active: $route.path === '/insights' }">
             <Lightbulb class="nav-icon icon-insights" :size="18" />
-            <span>消费洞察</span>
+            <span>{{ t('nav.insights') }}</span>
           </router-link>
           <router-link to="/transactions" class="nav-item" :class="{ active: $route.path === '/transactions' }">
             <Receipt class="nav-icon icon-transactions" :size="18" />
-            <span>交易记录</span>
+            <span>{{ t('nav.transactions') }}</span>
           </router-link>
           <router-link to="/agent" class="nav-item" :class="{ active: $route.path === '/agent' }">
             <Bot class="nav-icon icon-agent" :size="18" />
-            <span>AI Agent 接入</span>
+            <span>{{ t('nav.agent') }}</span>
           </router-link>
           <button
             type="button"
             class="nav-item nav-item-external"
-            title="打开小遥Claw 官网"
+            :title="t('layout.openClawSite')"
             @click="openClawSite"
           >
             <PawPrint class="nav-icon icon-claw" :size="18" />
-            <span>小遥Claw</span>
+            <span>{{ t('nav.claw') }}</span>
             <ArrowUpRight class="nav-external" :size="13" />
           </button>
           <router-link to="/settings" class="nav-item" :class="{ active: $route.path === '/settings' }">
             <Settings class="nav-icon icon-settings" :size="18" />
-            <span>设置</span>
+            <span>{{ t('nav.settings') }}</span>
           </router-link>
           <router-link to="/about-author" class="nav-item" :class="{ active: $route.path === '/about-author' }">
             <CircleUserRound class="nav-icon icon-author" :size="18" />
-            <span>关于作者</span>
+            <span>{{ t('nav.author') }}</span>
           </router-link>
         </nav>
       </aside>
@@ -131,7 +131,7 @@
       @click="setFilter('all')"
     >
       <List :size="16" />
-      <span>全部交易</span>
+      <span>{{ t('layout.filters.all') }}</span>
     </button>
     <button
       class="filter-btn"
@@ -139,7 +139,7 @@
       @click="setFilter('large')"
     >
       <Coins :size="16" />
-      <span>仅大额交易</span>
+      <span>{{ t('layout.filters.large') }}</span>
     </button>
     <button
       class="filter-btn"
@@ -147,7 +147,7 @@
       @click="setFilter('small')"
     >
       <Coffee :size="16" />
-      <span>仅小额交易</span>
+      <span>{{ t('layout.filters.small') }}</span>
     </button>
   </div>
 
@@ -161,7 +161,7 @@
   <div v-if="uiStore.globalLoading" class="global-loader">
     <div class="loader-content">
       <div class="spinner"></div>
-      <div class="loader-text">加载中...</div>
+      <div class="loader-text">{{ t('layout.globalLoading') }}</div>
     </div>
   </div>
 </template>
@@ -200,6 +200,7 @@ import { openUrl } from '@tauri-apps/plugin-opener'
 import { useUiStore } from '@/stores/ui'
 import { useSessionStore } from '@/stores/session'
 import { useFilterStore } from '@/stores/filter'
+import { useI18n } from 'vue-i18n'
 import Toast from '@/components/common/Toast.vue'
 import Modal from '@/components/common/Modal.vue'
 
@@ -208,6 +209,7 @@ const route = useRoute()
 const uiStore = useUiStore()
 const sessionStore = useSessionStore()
 const filterStore = useFilterStore()
+const { t } = useI18n()
 
 let unlistenCloseHint = null
 
@@ -286,7 +288,7 @@ async function openClawSite() {
   try {
     await openUrl('https://www.xiaoyaosai.com/xiaoyaoclaw/')
   } catch (error) {
-    uiStore.showError('打开小遥Claw 官网失败: ' + error.message)
+    uiStore.showError(`${t('layout.openClawFailed')}: ${error.message}`)
   }
 }
 
@@ -323,7 +325,7 @@ onMounted(async () => {
   await nextTick()
   decoratePageChrome()
   unlistenCloseHint = await listen('desktop://close-to-tray-hint', () => {
-    uiStore.showSuccess('已最小化到托盘，可从托盘菜单退出')
+    uiStore.showSuccess(t('layout.closeToTray'))
   })
 
   // 最大化状态跟随系统（双击拖拽区、Win+↑、任务栏菜单都会触发 resize）
@@ -347,13 +349,13 @@ onUnmounted(() => {
 })
 
 async function exitDemoMode() {
-  if (confirm('确定要退出演示模式吗？')) {
+  if (confirm(t('layout.demo.confirmExit'))) {
     try {
       await sessionStore.exitDemoMode()
-      uiStore.showSuccess('已退出演示模式')
+      uiStore.showSuccess(t('layout.demo.exited'))
       router.replace('/')
     } catch (error) {
-      uiStore.showError('退出失败: ' + error.message)
+      uiStore.showError(`${t('layout.demo.exitFailed')}: ${error.message}`)
     }
   }
 }

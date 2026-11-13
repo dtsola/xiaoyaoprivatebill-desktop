@@ -1,9 +1,9 @@
 <template>
   <div class="welcome-section">
-    <h1 class="welcome-title">小遥账单助手</h1>
+    <h1 class="welcome-title">{{ t('home.title') }}</h1>
     <p class="welcome-subtitle">
-      支持支付宝和微信账单的一站式分析，获取详细的消费洞察。<br />
-      所有数据分析均在本地进行，保护您的隐私安全。
+      {{ t('home.subtitle') }}<br />
+      {{ t('home.privacySubtitle') }}
     </p>
 
     <div class="features-grid">
@@ -11,54 +11,54 @@
         <div class="feature-icon feature-icon-analysis">
           <ChartPie :size="'1em'" />
         </div>
-        <h3 class="feature-title">多维度分析</h3>
+        <h3 class="feature-title">{{ t('home.features.analysisTitle') }}</h3>
         <p class="feature-description">
-          支持年度、月度、分类、时间等多个维度的消费分析，帮助您更好地了解消费习惯。
+          {{ t('home.features.analysisDesc') }}
         </p>
       </div>
       <div class="feature-card">
         <div class="feature-icon feature-icon-privacy">
           <ShieldCheck :size="'1em'" />
         </div>
-        <h3 class="feature-title">隐私保护</h3>
+        <h3 class="feature-title">{{ t('home.features.privacyTitle') }}</h3>
         <p class="feature-description">
-          数据仅保存在本机，不发起任何网络请求。文件由你手动管理，可随时删除。
+          {{ t('home.features.privacyDesc') }}
         </p>
       </div>
       <div class="feature-card">
         <div class="feature-icon feature-icon-trend">
           <ChartLine :size="'1em'" />
         </div>
-        <h3 class="feature-title">趋势追踪</h3>
+        <h3 class="feature-title">{{ t('home.features.trendTitle') }}</h3>
         <p class="feature-description">
-          展示消费趋势变化，支持环比分析，帮助您更好地规划财务。
+          {{ t('home.features.trendDesc') }}
         </p>
       </div>
       <div class="feature-card">
         <div class="feature-icon feature-icon-search">
           <Search :size="'1em'" />
         </div>
-        <h3 class="feature-title">智能搜索</h3>
+        <h3 class="feature-title">{{ t('home.features.searchTitle') }}</h3>
         <p class="feature-description">
-          支持交易记录快速搜索和筛选，轻松找到任意历史交易信息。
+          {{ t('home.features.searchDesc') }}
         </p>
       </div>
     </div>
 
     <div class="upload-section">
-      <h2 class="upload-title">开始分析您的账单</h2>
+      <h2 class="upload-title">{{ t('home.uploadTitle') }}</h2>
       <p class="privacy-notice">
-        支持导入支付宝和微信账单（CSV/XLSX），文件保存在本机数据目录，可随时删除。<br />
-        所有数据分析均在本地进行，我们不会收集或存储您的个人信息。
+        {{ t('home.uploadHint') }}<br />
+        {{ t('home.privacyHint') }}
       </p>
       <div class="action-buttons">
         <router-link to="/settings" class="start-button">
           <Upload :size="'1em'" />
-          上传账单文件
+          {{ t('home.uploadButton') }}
         </router-link>
         <button @click="enterDemoMode" class="demo-button">
           <Eye :size="'1em'" />
-          查看示例数据
+          {{ t('home.demoButton') }}
         </button>
       </div>
     </div>
@@ -69,20 +69,22 @@
 import { ChartLine, ChartPie, Eye, Search, ShieldCheck, Upload } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { useUiStore } from '@/stores/ui'
+import { useI18n } from 'vue-i18n'
 import { useSessionStore } from '@/stores/session'
 
 const router = useRouter()
 const uiStore = useUiStore()
+const { t } = useI18n()
 const sessionStore = useSessionStore()
 
 async function enterDemoMode() {
   try {
     await sessionStore.enterDemoMode()
-    uiStore.showSuccess('已进入演示模式')
+    uiStore.showSuccess(t('layout.demo.entered'))
     router.push('/yearly')
   } catch (error) {
     console.error('Error:', error)
-    uiStore.showError('进入演示模式失败: ' + error.message)
+    uiStore.showError(`${t('layout.demo.enterFailed')}: ${error.message}`)
   }
 }
 </script>

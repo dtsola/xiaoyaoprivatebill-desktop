@@ -88,6 +88,9 @@ describe('格式化', () => {
     expect(formatCompactYuan(17374.89)).toBe('1.74万')
     expect(formatCompactYuan(9999.5)).toBe('9,999.50')
     expect(formatCompactYuan(120000000)).toBe('1.20亿')
+    expect(formatCompactYuan(67404.67, 'en-US')).toBe('67.4K')
+    expect(formatCompactYuan(120000000, 'en-US')).toBe('120.00M')
+    expect(formatCompactYuan(1200000000, 'en-US')).toBe('1.20B')
   })
 
   it('按开关显示金额或掩码', () => {
@@ -209,6 +212,40 @@ describe('月度模型', () => {
     )
     expect(empty.chart.items).toEqual([])
     expect(empty.periodLabel).toBe('2024 年 5 月')
+  })
+})
+
+describe('英文海报', () => {
+  it('年度与月度文案按英文输出', () => {
+    const annual = buildPosterModel(yearly, {
+      period: 'year',
+      year: 2024,
+      locale: 'en-US'
+    })
+    expect(annual.locale).toBe('en-US')
+    expect(annual.titleSuffix).toBe('Yearly Bill')
+    expect(annual.periodLabel).toBe('2024')
+    expect(annual.heroLabel).toBe('Yearly spending')
+    expect(annual.chartTitle).toBe('Monthly spending trend')
+    expect(annual.countText(1838)).toBe('1838')
+    expect(annual.peakText({ label: '3' }, '39.4K')).toBe('Peak 3 · 39.4K')
+
+    const monthlyPoster = buildPosterModel(monthly, {
+      period: 'month',
+      year: 2024,
+      month: 12,
+      locale: 'en-US'
+    })
+    expect(monthlyPoster.periodLabel).toBe('2024-12')
+    expect(monthlyPoster.heroLabel).toBe('Monthly spending')
+    expect(monthlyPoster.chartTitle).toBe('Daily spending')
+    expect(monthlyPoster.peakText({ label: '12' }, '')).toBe('Peak day 12')
+  })
+
+  it('未知语言回退中文', () => {
+    const model = buildPosterModel(yearly, { period: 'year', year: 2024, locale: 'fr-FR' })
+    expect(model.locale).toBe('zh-CN')
+    expect(model.titleSuffix).toBe('年度账单')
   })
 })
 

@@ -220,6 +220,77 @@ export const AMOUNT_FIELDS = [
   { key: 'peak', label: '趋势最高金额' }
 ]
 
+
+/**
+ * 海报画布文案。海报是图片，不走 vue-i18n，避免 Canvas 层依赖组件上下文。
+ */
+const POSTER_COPY = {
+  'zh-CN': {
+    appName: '小遥账单',
+    product: '小遥账单桌面版',
+    slogan: '隐私优先 · 完全离线 · 本地分析',
+    titleYear: '年度账单',
+    titleMonth: '月度账单',
+    subtitle: '每一笔支出，都是这一年的注脚',
+    heroYear: '年度支出',
+    heroMonth: '本月支出',
+    incomeYear: '年度收入',
+    incomeMonth: '本月收入',
+    balanceYear: '年度结余',
+    balanceMonth: '本月结余',
+    chartYear: '月度支出趋势',
+    chartMonth: '每日支出',
+    top: '消费 TOP 5',
+    sort: '按支出金额排序',
+    qrHint: '扫码了解详情',
+    qrPlaceholder: '二维码',
+    categoriesEmpty: '还没有分类数据',
+    chartEmpty: '这段时间还没有支出数据',
+    transactions: '交易笔数',
+    periodLabel: (year, month, period) =>
+      period === 'month' ? `${year} 年 ${month} 月` : `${year} 年`,
+    asOf: (day) => `数据截至 ${day} 日`,
+    dailyAvg: (value) => `日均消费 ¥${value}`,
+    dailyAvgHidden: '日均消费 ••••',
+    countText: (count) => `${count} 笔`,
+    peakText: (label, value, period) =>
+      `最高 ${label}${period === 'month' ? '日' : '月'}${value ? ` · ${value}` : ''}`
+  },
+  'en-US': {
+    appName: 'Xiaoyao Bill',
+    product: 'Xiaoyao Bill Desktop',
+    slogan: 'Private · Fully offline · Local analysis',
+    titleYear: 'Yearly Bill',
+    titleMonth: 'Monthly Bill',
+    subtitle: 'Every transaction tells a story of the year',
+    heroYear: 'Yearly spending',
+    heroMonth: 'Monthly spending',
+    incomeYear: 'Yearly income',
+    incomeMonth: 'Monthly income',
+    balanceYear: 'Yearly balance',
+    balanceMonth: 'Monthly balance',
+    chartYear: 'Monthly spending trend',
+    chartMonth: 'Daily spending',
+    top: 'TOP 5 categories',
+    sort: 'By spending amount',
+    qrHint: 'Scan to learn more',
+    qrPlaceholder: 'QR code',
+    categoriesEmpty: 'No category data yet',
+    chartEmpty: 'No spending in this period',
+    transactions: 'Transactions',
+    periodLabel: (year, month, period) =>
+      period === 'month' ? `${year}-${String(month).padStart(2, '0')}` : `${year}`,
+    asOf: (day) => `Data through day ${day}`,
+    dailyAvg: (value) => `Daily average ¥${value}`,
+    dailyAvgHidden: 'Daily average ••••',
+    countText: (count) => `${count}`,
+    peakText: (label, value, period) =>
+      `Peak ${period === 'month' ? 'day ' : ''}${label}${value ? ` · ${value}` : ''}`
+  }
+}
+
+const posterCopy = (locale) => POSTER_COPY[locale === 'en-US' ? 'en-US' : 'zh-CN']
+
 export const DEFAULT_AMOUNT_VISIBILITY = AMOUNT_FIELDS.reduce((result, field) => {
   result[field.key] = true
   return result
@@ -250,10 +321,18 @@ export function formatYuan(value) {
   })
 }
 
-/** 分类金额缩写：≥1 亿用「亿」，≥1 万用「万」，其余保持千分位。 */
-export function formatCompactYuan(value) {
+/**
+ * 分类金额缩写：中文用「亿 / 万」，英文用 B / M / K；小数保持千分位。
+ */
+export function formatCompactYuan(value, locale = 'zh-CN') {
   const amount = toNumber(value)
   const abs = Math.abs(amount)
+  if (locale === 'en-US') {
+    if (abs >= 1_000_000_000) return `${(amount / 1_000_000_000).toFixed(2)}B`
+    if (abs >= 1_000_000) return `${(amount / 1_000_000).toFixed(2)}M`
+    if (abs >= 10_000) return `${(amount / 1_000).toFixed(1)}K`
+    return formatYuan(amount)
+  }
   if (abs >= 100_000_000) {
     return `${(amount / 100_000_000).toFixed(2)}亿`
   }
@@ -297,7 +376,7 @@ function aggregateCategories(data) {
     .sort((a, b) => b.amount - a.amount)
 }
 
-function computeAsOfLabel(data, period, year, month, today) {
+function computeAsOfLabel(data, period, year, month, today, copy) {
   if (period !== 'month' || !(today instanceof Date) || Number.isNaN(today.getTime())) {
     return ''
   }
@@ -315,7 +394,7 @@ function computeAsOfLabel(data, period, year, month, today) {
     }
   }
   if (lastActive === 0 || lastActive >= days) return ''
-  return `数据截至 ${lastActive} 日`
+  return copy.asOf(lastActive)
 }
 
 function buildChart(data, period) {
@@ -379,17 +458,43 @@ export function buildPosterModel(data, options = {}) {
       ? (chart.items.length > 0 ? expense / chart.items.length : 0)
       : toNumber(stats.avg_daily_expense)
 
+  const locale = options.locale === 'en-US' ? 'en-US' : 'zh-CN'
+  const copy = posterCopy(locale)
+
   return {
     period,
     year,
     month,
-    asOfLabel: computeAsOfLabel(data, period, year, month, options.today ?? new Date()),
-    titleSuffix: period === 'month' ? '月度账单' : '年度账单',
-    periodLabel: period === 'month' ? `${year} 年 ${month} 月` : `${year} 年`,
-    heroLabel: period === 'month' ? '本月支出' : '年度支出',
-    incomeLabel: period === 'month' ? '本月收入' : '年度收入',
-    balanceLabel: period === 'month' ? '本月结余' : '年度结余',
-    chartTitle: period === 'month' ? '每日支出' : '月度支出趋势',
+    locale,
+    asOfLabel: computeAsOfLabel(
+      data,
+      period,
+      year,
+      month,
+      options.today ?? new Date(),
+      copy
+    ),
+    appName: copy.appName,
+    titleSuffix: period === 'month' ? copy.titleMonth : copy.titleYear,
+    periodLabel: copy.periodLabel(year, month, period),
+    subtitle: copy.subtitle,
+    heroLabel: period === 'month' ? copy.heroMonth : copy.heroYear,
+    incomeLabel: period === 'month' ? copy.incomeMonth : copy.incomeYear,
+    balanceLabel: period === 'month' ? copy.balanceMonth : copy.balanceYear,
+    chartTitle: period === 'month' ? copy.chartMonth : copy.chartYear,
+    topLabel: copy.top,
+    sortLabel: copy.sort,
+    qrHint: copy.qrHint,
+    qrPlaceholder: copy.qrPlaceholder,
+    categoriesEmpty: copy.categoriesEmpty,
+    chartEmpty: copy.chartEmpty,
+    productName: copy.product,
+    productSlogan: copy.slogan,
+    transactionsLabel: copy.transactions,
+    countText: copy.countText,
+    dailyAvgText: copy.dailyAvg,
+    dailyAvgHidden: copy.dailyAvgHidden,
+    peakText: (peak, value) => copy.peakText(peak.label, value, period),
     chart,
     expense,
     income,
@@ -465,11 +570,11 @@ function drawHeader(ctx, model, theme, options) {
   ctx.textBaseline = 'alphabetic'
   ctx.fillStyle = theme.ink
   ctx.font = font(600, 34)
-  ctx.fillText(`小遥账单 · ${model.titleSuffix}`, 236, 152)
+  ctx.fillText(`${model.appName} · ${model.titleSuffix}`, 236, 152)
 
   ctx.fillStyle = theme.muted
   ctx.font = font(400, 24)
-  ctx.fillText('每一笔支出，都是这一年的注脚', 236, 192)
+  ctx.fillText(model.subtitle, 236, 192)
 
   if (model.asOfLabel) {
     ctx.textAlign = 'right'
@@ -512,8 +617,8 @@ function drawHero(ctx, model, theme, options) {
   ctx.font = font(400, 24)
   ctx.fillText(
     visibility.expense
-      ? `日均消费 ¥${formatYuan(model.avgDailyExpense)}`
-      : '日均消费 ••••',
+      ? model.dailyAvgText(formatYuan(model.avgDailyExpense))
+      : model.dailyAvgHidden,
     112,
     448
   )
@@ -532,8 +637,8 @@ function drawHero(ctx, model, theme, options) {
       color: model.balance >= 0 ? theme.green : theme.red
     },
     {
-      label: '交易笔数',
-      value: `${model.totalCount} 笔`,
+      label: model.transactionsLabel,
+      value: model.countText(model.totalCount),
       color: theme.ink
     }
   ]
@@ -577,9 +682,10 @@ function drawChart(ctx, model, theme, options) {
   ctx.font = font(400, 22)
   const peak = model.chart.peak
   const peakText = peak
-    ? `最高 ${peak.label}${model.period === 'month' ? '日' : '月'}${
-        visibility.peak ? ` · ${formatCompactYuan(peak.value)}` : ''
-      }`
+    ? model.peakText(
+        peak,
+        visibility.peak ? formatCompactYuan(peak.value, model.locale) : ''
+      )
     : ''
   if (peakText) ctx.fillText(peakText, x + width - 32, y + 52)
 
@@ -588,7 +694,7 @@ function drawChart(ctx, model, theme, options) {
     ctx.textAlign = 'center'
     ctx.fillStyle = theme.muted
     ctx.font = font(400, 24)
-    ctx.fillText('这段时间还没有支出数据', x + width / 2, y + height / 2)
+    ctx.fillText(model.chartEmpty, x + width / 2, y + height / 2)
     return
   }
 
@@ -630,18 +736,18 @@ function drawCategories(ctx, model, theme, options) {
   ctx.textBaseline = 'alphabetic'
   ctx.fillStyle = theme.ink
   ctx.font = font(600, 28)
-  ctx.fillText('消费 TOP 5', x, titleY)
+  ctx.fillText(model.topLabel, x, titleY)
 
   ctx.textAlign = 'right'
   ctx.fillStyle = theme.muted
   ctx.font = font(400, 22)
-  ctx.fillText('按支出金额排序', 968, titleY)
+  ctx.fillText(model.sortLabel, 968, titleY)
 
   if (model.topCategories.length === 0) {
     ctx.textAlign = 'left'
     ctx.fillStyle = theme.muted
     ctx.font = font(400, 24)
-    ctx.fillText('还没有分类数据', x, titleY + 64)
+    ctx.fillText(model.categoriesEmpty, x, titleY + 64)
     return
   }
 
@@ -689,14 +795,14 @@ function drawCategories(ctx, model, theme, options) {
     ctx.fillStyle = theme.ink
     ctx.font = font(600, 26)
     ctx.fillText(
-      visibility.categories ? formatCompactYuan(item.amount) : '••••',
+      visibility.categories ? formatCompactYuan(item.amount, model.locale) : '••••',
       968,
       rowY + 4
     )
   })
 }
 
-function drawFooter(ctx, theme, assets) {
+function drawFooter(ctx, model, theme, assets) {
   ctx.beginPath()
   ctx.moveTo(112, 1256)
   ctx.lineTo(968, 1256)
@@ -708,11 +814,11 @@ function drawFooter(ctx, theme, assets) {
   ctx.textBaseline = 'alphabetic'
   ctx.fillStyle = theme.ink
   ctx.font = font(600, 30)
-  ctx.fillText(PRODUCT_NAME, 112, 1306)
+  ctx.fillText(model.productName, 112, 1306)
 
   ctx.fillStyle = theme.muted
   ctx.font = font(400, 22)
-  ctx.fillText(PRODUCT_SLOGAN, 112, 1338)
+  ctx.fillText(model.productSlogan, 112, 1338)
 
   ctx.fillStyle = theme.brand
   ctx.font = font(400, 19)
@@ -732,14 +838,14 @@ function drawFooter(ctx, theme, assets) {
     ctx.fillStyle = theme.muted
     ctx.font = font(400, 16)
     ctx.textBaseline = 'middle'
-    ctx.fillText('二维码', qrX + qrSize / 2, qrY + qrSize / 2)
+    ctx.fillText(model.qrPlaceholder, qrX + qrSize / 2, qrY + qrSize / 2)
   }
 
   ctx.textAlign = 'center'
   ctx.textBaseline = 'alphabetic'
   ctx.fillStyle = theme.muted
   ctx.font = font(400, 18)
-  ctx.fillText('扫码了解详情', qrX + qrSize / 2, 1380)
+  ctx.fillText(model.qrHint, qrX + qrSize / 2, 1380)
 }
 
 /**
@@ -795,6 +901,6 @@ export function drawSharePoster(ctx, model, assets = {}, options = {}) {
   drawHero(ctx, model, theme, resolved)
   drawChart(ctx, model, theme, resolved)
   drawCategories(ctx, model, theme, resolved)
-  drawFooter(ctx, theme, assets)
+  drawFooter(ctx, model, theme, assets)
   ctx.restore()
 }

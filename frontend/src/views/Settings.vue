@@ -173,6 +173,19 @@
       <h2 class="section-title">桌面</h2>
       <div class="desktop-card">
         <div class="desktop-row">
+          <span class="mcp-label">{{ t('settings.language.label') }}</span>
+          <select
+            class="language-select"
+            :value="desktop.language"
+            :aria-label="t('settings.language.label')"
+            @change="changeLanguage($event.target.value)"
+          >
+            <option value="system">{{ t('settings.language.system') }}</option>
+            <option value="zh-CN">{{ t('settings.language.zh') }}</option>
+            <option value="en-US">{{ t('settings.language.en') }}</option>
+          </select>
+        </div>
+        <div class="desktop-row">
           <span class="mcp-label">关闭行为</span>
           <button class="mcp-btn" @click="toggleCloseToTray">
             {{ desktop.close_to_tray ? '关闭窗口时最小化到托盘' : '关闭窗口时直接退出' }}
@@ -302,6 +315,8 @@ import { listen } from '@tauri-apps/api/event'
 import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { useSessionStore } from '@/stores/session'
 import { useUiStore } from '@/stores/ui'
+import { useI18n } from 'vue-i18n'
+import { resolveLocale, setLocale } from '@/i18n'
 import api from '@/api/client'
 
 const props = defineProps({
@@ -311,6 +326,7 @@ const props = defineProps({
 
 const sessionStore = useSessionStore()
 const uiStore = useUiStore()
+const { t } = useI18n()
 
 // 文件列表
 const alipayFiles = ref([])
@@ -323,6 +339,7 @@ const wechatDragging = ref(false)
 // 桌面设置
 const desktop = ref({
   close_to_tray: true,
+  language: 'system',
   data_dir: ''
 })
 
@@ -422,6 +439,20 @@ async function loadDesktop() {
     desktop.value = { ...desktop.value, ...(await api.desktopSettings()) }
   } catch (error) {
     console.error('[Settings] 读取桌面设置失败:', error)
+  }
+}
+
+async function changeLanguage(preference) {
+  const previous = desktop.value.language
+  const locale = resolveLocale(preference)
+  try {
+    await api.setLanguage(preference, locale)
+    desktop.value = { ...desktop.value, language: preference }
+    setLocale(locale)
+    uiStore.showSuccess(t('settings.language.saved'))
+  } catch (error) {
+    desktop.value = { ...desktop.value, language: previous }
+    uiStore.showError(`${t('settings.language.failed')}: ${error.message}`)
   }
 }
 
@@ -1369,6 +1400,17 @@ async function handleClearAllData() {
 }
 
 /* 桌面设置 */
+.language-select {
+  height: 34px;
+  padding: 0 28px 0 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #111827;
+  font-size: 13px;
+  cursor: pointer;
+}
+
 .desktop-section {
   margin-top: 32px;
 }

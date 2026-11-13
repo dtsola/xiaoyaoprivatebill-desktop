@@ -37,6 +37,8 @@ export const api = {
   openDataDir: () => invoke('open_data_dir'),
   storageStatus: () => invoke('storage_status'),
   openStorageDir: (kind) => invoke('open_storage_dir', { kind }),
+  setLanguage: (preference, locale) => invoke('set_language', { preference, locale }),
+  applyShellLanguage: (locale) => invoke('apply_shell_language', { locale }),
 
   // ==================== MCP 服务 ====================
   mcpStatus: () => invoke('mcp_status'),

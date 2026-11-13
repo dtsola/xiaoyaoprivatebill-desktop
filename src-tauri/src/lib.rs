@@ -2,6 +2,7 @@
 
 mod commands;
 mod mcp_state;
+mod shell_i18n;
 mod tray;
 
 use std::sync::Arc;
@@ -53,6 +54,14 @@ pub fn run() {
 
             tray::create_tray(app)?;
 
+            // 已明确选择过语言时，启动即同步托盘与窗口标题；
+            // `system` 由前端读取系统语言后调用 apply_shell_language。
+            let language = app.state::<McpState>().desktop_settings().language;
+            if language != "system" {
+                let handle = app.handle().clone();
+                tray::apply_shell_language(&handle, &language);
+            }
+
             // 首帧后再显示，避免白屏。
             if let Some(window) = app.get_webview_window("main") {
                 // Windows 去掉原生标题栏，改由前端 AppLayout 渲染拖拽区与窗口按钮；
@@ -75,7 +84,9 @@ pub fn run() {
             commands::storage_status,
             commands::open_storage_dir,
             commands::share_qr_svg,
-            commands::save_share_poster
+            commands::save_share_poster,
+            commands::set_language,
+            commands::apply_shell_language
         ])
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {

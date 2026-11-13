@@ -8,6 +8,8 @@ use serde_json::{json, Value};
 use tauri::menu::MenuItem;
 use tauri::Wry;
 
+use crate::shell_i18n::{normalize_locale, shell_labels};
+
 /// 主管 MCP 生命周期的共享状态。
 pub struct McpState {
     /// 数据运行时。
@@ -16,6 +18,8 @@ pub struct McpState {
     pub manager: McpManager,
     settings: Mutex<Settings>,
     tray_item: Mutex<Option<MenuItem<Wry>>>,
+    /// 当前托盘 / 窗口语言（已归一为 zh-CN / en-US）。
+    shell_locale: Mutex<String>,
 }
 
 impl McpState {
@@ -28,6 +32,22 @@ impl McpState {
             manager,
             settings: Mutex::new(settings),
             tray_item: Mutex::new(None),
+            shell_locale: Mutex::new("zh-CN".to_owned()),
+        }
+    }
+
+    /// 当前托盘 / 窗口语言。
+    pub fn shell_locale(&self) -> String {
+        self.shell_locale
+            .lock()
+            .map(|guard| guard.clone())
+            .unwrap_or_else(|_| "zh-CN".to_owned())
+    }
+
+    /// 更新托盘 / 窗口语言（不落盘，落盘由 `set_language` 命令负责）。
+    pub fn set_shell_locale(&self, locale: &str) {
+        if let Ok(mut guard) = self.shell_locale.lock() {
+            *guard = normalize_locale(locale).to_owned();
         }
     }
 
@@ -38,12 +58,13 @@ impl McpState {
         }
     }
 
-    /// 按当前启用状态刷新托盘菜单文案。
+    /// 按当前启用状态与语言刷新托盘菜单文案。
     pub fn sync_tray_label(&self) {
+        let labels = shell_labels(&self.shell_locale());
         let label = if self.enabled() {
-            "关闭 MCP 服务"
+            labels.mcp_on
         } else {
-            "开启 MCP 服务"
+            labels.mcp_off
         };
         if let Ok(guard) = self.tray_item.lock() {
             if let Some(item) = guard.as_ref() {

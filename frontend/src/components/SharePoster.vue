@@ -1,23 +1,23 @@
 <template>
-  <div class="share-poster-inline" aria-label="账单分享海报">
+  <div class="share-poster-inline" :aria-label="t('poster.save')">
     <div class="share-body">
       <div class="share-preview">
         <canvas ref="canvasRef" class="poster-canvas"></canvas>
         <div v-if="!ready" class="poster-loading">
           <div class="poster-spinner"></div>
-          <span>正在生成海报...</span>
+          <span>{{ t('poster.generating') }}</span>
         </div>
       </div>
 
       <aside class="share-side">
-        <h2 class="share-side-title">把账单变成<br />一张海报</h2>
+        <h2 class="share-side-title">{{ t('poster.sideTitleLine1') }}<br />{{ t('poster.sideTitleLine2') }}</h2>
         <p class="share-side-subtitle">
-          1080×1440 竖版<br />
-          适合朋友圈、小红书、微博、抖音、视频号
+          {{ t('poster.sizeLine') }}<br />
+          {{ t('poster.channels') }}
         </p>
 
         <section class="share-section">
-          <h3 class="share-section-title">海报模板</h3>
+          <h3 class="share-section-title">{{ t('poster.templates') }}</h3>
           <div class="theme-grid">
             <button
               v-for="theme in POSTER_THEMES"
@@ -32,20 +32,20 @@
                 class="theme-swatch"
                 :style="{ background: `linear-gradient(135deg, ${theme.swatch[0]}, ${theme.swatch[1]})` }"
               ></span>
-              <span class="theme-name">{{ theme.name }}</span>
+              <span class="theme-name">{{ t(`poster.themeNames.${theme.id}`) }}</span>
             </button>
           </div>
         </section>
 
         <section class="share-section">
           <div class="share-section-head">
-            <h3 class="share-section-title">金额显示</h3>
+            <h3 class="share-section-title">{{ t('poster.amounts') }}</h3>
             <button type="button" class="link-btn" @click="toggleHideAmounts">
-              {{ allAmountsVisible ? '全部隐藏' : '全部显示' }}
+              {{ allAmountsVisible ? t('poster.hideAll') : t('poster.showAll') }}
             </button>
           </div>
           <p v-if="period === 'month'" class="switch-hint">
-            月度海报默认隐藏收入与结余，可随时打开。
+            {{ t('poster.monthlyHint') }}
           </p>
           <div class="amount-switches">
             <button
@@ -57,7 +57,7 @@
               :aria-pressed="visibility[field.key]"
               @click="toggleAmount(field.key)"
             >
-              <span>{{ field.label }}</span>
+              <span>{{ t(`poster.amountFields.${field.key}`) }}</span>
               <span class="switch-track"><span class="switch-thumb"></span></span>
             </button>
           </div>
@@ -71,11 +71,11 @@
             @click="savePoster"
           >
             <Download :size="16" />
-            {{ saving ? '保存中...' : '保存图片' }}
+            {{ saving ? t('poster.saving') : t('poster.save') }}
           </button>
         </div>
 
-        <p class="share-tip">图片完全在本机生成；二维码指向产品官网。</p>
+        <p class="share-tip">{{ t('poster.tip') }}</p>
       </aside>
     </div>
   </div>
@@ -85,6 +85,7 @@
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { Download } from 'lucide-vue-next'
 import { save } from '@tauri-apps/plugin-dialog'
+import { useI18n } from 'vue-i18n'
 
 import api from '@/api/client'
 import { useUiStore } from '@/stores/ui'
@@ -107,6 +108,7 @@ const props = defineProps({
 })
 
 const uiStore = useUiStore()
+const { t, locale } = useI18n()
 const canvasRef = ref(null)
 const ready = ref(false)
 const saving = ref(false)
@@ -150,7 +152,8 @@ function render() {
     buildPosterModel(props.data, {
       period: props.period,
       year: props.year,
-      month: props.month
+      month: props.month,
+      locale: locale.value
     }),
     { logo, qr },
     {
@@ -183,7 +186,7 @@ function toggleAmount(key) {
 async function savePoster() {
   if (!ready.value || saving.value) return
   if (!qr) {
-    uiStore.showError('二维码尚未加载完成，请稍后再试')
+    uiStore.showError(t('poster.qrNotReady'))
     return
   }
 
@@ -191,20 +194,20 @@ async function savePoster() {
   try {
     const suffix =
       props.period === 'month'
-        ? `${props.year}年${props.month}月账单`
-        : `${props.year}年度账单`
+        ? t('poster.fileNameMonth', { year: props.year, month: props.month })
+        : t('poster.fileNameYear', { year: props.year })
     const target = await save({
-      defaultPath: `小遥账单-${suffix}.png`,
-      filters: [{ name: 'PNG 图片', extensions: ['png'] }]
+      defaultPath: suffix,
+      filters: [{ name: t('poster.filterName'), extensions: ['png'] }]
     })
     if (!target) return
 
     const dataUrl = canvasRef.value.toDataURL('image/png')
     const result = await api.saveSharePoster(target, dataUrl.split(',')[1])
-    uiStore.showSuccess(`海报已保存：${result?.path ?? target}`)
+    uiStore.showSuccess(t('poster.saveSuccess', { path: result?.path ?? target }))
   } catch (error) {
     console.error('[SharePoster] 保存失败:', error)
-    uiStore.showError(`保存海报失败: ${error?.message ?? error}`)
+    uiStore.showError(`${t('poster.saveFailed')}: ${error?.message ?? error}`)
   } finally {
     saving.value = false
   }
@@ -221,7 +224,7 @@ watch(
 
 // 页面切换年份 / 月份 / 范围会替换 data，必须重绘画布。
 watch(
-  () => [props.data, props.period, props.year, props.month, props.isDemo],
+  () => [props.data, props.period, props.year, props.month, props.isDemo, locale.value],
   () => {
     if (ready.value) render()
   }

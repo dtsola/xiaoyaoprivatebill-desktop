@@ -75,6 +75,13 @@ pub struct DesktopSettings {
     /// 是否已展示过「关闭到托盘」提示。
     #[serde(default)]
     pub close_hint_shown: bool,
+    /// 界面语言偏好：`system` / `zh-CN` / `en-US`。
+    #[serde(default = "default_language")]
+    pub language: String,
+}
+
+fn default_language() -> String {
+    "system".to_owned()
 }
 
 fn default_true() -> bool {
@@ -86,6 +93,7 @@ impl Default for DesktopSettings {
         Self {
             close_to_tray: true,
             close_hint_shown: false,
+            language: default_language(),
         }
     }
 }
@@ -135,5 +143,37 @@ impl Default for DataSettings {
             parity_filenames: true,
             snapshot_before_clear: true,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn default_language_follows_system() {
+        let settings = Settings::default();
+        assert_eq!(settings.desktop.language, "system");
+    }
+
+    #[test]
+    fn legacy_settings_without_language_use_system() {
+        let legacy = r#"{
+            "schema_version": 1,
+            "desktop": {"close_to_tray": false, "close_hint_shown": true},
+            "mcp": {"enabled": false, "port": 17650},
+            "data": {"parity_filenames": true, "snapshot_before_clear": true}
+        }"#;
+        let settings: Settings = serde_json::from_str(legacy).expect("旧设置应可解析");
+        assert_eq!(settings.desktop.language, "system");
+    }
+
+    #[test]
+    fn language_round_trips_through_json() {
+        let mut settings = Settings::default();
+        settings.desktop.language = "en-US".to_owned();
+        let text = serde_json::to_string(&settings).unwrap();
+        let parsed: Settings = serde_json::from_str(&text).unwrap();
+        assert_eq!(parsed.desktop.language, "en-US");
     }
 }

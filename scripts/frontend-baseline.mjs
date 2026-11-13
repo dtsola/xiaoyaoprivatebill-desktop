@@ -12,6 +12,8 @@ export const ALLOWED_FILES = new Set([
   'frontend/src/views/AboutAuthor.vue',
   'frontend/vite.config.js',
   'frontend/src/views/Home.vue',
+  // 国际化：启动时先读取语言偏好再挂载
+  'frontend/src/main.js',
   // 图标迁移例外：Font Awesome → Lucide（仅保留支付宝/微信/Bilibili 品牌图标）
   'frontend/src/views/Yearly.vue',
   'frontend/src/views/Monthly.vue',
@@ -32,6 +34,8 @@ export const ALLOWED_FILES = new Set([
 
 export const ALLOWED_PREFIXES = [
   'frontend/public/vendor/',
+  // 国际化：词典与语言切换模块（纯新增文件）
+  'frontend/src/i18n/',
   // AI Agent 接入页的小遥Claw 实操截图（只读静态资源）
   'frontend/public/images/claw/'
 ]
