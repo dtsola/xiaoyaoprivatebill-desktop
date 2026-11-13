@@ -11,7 +11,8 @@ import {
   defaultAmountVisibility,
   displayAmount,
   formatCompactYuan,
-  formatYuan
+  formatYuan,
+  localizeCategory
 } from './sharePoster'
 
 const yearly = {
@@ -228,7 +229,15 @@ describe('英文海报', () => {
     expect(annual.heroLabel).toBe('Yearly spending')
     expect(annual.chartTitle).toBe('Monthly spending trend')
     expect(annual.countText(1838)).toBe('1838')
+    expect(annual.demoSuffix).toBe(' · Sample')
     expect(annual.peakText({ label: '3' }, '39.4K')).toBe('Peak 3 · 39.4K')
+    expect(annual.topCategories.map((item) => item.name)).toEqual([
+      'Housing',
+      'Clothing',
+      'Transport',
+      'Dining',
+      'Electronics'
+    ])
 
     const monthlyPoster = buildPosterModel(monthly, {
       period: 'month',
@@ -240,6 +249,12 @@ describe('英文海报', () => {
     expect(monthlyPoster.heroLabel).toBe('Monthly spending')
     expect(monthlyPoster.chartTitle).toBe('Daily spending')
     expect(monthlyPoster.peakText({ label: '12' }, '')).toBe('Peak day 12')
+  })
+
+  it('分类名按英文词典映射，未知分类保留原文', () => {
+    expect(localizeCategory('餐饮美食', 'en-US')).toBe('Dining')
+    expect(localizeCategory('餐饮美食', 'zh-CN')).toBe('餐饮美食')
+    expect(localizeCategory('自定义分类', 'en-US')).toBe('自定义分类')
   })
 
   it('未知语言回退中文', () => {
