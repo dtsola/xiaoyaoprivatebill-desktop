@@ -2,36 +2,36 @@
   <div class="transactions-page">
     <!-- 页面标题 -->
     <div class="page-header">
-      <h1 class="page-title">交易记录</h1>
+      <h1 class="page-title">{{ t('transactions.title') }}</h1>
     </div>
 
     <!-- 卡片容器 -->
     <div class="card">
       <!-- 表格头部和筛选器 -->
       <div class="table-header">
-        <h3>交易明细</h3>
+        <h3>{{ t('transactions.detail') }}</h3>
         <div class="table-filters">
           <select v-model="filters.month" @change="onFilterChange" class="filter-select">
-            <option value="">全部时间</option>
+            <option value="">{{ t('transactions.allTime') }}</option>
             <option v-for="month in availableMonths" :key="month" :value="month">
               {{ month }}
             </option>
           </select>
           <select v-model="filters.category" @change="onFilterChange" class="filter-select">
-            <option value="">全部分类</option>
+            <option value="">{{ t('transactions.allCategories') }}</option>
             <option v-for="cat in categories" :key="cat" :value="cat">
               {{ cat }}
             </option>
           </select>
           <select v-model="filters.type" @change="onFilterChange" class="filter-select">
-            <option value="">全部类型</option>
-            <option value="收入">收入</option>
-            <option value="支出">支出</option>
+            <option value="">{{ t('transactions.allTypes') }}</option>
+            <option value="收入">{{ t('common.income') }}</option>
+            <option value="支出">{{ t('common.expense') }}</option>
           </select>
           <input
             v-model="filters.search"
             type="text"
-            placeholder="搜索交易..."
+            :placeholder="t('transactions.searchPlaceholder')"
             class="filter-input"
             @keyup.enter="onFilterChange"
           />
@@ -41,15 +41,15 @@
       <!-- 总金额汇总 -->
       <div class="table-summary">
         <div class="summary-item">
-          <span class="summary-label">总收入</span>
+          <span class="summary-label">{{ t('transactions.totalIncome') }}</span>
           <span class="summary-value income">¥{{ summary.total_income.toFixed(2) }}</span>
         </div>
         <div class="summary-item">
-          <span class="summary-label">总支出</span>
+          <span class="summary-label">{{ t('transactions.totalExpense') }}</span>
           <span class="summary-value expense">¥{{ summary.total_expense.toFixed(2) }}</span>
         </div>
         <div class="summary-item">
-          <span class="summary-label">结余</span>
+          <span class="summary-label">{{ t('transactions.balance') }}</span>
           <span class="summary-value" :class="summary.balance >= 0 ? 'income' : 'expense'">
             ¥{{ summary.balance.toFixed(2) }}
           </span>
@@ -60,24 +60,24 @@
       <div class="table-container">
         <div v-if="uiStore.globalLoading" class="table-loading">
           <div class="loading-spinner"></div>
-          <p>加载中...</p>
+          <p>{{ t('transactions.loading') }}</p>
         </div>
 
         <div v-else-if="transactions.length === 0" class="empty-state">
           <Receipt class="empty-icon" :size="'1em'" />
-          <p>暂无交易记录</p>
+          <p>{{ t('transactions.empty') }}</p>
         </div>
 
         <table v-else id="transactionTable" class="transaction-table">
           <thead>
             <tr>
-              <th>交易时间</th>
-              <th>商品说明</th>
-              <th>交易对方</th>
-              <th>分类</th>
-              <th>收/支</th>
-              <th>金额</th>
-              <th>状态</th>
+              <th>{{ t('transactions.thTime') }}</th>
+              <th>{{ t('transactions.thProduct') }}</th>
+              <th>{{ t('transactions.thCounterparty') }}</th>
+              <th>{{ t('transactions.thCategory') }}</th>
+              <th>{{ t('transactions.thDirection') }}</th>
+              <th>{{ t('transactions.thAmount') }}</th>
+              <th>{{ t('transactions.thStatus') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -86,13 +86,13 @@
               <td :title="tx.description">{{ tx.description }}</td>
               <td :title="tx.counterparty || ''">{{ tx.counterparty || '-' }}</td>
               <td>{{ tx.category }}</td>
-              <td>{{ tx.type }}</td>
+              <td>{{ tx.type === '收入' ? t('common.income') : t('common.expense') }}</td>
               <td :class="['amount', tx.type === '收入' ? 'income' : 'expense']">
                 {{ parseFloat(tx.amount).toFixed(2) }}
               </td>
               <td>
-                <span :class="['status-tag', tx.status === '交易成功' ? 'success' : 'refund']">
-                  {{ tx.status }}
+                <span :class="['status-tag', isRefundStatus(tx.status) ? 'refund' : 'success']">
+                  {{ statusLabel(tx.status) }}
                 </span>
               </td>
             </tr>
@@ -107,17 +107,17 @@
           :disabled="pagination.current_page <= 1"
           @click="goToPage(pagination.current_page - 1)"
         >
-          上一页
+          {{ t('transactions.prevPage') }}
         </button>
         <span id="pageInfo" class="page-info">
-          第 {{ pagination.current_page }} 页 / 共 {{ pagination.total_pages }} 页 ({{ pagination.total_records }} 条记录)
+          {{ t('transactions.pageInfo', { current: pagination.current_page, total: pagination.total_pages, count: pagination.total_records }) }}
         </span>
         <button
           class="pagination-btn"
           :disabled="pagination.current_page >= pagination.total_pages"
           @click="goToPage(pagination.current_page + 1)"
         >
-          下一页
+          {{ t('transactions.nextPage') }}
         </button>
       </div>
     </div>
@@ -129,12 +129,25 @@ import { Receipt } from 'lucide-vue-next'
 import { ref, reactive, onMounted, watch } from 'vue'
 import { useDataStore } from '@/stores/data'
 import { useUiStore } from '@/stores/ui'
+import { useI18n } from 'vue-i18n'
 import { useSessionStore } from '@/stores/session'
 import { useFilterStore } from '@/stores/filter'
 import api from '@/api/client'
 
 const dataStore = useDataStore()
 const uiStore = useUiStore()
+const { t } = useI18n()
+
+// 支付宝为「交易成功」，微信为「支付成功」；退款/关闭/撤销统一显示为退款
+function isRefundStatus(status) {
+  return /退款|关闭|撤销|refund|closed|cancel/i.test(String(status || ''))
+}
+
+function statusLabel(status) {
+  if (isRefundStatus(status)) return t('transactions.statusRefund')
+  if (String(status || '').includes('成功')) return t('transactions.statusSuccess')
+  return status
+}
 const sessionStore = useSessionStore()
 const filterStore = useFilterStore()
 
@@ -252,7 +265,7 @@ async function loadTransactions() {
     console.log('[Transactions] Loaded', transactions.value.length, 'transactions')
   } catch (error) {
     console.error('[Transactions] Error:', error)
-    uiStore.showError('加载交易记录失败: ' + error.message)
+    uiStore.showError(`${t('transactions.loadFailed')}: ${error.message}`)
   } finally {
     uiStore.setGlobalLoading(false)
   }

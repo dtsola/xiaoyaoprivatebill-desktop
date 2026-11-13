@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { currentLocale, resolveLocale, setLocale } from './index'
+import i18n, { currentLocale, resolveLocale, setLocale } from './index'
 import enUS from './locales/en-US'
 import zhCN from './locales/zh-CN'
 
@@ -61,6 +61,27 @@ describe('语言解析', () => {
 describe('词条完整性', () => {
   it('中英文 key 完全一致', () => {
     expect(flattenKeys(enUS)).toEqual(flattenKeys(zhCN))
+  })
+
+  it('所有字符串词条都能编译（不会被当成复数或多层消息）', () => {
+    const walk = (source, prefix = '', result = []) => {
+      for (const [key, value] of Object.entries(source)) {
+        const path = prefix ? `${prefix}.${key}` : key
+        if (typeof value === 'string') {
+          result.push([path, value])
+        } else if (value && typeof value === 'object' && !Array.isArray(value)) {
+          walk(value, path, result)
+        }
+      }
+      return result
+    }
+
+    for (const locale of ['zh-CN', 'en-US']) {
+      for (const [path, value] of walk(locale === 'zh-CN' ? zhCN : enUS)) {
+        const rendered = i18n.global.t(path, { year: '2024', count: 1 }, { locale })
+        expect(String(rendered), `${locale} ${path} (${value})`).not.toBe(path)
+      }
+    }
   })
 
   it('没有空词条', () => {

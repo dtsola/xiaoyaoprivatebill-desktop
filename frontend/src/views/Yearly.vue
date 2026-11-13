@@ -1,12 +1,12 @@
 <template>
   <div class="yearly-page">
     <div class="page-header">
-      <h1 class="page-title">年度总览</h1>
+      <h1 class="page-title">{{ t('yearly.title') }}</h1>
       <div class="control-group">
         <button @click="prevYear" class="control-button" :disabled="!canGoPrev">
           <ChevronLeft :size="'1em'" />
         </button>
-        <span class="control-display">{{ currentYear }}年</span>
+        <span class="control-display">{{ t('common.yearLabel', { year: currentYear }) }}</span>
         <button @click="nextYear" class="control-button" :disabled="!canGoNext">
           <ChevronRight :size="'1em'" />
         </button>
@@ -16,16 +16,16 @@
 
     <div v-if="uiStore.globalLoading && !yearlyData" class="page-loading">
       <div class="loading-spinner"></div>
-      <p>加载中...</p>
+      <p>{{ t('common.loading') }}</p>
     </div>
 
     <div v-else-if="yearlyData" class="yearly-content">
       <!-- 统计卡片 -->
       <div class="stats-grid">
         <div class="stat-card">
-          <h3>年度收支</h3>
+          <h3>{{ t('yearly.balanceCard') }}</h3>
           <div class="value" :style="{ color: balanceColor }">
-            {{ formatMoney(Math.abs(balance)) }} 元
+            {{ formatMoney(Math.abs(balance)) }} {{ t('common.currency') }}
           </div>
           <div class="trend">
             <span>{{ balanceStatus }}</span>
@@ -37,11 +37,11 @@
           </div>
         </div>
         <div class="stat-card">
-          <h3>年度支出</h3>
-          <div class="value">{{ formatMoney(yearlyData.yearly_stats?.total_expense || 0) }} 元</div>
+          <h3>{{ t('yearly.expenseCard') }}</h3>
+          <div class="value">{{ formatMoney(yearlyData.yearly_stats?.total_expense || 0) }} {{ t('common.currency') }}</div>
           <div class="trend">
-            <span>{{ yearlyData.yearly_stats?.expense_count || 0 }} 笔支出</span>
-            <span style="margin-left: 8px">日均 {{ formatMoney(yearlyData.yearly_stats?.avg_daily_expense || 0) }} 元</span>
+            <span>{{ t('common.spendingCount', { count: yearlyData.yearly_stats?.expense_count || 0 }) }}</span>
+            <span style="margin-left: 8px">{{ t('common.dailyAvg', { amount: formatMoney(yearlyData.yearly_stats?.avg_daily_expense || 0) }) }}</span>
           </div>
           <div class="comparison">
             <component :is="getComparisonData('expense').icon" class="trend-icon" :class="getComparisonData('expense').iconClass" :size="12" />
@@ -49,11 +49,11 @@
           </div>
         </div>
         <div class="stat-card">
-          <h3>年度收入</h3>
-          <div class="value">{{ formatMoney(yearlyData.yearly_stats?.total_income || 0) }} 元</div>
+          <h3>{{ t('yearly.incomeCard') }}</h3>
+          <div class="value">{{ formatMoney(yearlyData.yearly_stats?.total_income || 0) }} {{ t('common.currency') }}</div>
           <div class="trend">
-            <span>{{ yearlyData.yearly_stats?.income_count || 0 }} 笔收入</span>
-            <span style="margin-left: 8px">月均 {{ formatMoney(yearlyData.yearly_stats?.avg_monthly_income || 0) }} 元</span>
+            <span>{{ t('common.incomeCount', { count: yearlyData.yearly_stats?.income_count || 0 }) }}</span>
+            <span style="margin-left: 8px">{{ t('common.monthlyAvg', { amount: formatMoney(yearlyData.yearly_stats?.avg_monthly_income || 0) }) }}</span>
           </div>
           <div class="comparison">
             <component :is="getComparisonData('income').icon" class="trend-icon" :class="getComparisonData('income').iconClass" :size="12" />
@@ -61,11 +61,11 @@
           </div>
         </div>
         <div class="stat-card">
-          <h3>交易情况</h3>
-          <div class="value">{{ yearlyData.yearly_stats?.total_count || 0 }} 笔</div>
+          <h3>{{ t('yearly.txnCard') }}</h3>
+          <div class="value">{{ t('common.countTotal', { count: yearlyData.yearly_stats?.total_count || 0 }) }}</div>
           <div class="trend">
-            <span>平均 {{ formatMoney(yearlyData.yearly_stats?.avg_transaction || 0) }} 元/笔</span>
-            <span style="margin-left: 8px">{{ yearlyData.yearly_stats?.active_days || 0 }} 个交易日</span>
+            <span>{{ t('common.avgPerTx', { amount: formatMoney(yearlyData.yearly_stats?.avg_transaction || 0) }) }}</span>
+            <span style="margin-left: 8px">{{ t('common.activeDays', { count: yearlyData.yearly_stats?.active_days || 0 }) }}</span>
           </div>
           <div class="comparison">
             <component :is="getComparisonData('count').icon" class="trend-icon" :class="getComparisonData('count').iconClass" :size="12" />
@@ -78,21 +78,21 @@
       <div class="card">
         <div class="chart-header">
           <div class="chart-title-row">
-            <h2 class="chart-title">{{ currentType === 'expense' ? '支出' : '收入' }}趋势</h2>
+            <h2 class="chart-title">{{ currentType === 'expense' ? t('yearly.expenseTrend') : t('yearly.incomeTrend') }}</h2>
             <div class="chart-toggle">
               <button
                 class="toggle-btn"
                 :class="{ active: currentType === 'expense' }"
                 @click="switchType('expense')"
               >
-                <ArrowUp :size="'1em'" />支出
+                <ArrowUp :size="'1em'" />{{ t('common.expense') }}
               </button>
               <button
                 class="toggle-btn"
                 :class="{ active: currentType === 'income' }"
                 @click="switchType('income')"
               >
-                <ArrowDown :size="'1em'" />收入
+                <ArrowDown :size="'1em'" />{{ t('common.income') }}
               </button>
             </div>
           </div>
@@ -103,7 +103,7 @@
       <div class="card">
         <div class="chart-header">
           <div class="chart-title-row">
-            <h2 class="chart-title">{{ currentType === 'expense' ? '支出' : '收入' }}分类</h2>
+            <h2 class="chart-title">{{ currentType === 'expense' ? t('yearly.expenseCategory') : t('yearly.incomeCategory') }}</h2>
           </div>
         </div>
         <div class="chart-container" style="display: flex; height: 500px;">
@@ -115,9 +115,9 @@
 
     <div v-else class="empty-state">
       <ChartColumn class="empty-icon" :size="'1em'" />
-      <p>暂无数据</p>
+      <p>{{ t('common.noData') }}</p>
       <button class="btn btn-primary" @click="$router.push('/settings')">
-        上传账单
+        {{ t('common.uploadBill') }}
       </button>
     </div>
 
@@ -129,6 +129,7 @@ import { ArrowDown, ArrowUp, ChartColumn, ChevronLeft, ChevronRight, Minus } fro
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useDataStore } from '@/stores/data'
 import { useUiStore } from '@/stores/ui'
+import { useI18n } from 'vue-i18n'
 import { useSessionStore } from '@/stores/session'
 import { useFilterStore } from '@/stores/filter'
 import { formatMoney, getCategoryColor } from '@/utils/format'
@@ -136,6 +137,7 @@ import * as echarts from 'echarts'
 
 const dataStore = useDataStore()
 const uiStore = useUiStore()
+const { t, locale } = useI18n()
 const sessionStore = useSessionStore()
 const filterStore = useFilterStore()
 
@@ -164,7 +166,7 @@ const balanceColor = computed(() => {
 })
 
 const balanceStatus = computed(() => {
-  return balance.value >= 0 ? '收大于支' : '支大于收'
+  return balance.value >= 0 ? t('yearly.surplus') : t('yearly.deficit')
 })
 
 const balanceRatio = computed(() => {
@@ -173,9 +175,9 @@ const balanceRatio = computed(() => {
   if (income === 0) return '--'
   const ratio = (expense / income * 100).toFixed(2)
   if (expense > income) {
-    return `超支比例 ${ratio}%`
+    return t('yearly.overspendRatio', { ratio })
   } else {
-    return `支出占比 ${ratio}%`
+    return t('yearly.spendingShare', { ratio })
   }
 })
 
@@ -203,7 +205,7 @@ function getComparisonData(type) {
     return {
       icon: Minus,
       iconClass: 'neutral',
-      text: '暂无对比数据'
+      text: t('common.compareNone')
     }
   }
 
@@ -214,7 +216,7 @@ function getComparisonData(type) {
     return {
       icon: Minus,
       iconClass: 'neutral',
-      text: '暂无对比数据'
+      text: t('common.compareNone')
     }
   }
 
@@ -222,14 +224,16 @@ function getComparisonData(type) {
     return {
       icon: Minus,
       iconClass: 'neutral',
-      text: '与上期基本持平'
+      text: t('common.compareFlat')
     }
   }
 
   if (change > 0) {
-    const unit = type === 'count' ? '笔' : '元'
     const amountText = type === 'count' ? Math.abs(change) : formatMoney(Math.abs(change))
-    let text = `较上期增加 ${amountText} ${unit}`
+    let text =
+      type === 'count'
+        ? t('common.compareUpCount', { count: amountText })
+        : t('common.compareUpAmount', { amount: amountText })
     if (rate !== null && rate !== undefined) {
       text += ` (+${rate.toFixed(1)}%)`
     }
@@ -239,9 +243,11 @@ function getComparisonData(type) {
       text
     }
   } else {
-    const unit = type === 'count' ? '笔' : '元'
     const amountText = type === 'count' ? Math.abs(change) : formatMoney(Math.abs(change))
-    let text = `较上期减少 ${amountText} ${unit}`
+    let text =
+      type === 'count'
+        ? t('common.compareDownCount', { count: amountText })
+        : t('common.compareDownAmount', { amount: amountText })
     if (rate !== null && rate !== undefined) {
       text += ` (${rate.toFixed(1)}%)`
     }
@@ -288,13 +294,17 @@ async function loadData(year) {
     initCharts()
   } catch (error) {
     console.error('[Yearly] Failed to load data:', error)
-    uiStore.showError('加载数据失败: ' + error.message)
+    uiStore.showError(`${t('yearly.loadFailed')}: ${error.message}`)
   } finally {
     uiStore.setGlobalLoading(false)
   }
 }
 
 // 监听筛选器变化，重新加载数据
+watch(locale, () => {
+  if (yearlyData.value) updateCharts()
+})
+
 watch(() => filterStore.currentFilter, (newFilter, oldFilter) => {
   console.log('[Yearly] Filter changed from', oldFilter, 'to', newFilter)
   if (currentYear.value) {
@@ -372,7 +382,8 @@ function initTrendChart() {
       trigger: 'axis',
       formatter: (params) => {
         const param = params[0]
-        return `${param.name}<br/>${currentType.value === 'expense' ? '支出' : '收入'}：${formatMoney(param.value)} 元`
+        const label = currentType.value === 'expense' ? t('common.expense') : t('common.income')
+        return `${param.name}<br/>${t('common.amountLine', { label, value: formatMoney(param.value) })}`
       },
       axisPointer: {
         type: 'shadow'
@@ -392,10 +403,10 @@ function initTrendChart() {
         fontSize: 12,
         color: 'var(--secondary-text)',
         formatter: (value) => {
-          // 格式 "2024-01" -> "1月"
+          // 格式 "2024-01" -> "1月" / "1"
           const parts = value.split('-')
           if (parts.length === 2) {
-            return parts[1] + '月'
+            return t('monthly.monthShort', { month: Number(parts[1]) })
           }
           return value
         }
@@ -403,14 +414,14 @@ function initTrendChart() {
     },
     yAxis: {
       type: 'value',
-      name: '金额 (元)',
+      name: t('common.amountAxis'),
       axisLabel: {
         fontSize: 12,
         color: 'var(--secondary-text)'
       }
     },
     series: [{
-      name: currentType.value === 'expense' ? '支出' : '收入',
+      name: currentType.value === 'expense' ? t('common.expense') : t('common.income'),
       type: 'bar',
       data: chartData,
       barMaxWidth: 50,
@@ -483,14 +494,15 @@ function initCategoryChart() {
       trigger: 'item',
       formatter: (params) => {
         const percent = ((params.value / total) * 100).toFixed(2)
-        return `${params.data.originalName} (${params.data.source})<br/>金额：${formatMoney(params.value)} 元<br/>占比：${percent}%`
+        const source = params.data.source === '支付宝' ? t('common.alipay') : t('common.wechat')
+        return `${params.data.originalName} (${source})<br/>${t('common.amountLine', { label: t('common.amount'), value: formatMoney(params.value) })}<br/>${t('common.shareLine', { percent })}`
       }
     },
     legend: {
       show: false
     },
     series: [{
-      name: currentType.value === 'expense' ? '支出分类' : '收入分类',
+      name: currentType.value === 'expense' ? t('yearly.expenseCategory') : t('yearly.incomeCategory'),
       type: 'pie',
       radius: ['40%', '70%'],
       center: ['50%', '50%'],
@@ -572,7 +584,7 @@ function renderCustomLegend(categorySourceData, totalAmount) {
     .sort((a, b) => b['金额'] - a['金额'])
 
   // 创建分区块函数
-  const createSection = (title, items, isTwoCol) => {
+  const createSection = (title, items, isTwoCol, source) => {
     if (items.length === 0) return null
 
     const section = document.createElement('div')
@@ -584,7 +596,7 @@ function renderCustomLegend(categorySourceData, totalAmount) {
     header.style.color = 'var(--text-color)'
     header.style.fontSize = '13px'
     header.style.fontWeight = '600'
-    header.innerHTML = `<i class="fab fa-${title === '支付宝' ? 'alipay' : 'weixin'}" style="color: ${title === '支付宝' ? '#1677FF' : '#07C160'}; margin-right: 6px;"></i>${title} (${items.length})`
+    header.innerHTML = `<i class="fab fa-${source === 'alipay' ? 'alipay' : 'weixin'}" style="color: ${source === 'alipay' ? '#1677FF' : '#07C160'}; margin-right: 6px;"></i>${title} (${items.length})`
     section.appendChild(header)
 
     const list = document.createElement('div')
@@ -664,13 +676,13 @@ function renderCustomLegend(categorySourceData, totalAmount) {
 
   // 添加支付宝区块（两列布局）
   if (alipayData.length > 0) {
-    const alipaySection = createSection('支付宝', alipayData, true)
+    const alipaySection = createSection(t('common.alipay'), alipayData, true, 'alipay')
     if (alipaySection) container.appendChild(alipaySection)
   }
 
   // 添加微信区块（单列布局）
   if (wechatData.length > 0) {
-    const wechatSection = createSection('微信', wechatData, false)
+    const wechatSection = createSection(t('common.wechat'), wechatData, false, 'wechat')
     if (wechatSection) container.appendChild(wechatSection)
   }
 }
@@ -691,7 +703,7 @@ onMounted(async () => {
     await loadData()
   } catch (error) {
     console.error('Yearly page init error:', error)
-    uiStore.showError('页面初始化失败: ' + error.message)
+    uiStore.showError(`${t('yearly.initFailed')}: ${error.message}`)
   } finally {
     uiStore.setGlobalLoading(false)
   }

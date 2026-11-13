@@ -2,7 +2,7 @@
   <div class="about-author-page">
     <!-- 顶部标题区：与其它页面一致，固定在窗口标题栏 -->
     <div class="page-header">
-      <h1 class="page-title">关于作者</h1>
+      <h1 class="page-title">{{ t('about.title') }}</h1>
     </div>
 
     <!-- 页面内容 -->
@@ -14,12 +14,12 @@
             <img src="/images/author-avatar.jpg" alt="dtsola" />
           </div>
           <h1 class="author-name">dtsola</h1>
-          <p class="author-title">IT解决方案架构师 | 一人公司实践者</p>
+          <p class="author-title">{{ t('about.authorTitle') }}</p>
         </div>
 
         <!-- 联系方式 -->
         <div class="contact-section">
-          <h2 class="section-title">联系方式</h2>
+          <h2 class="section-title">{{ t('about.contactTitle') }}</h2>
 
           <div class="contact-list">
             <a href="https://www.xiaoyaosai.com/" target="_blank" rel="noopener noreferrer" class="contact-item" @click.prevent="openExternal('https://www.xiaoyaosai.com/')">
@@ -27,7 +27,7 @@
                 <Compass :size="18" />
               </div>
               <div class="contact-info">
-                <div class="contact-label">小遥官网</div>
+                <div class="contact-label">{{ t('about.officialSite') }}</div>
                 <div class="contact-value">www.xiaoyaosai.com</div>
               </div>
               <ExternalLink class="contact-arrow" :size="'1em'" />
@@ -38,7 +38,7 @@
                 <Globe :size="18" />
               </div>
               <div class="contact-info">
-                <div class="contact-label">个人网站</div>
+                <div class="contact-label">{{ t('about.personalSite') }}</div>
                 <div class="contact-value">www.dtsola.com</div>
               </div>
               <ExternalLink class="contact-arrow" :size="'1em'" />
@@ -49,7 +49,7 @@
                 <Video :size="18" />
               </div>
               <div class="contact-info">
-                <div class="contact-label">B站</div>
+                <div class="contact-label">{{ t('about.bilibili') }}</div>
                 <div class="contact-value">space.bilibili.com/736015</div>
               </div>
               <ExternalLink class="contact-arrow" :size="'1em'" />
@@ -60,65 +60,64 @@
                 <MessageCircle :size="18" />
               </div>
               <div class="contact-info">
-                <div class="contact-label">微信</div>
+                <div class="contact-label">{{ t('about.wechat') }}</div>
                 <div class="contact-value">dtsola</div>
               </div>
-              <div class="contact-note">（与我建联，备注：github）</div>
+              <div class="contact-note">{{ t('about.wechatNote') }}</div>
             </div>
           </div>
         </div>
 
         <!-- 二维码展示 -->
         <div class="qrcode-section">
-          <h2 class="section-title">扫码联系</h2>
+          <h2 class="section-title">{{ t('about.qrTitle') }}</h2>
           <div class="qrcode-container">
             <div class="qrcode-item">
               <img
                 src="/images/个人二维码.png"
-                alt="微信二维码"
+                :alt="t('about.wechatQrAlt')"
                 class="qrcode-image clickable"
-                @click="openPreview('/images/个人二维码.png', '微信联系')"
+                @click="openPreview('/images/个人二维码.png', t('about.wechatContact'))"
               />
-              <p class="qrcode-hint">微信联系</p>
+              <p class="qrcode-hint">{{ t('about.wechatContact') }}</p>
             </div>
             <div class="qrcode-divider"></div>
             <div class="qrcode-item">
               <img
                 src="/images/开发者交流群.png"
-                alt="开发者交流群"
+                :alt="t('about.devGroupQrAlt')"
                 class="qrcode-image clickable"
-                @click="openPreview('/images/开发者交流群.png', '开发者交流群')"
+                @click="openPreview('/images/开发者交流群.png', t('about.devGroup'))"
               />
-              <p class="qrcode-hint">开发者交流群</p>
+              <p class="qrcode-hint">{{ t('about.devGroup') }}</p>
             </div>
             <div class="qrcode-divider"></div>
             <div class="qrcode-item">
               <img
                 src="/images/用户交流群.png"
-                alt="用户交流群"
+                :alt="t('about.userGroupQrAlt')"
                 class="qrcode-image clickable"
-                @click="openPreview('/images/用户交流群.png', '用户交流群')"
+                @click="openPreview('/images/用户交流群.png', t('about.userGroup'))"
               />
-              <p class="qrcode-hint">用户交流群</p>
+              <p class="qrcode-hint">{{ t('about.userGroup') }}</p>
             </div>
           </div>
         </div>
 
         <!-- 项目信息 -->
         <div class="project-section">
-          <h2 class="section-title">关于本项目</h2>
+          <h2 class="section-title">{{ t('about.projectTitle') }}</h2>
           <p class="project-description">
-            小遥账单助手是一个<strong>隐私优先</strong>的个人账单分析工具，
-            数据完全本地处理，不上传任何服务器。支持支付宝和微信账单的自动解析和多维度数据可视化分析。
+            <span v-html="t('about.projectDescription')"></span>
           </p>
           <div class="project-links">
             <a href="https://www.xiaoyaosai.com/xiaoyaoprivatebill-desktop/" target="_blank" rel="noopener noreferrer" class="project-link" @click.prevent="openExternal('https://www.xiaoyaosai.com/xiaoyaoprivatebill-desktop/')">
               <Compass :size="'1em'" />
-              <span>产品官网</span>
+              <span>{{ t('about.officialProduct') }}</span>
             </a>
             <a href="https://github.com/dtsola/xiaoyaoprivatebill-desktop" target="_blank" rel="noopener noreferrer" class="project-link secondary" @click.prevent="openExternal('https://github.com/dtsola/xiaoyaoprivatebill-desktop')">
               <Github :size="'1em'" />
-              <span>GitHub 仓库</span>
+              <span>{{ t('about.githubRepo') }}</span>
             </a>
           </div>
         </div>
@@ -143,7 +142,10 @@
 <script setup>
 import { Compass, ExternalLink, Github, Globe, MessageCircle, Video, X } from 'lucide-vue-next'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { openUrl } from '@tauri-apps/plugin-opener'
+
+const { t } = useI18n()
 
 // 外链一律交给系统浏览器，避免在 WebView 内新开窗口。
 async function openExternal(url) {

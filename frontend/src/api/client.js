@@ -1,5 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 
+import i18n from '../i18n'
+
 /**
  * 统一 API 客户端。
  *
@@ -69,7 +71,7 @@ async function request(method, path, query, body) {
       }
     })
   } catch (error) {
-    throw new Error(typeof error === 'string' ? error : '请求失败')
+    throw new Error(typeof error === 'string' ? error : i18n.global.t('common.requestFailed'))
   }
 }
 
@@ -81,7 +83,7 @@ async function request(method, path, query, body) {
  */
 function normalize(data) {
   if (data && typeof data === 'object' && 'success' in data && !data.success) {
-    throw new Error(data.error || '请求失败')
+    throw new Error(data.error || i18n.global.t('common.requestFailed'))
   }
   if (data && typeof data === 'object' && 'data' in data) {
     return data.data
@@ -105,7 +107,7 @@ async function get(endpoint, params) {
 
 async function post(endpoint, data) {
   if (typeof FormData !== 'undefined' && data instanceof FormData) {
-    throw new Error('桌面端不支持 FormData 上传，请使用 uploadPaths')
+    throw new Error(i18n.global.t('common.formDataUnsupported'))
   }
   return normalize(await request('POST', endpoint, {}, data ?? null))
 }
@@ -122,7 +124,7 @@ async function getSessionStatus() {
   try {
     const data = await request('GET', '/session/status', {}, null)
     if (data && data.success === false) {
-      throw new Error(data.error || '请求失败')
+      throw new Error(data.error || i18n.global.t('common.requestFailed'))
     }
     return {
       active: data?.active || false,
@@ -134,7 +136,7 @@ async function getSessionStatus() {
   } catch (error) {
     return {
       active: false,
-      message: '获取会话状态失败',
+      message: i18n.global.t('common.sessionStatusFailed'),
       is_demo: false,
       user_id: null,
       session_start: null

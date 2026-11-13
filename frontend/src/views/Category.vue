@@ -3,7 +3,7 @@
     <!-- 页面头部 -->
     <div class="category-page-header">
       <div class="header-left">
-        <h1 class="page-title">分类分析</h1>
+        <h1 class="page-title">{{ t('category.title') }}</h1>
         <div class="category-selector">
           <div class="selected-category" @click="toggleCategoryExpanded">
             <div class="category-pill active">
@@ -17,7 +17,7 @@
               <!-- 支付宝分类 -->
               <template v-if="categoryGroups.alipay && categoryGroups.alipay.length > 0">
                 <div class="category-divider">
-                  <span><i class="fab fa-alipay" style="color: #1677FF;"></i> 支付宝</span>
+                  <span><i class="fab fa-alipay" style="color: #1677FF;"></i> {{ t('common.alipay') }}</span>
                   <div class="line"></div>
                 </div>
                 <div
@@ -35,7 +35,7 @@
               <!-- 微信分类 -->
               <template v-if="categoryGroups.wechat && categoryGroups.wechat.length > 0">
                 <div class="category-divider">
-                  <span><i class="fab fa-weixin" style="color: #07C160;"></i> 微信</span>
+                  <span><i class="fab fa-weixin" style="color: #07C160;"></i> {{ t('common.wechat') }}</span>
                   <div class="line"></div>
                 </div>
                 <div
@@ -67,45 +67,45 @@
       </div>
 
       <div class="category-range-selector">
-        <button class="range-btn" :class="{ active: timeRange === 'all' }" @click="setTimeRange('all')">所有</button>
-        <button class="range-btn" :class="{ active: timeRange === 'year' }" @click="setTimeRange('year')">年度</button>
-        <button class="range-btn" :class="{ active: timeRange === 'month' }" @click="setTimeRange('month')">月度</button>
+        <button class="range-btn" :class="{ active: timeRange === 'all' }" @click="setTimeRange('all')">{{ t('category.all') }}</button>
+        <button class="range-btn" :class="{ active: timeRange === 'year' }" @click="setTimeRange('year')">{{ t('category.year') }}</button>
+        <button class="range-btn" :class="{ active: timeRange === 'month' }" @click="setTimeRange('month')">{{ t('category.month') }}</button>
       </div>
     </div>
 
     <div v-if="uiStore.globalLoading && !categoryData" class="page-loading">
       <div class="loading-spinner"></div>
-      <p>加载中...</p>
+      <p>{{ t('category.loading') }}</p>
     </div>
 
     <div v-else-if="categoryData" class="category-content">
       <!-- 统计卡片 -->
       <div class="stats-grid">
         <div class="stat-card">
-          <h3>分类总支出</h3>
-          <div class="value">{{ formatMoney(categoryData.stats?.total_expense || 0) }} 元</div>
+          <h3>{{ t('category.totalExpense') }}</h3>
+          <div class="value">{{ formatMoney(categoryData.stats?.total_expense || 0) }} {{ t('common.currency') }}</div>
           <div class="trend">
-            <span>{{ categoryData.stats?.transaction_count || 0 }} 笔交易</span>
-            <span style="margin-left: 8px">平均 {{ formatMoney(categoryData.stats?.avg_amount || 0) }} 元/笔</span>
+            <span>{{ t('category.transactionCount', { count: categoryData.stats?.transaction_count || 0 }) }}</span>
+            <span style="margin-left: 8px">{{ t('category.avgPerTx', { amount: formatMoney(categoryData.stats?.avg_amount || 0) }) }}</span>
           </div>
         </div>
         <div class="stat-card">
-          <h3>支出占比</h3>
+          <h3>{{ t('category.shareCard') }}</h3>
           <div class="value">{{ (categoryData.stats?.expense_ratio || 0).toFixed(1) }}%</div>
           <div class="trend">
-            <span>{{ categoryData.stats?.total_expense > 0 ? '占总支出比例' : '暂无数据' }}</span>
+            <span>{{ categoryData.stats?.total_expense > 0 ? t('category.shareOfTotal') : t('category.noData') }}</span>
           </div>
         </div>
         <div class="stat-card">
-          <h3>月均支出</h3>
-          <div class="value">{{ monthlyAvgValue }} 元</div>
+          <h3>{{ t('category.monthlyAvgCard') }}</h3>
+          <div class="value">{{ monthlyAvgValue }} {{ t('common.currency') }}</div>
           <div class="trend">
             <span>{{ monthlyAvgLabel }}</span>
           </div>
         </div>
         <div class="stat-card">
-          <h3>消费频率</h3>
-          <div class="value">{{ frequencyValue }} 次</div>
+          <h3>{{ t('category.frequencyCard') }}</h3>
+          <div class="value">{{ t('category.times', { count: frequencyValue }) }}</div>
           <div class="trend">
             <span>{{ frequencyLabel }}</span>
           </div>
@@ -115,21 +115,21 @@
       <!-- 图表区域 -->
       <div class="chart">
         <div class="chart-header">
-          <h2 class="chart-title">支出趋势</h2>
+          <h2 class="chart-title">{{ t('category.trendTitle') }}</h2>
         </div>
         <div class="chart-container" ref="trendChartRef"></div>
       </div>
 
       <div class="chart">
         <div class="chart-header">
-          <h2 class="chart-title">消费规律分析</h2>
+          <h2 class="chart-title">{{ t('category.patternTitle') }}</h2>
         </div>
         <div class="chart-container" ref="patternChartRef"></div>
       </div>
 
       <div class="chart">
         <div class="chart-header">
-          <h2 class="chart-title">金额分布</h2>
+          <h2 class="chart-title">{{ t('category.distributionTitle') }}</h2>
         </div>
         <div class="chart-container" ref="distributionChartRef"></div>
       </div>
@@ -137,9 +137,9 @@
 
     <div v-else class="empty-state">
       <ChartColumn class="empty-icon" :size="'1em'" />
-      <p>暂无数据</p>
+      <p>{{ t('category.noData') }}</p>
       <button class="btn btn-primary" @click="$router.push('/settings')">
-        上传账单
+        {{ t('common.uploadBill') }}
       </button>
     </div>
   </div>
@@ -149,6 +149,7 @@
 import { ChartColumn, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useUiStore } from '@/stores/ui'
+import { useI18n } from 'vue-i18n'
 import { useSessionStore } from '@/stores/session'
 import { useFilterStore } from '@/stores/filter'
 import { formatMoney, getCategoryColor } from '@/utils/format'
@@ -156,6 +157,7 @@ import * as echarts from 'echarts'
 import api from '@/api/client'
 
 const uiStore = useUiStore()
+const { t, locale } = useI18n()
 const sessionStore = useSessionStore()
 const filterStore = useFilterStore()
 
@@ -183,9 +185,9 @@ let distributionChart = null
 
 // 计算属性
 const timeDisplay = computed(() => {
-  if (timeRange.value === 'all') return '全部时间'
-  if (timeRange.value === 'year') return `${currentYear.value}年`
-  return `${currentYear.value}年${currentMonth.value}月`
+  if (timeRange.value === 'all') return t('category.allTime')
+  if (timeRange.value === 'year') return t('category.yearLabel', { year: currentYear.value })
+  return t('category.monthLabel', { year: currentYear.value, month: currentMonth.value })
 })
 
 const canGoPrev = computed(() => {
@@ -231,9 +233,9 @@ const monthlyAvgValue = computed(() => {
 })
 
 const monthlyAvgLabel = computed(() => {
-  if (timeRange.value === 'all') return '历史月均支出'
-  if (timeRange.value === 'year') return '月均支出'
-  return '本月支出'
+  if (timeRange.value === 'all') return t('category.historyMonthlyAvg')
+  if (timeRange.value === 'year') return t('category.monthlyAvg')
+  return t('category.currentMonthExpense')
 })
 
 const frequencyValue = computed(() => {
@@ -254,8 +256,8 @@ const frequencyValue = computed(() => {
 })
 
 const frequencyLabel = computed(() => {
-  if (timeRange.value === 'all') return '历史日均交易'
-  return '日均交易频率'
+  if (timeRange.value === 'all') return t('category.historyDailyFreq')
+  return t('category.dailyFreq')
 })
 
 // 方法
@@ -341,7 +343,7 @@ async function loadCategories() {
     console.log('[Category] Category analysis response:', data)
 
     if (!data.categories || data.categories.length === 0) {
-      uiStore.showError('暂无分类数据')
+      uiStore.showError(t('category.noCategory'))
       return
     }
 
@@ -365,7 +367,7 @@ async function loadCategories() {
     await loadCategoryData(defaultCategory)
   } catch (error) {
     console.error('[Category] Failed to load categories:', error)
-    uiStore.showError('加载分类失败: ' + error.message)
+    uiStore.showError(`${t('category.loadCategoryFailed')}: ${error.message}`)
   }
 }
 
@@ -414,7 +416,7 @@ async function loadCategoryData(category) {
     initCharts()
   } catch (error) {
     console.error('[Category] Failed to load category data:', error)
-    uiStore.showError('加载数据失败: ' + error.message)
+    uiStore.showError(`${t('category.loadFailed')}: ${error.message}`)
   }
 }
 
@@ -463,7 +465,7 @@ function initTrendChart() {
         type: 'cross'
       },
       formatter: (params) => {
-        if (!hasData) return '暂无数据'
+        if (!hasData) return t('category.noData')
         const date = params[0].name
         const amount = params[0].value
         const ratio = params[1] ? params[1].value : 0
@@ -471,23 +473,28 @@ function initTrendChart() {
 
         let dateLabel
         if (timeRange.value === 'all') {
-          dateLabel = `${date}年`
+          dateLabel = t('category.yearLabel', { year: date })
         } else if (timeRange.value === 'year') {
           const parts = date.split('-')
-          dateLabel = `${parts[0]}年${parts[1]}月`
+          dateLabel = t('category.monthLabel', { year: parts[0], month: parts[1] })
         } else {
           dateLabel = date
         }
 
         if (amount === 0) {
-          return `${dateLabel}<br/>无交易记录`
+          return t('category.noRecords', { date: dateLabel })
         }
 
-        return `${dateLabel}<br/>支出：${formatMoney(amount)} 元<br/>占比：${ratio.toFixed(1)}%<br/>笔数：${count} 笔`
+        return t('category.chartTooltip', {
+          date: dateLabel,
+          amount: formatMoney(amount),
+          ratio: ratio.toFixed(1),
+          count
+        })
       }
     },
     legend: {
-      data: ['支出金额', '支出占比'],
+      data: [t('category.expenseAmount'), t('category.expenseShare')],
       top: 10,
       right: 10
     },
@@ -503,27 +510,27 @@ function initTrendChart() {
       axisLabel: {
         formatter: (value) => {
           if (timeRange.value === 'all') {
-            return value + '年'
+            return t('category.yearLabel', { year: value })
           } else if (timeRange.value === 'year') {
             const parts = value.split('-')
-            return parts[1] + '月'
+            return t('monthly.monthShort', { month: Number(parts[1]) })
           } else {
             const parts = value.split('-')
-            return parts[2] + '日'
+            return t('category.dayLabel', { day: Number(parts[2]) })
           }
         }
       }
     },
     yAxis: [{
       type: 'value',
-      name: '金额 (元)',
+      name: t('category.amountAxis'),
       position: 'left',
       axisLabel: {
         formatter: (value) => formatMoney(value)
       }
     }, {
       type: 'value',
-      name: '占比 (%)',
+      name: t('category.ratioAxis'),
       position: 'right',
       splitLine: { show: false },
       axisLabel: {
@@ -531,7 +538,7 @@ function initTrendChart() {
       }
     }],
     series: [{
-      name: '支出金额',
+      name: t('category.expenseAmount'),
       type: 'bar',
       data: hasData ? trend.amounts : [],
       itemStyle: {
@@ -547,7 +554,7 @@ function initTrendChart() {
       barWidth: '60%',
       z: 1
     }, {
-      name: '支出占比',
+      name: t('category.expenseShare'),
       type: 'line',
       yAxisIndex: 1,
       data: hasData ? trend.ratios : [],
@@ -588,17 +595,17 @@ function initPatternChart() {
       formatter: (params) => {
         let result = params[0].name + '<br/>'
         params.forEach(param => {
-          if (param.seriesName === '交易金额') {
-            result += param.marker + param.seriesName + ': ' + formatMoney(param.value) + ' 元<br/>'
+          if (param.seriesIndex === 0) {
+            result += param.marker + t('time.tooltipSeriesAmount', { name: param.seriesName, amount: formatMoney(param.value) }) + '<br/>'
           } else {
-            result += param.marker + param.seriesName + ': ' + param.value + ' 次<br/>'
+            result += param.marker + t('time.tooltipSeriesCount', { name: param.seriesName, count: param.value }) + '<br/>'
           }
         })
         return result
       }
     },
     legend: {
-      data: ['交易次数', '交易金额'],
+      data: [t('category.txnCount'), t('category.txnAmount')],
       top: 0
     },
     grid: {
@@ -609,18 +616,18 @@ function initPatternChart() {
     },
     xAxis: {
       type: 'category',
-      data: pattern.hours.map(h => `${h}时`),
+      data: pattern.hours.map(h => t('time.hourLabel', { hour: h })),
       axisLabel: {
         interval: 0
       }
     },
     yAxis: [{
       type: 'value',
-      name: '交易次数',
+      name: t('category.txnCountAxis'),
       position: 'left'
     }, {
       type: 'value',
-      name: '交易金额',
+      name: t('category.txnAmountAxis'),
       position: 'right',
       axisLine: { show: true },
       axisLabel: {
@@ -628,7 +635,7 @@ function initPatternChart() {
       }
     }],
     series: [{
-      name: '交易金额',
+      name: t('category.txnAmount'),
       type: 'line',
       yAxisIndex: 1,
       data: pattern.amounts,
@@ -651,7 +658,7 @@ function initPatternChart() {
       },
       z: 1
     }, {
-      name: '交易次数',
+      name: t('category.txnCount'),
       type: 'bar',
       data: pattern.counts,
       itemStyle: {
@@ -678,12 +685,12 @@ function initDistributionChart() {
     tooltip: {
       trigger: 'axis',
       formatter: (params) => {
-        if (!hasData) return '暂无数据'
+        if (!hasData) return t('category.noData')
         const range = params[0].name
         const count = params[0].value
         const total = distribution.counts.reduce((a, b) => a + b, 0)
         const percentage = ((count / total) * 100).toFixed(2)
-        return `金额范围：${range}<br/>交易笔数：${count} 笔<br/>占比：${percentage}%`
+        return t('category.rangeTooltip', { range, count, percent: percentage })
       }
     },
     grid: {
@@ -702,7 +709,7 @@ function initDistributionChart() {
     },
     yAxis: {
       type: 'value',
-      name: '交易次数'
+      name: t('category.txnCountAxis')
     },
     series: [{
       type: 'bar',
@@ -726,6 +733,10 @@ function initDistributionChart() {
 }
 
 // 监听筛选器变化
+watch(locale, () => {
+  if (categoryData.value) updateCharts()
+})
+
 watch(() => filterStore.currentFilter, () => {
   if (currentCategory.value) {
     loadCategoryData(currentCategory.value)
@@ -748,7 +759,7 @@ onMounted(async () => {
     await loadCategories()
   } catch (error) {
     console.error('Category page init error:', error)
-    uiStore.showError('页面初始化失败: ' + error.message)
+    uiStore.showError(`${t('category.initFailed')}: ${error.message}`)
   } finally {
     uiStore.setGlobalLoading(false)
   }

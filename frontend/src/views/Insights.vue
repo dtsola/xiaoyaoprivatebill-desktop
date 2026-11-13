@@ -1,12 +1,12 @@
 <template>
   <div class="insights-page">
     <div class="page-header">
-      <h1 class="page-title">消费洞察</h1>
+      <h1 class="page-title">{{ t('insights.title') }}</h1>
       <div class="control-group">
         <button @click="prevYear" class="control-button" :disabled="!canGoPrev">
           <ChevronLeft :size="'1em'" />
         </button>
-        <span class="control-display">{{ currentYear }}年</span>
+        <span class="control-display">{{ t('insights.yearLabel', { year: currentYear }) }}</span>
         <button @click="nextYear" class="control-button" :disabled="!canGoNext">
           <ChevronRight :size="'1em'" />
         </button>
@@ -15,7 +15,7 @@
 
     <div v-if="uiStore.globalLoading && !insightsData" class="page-loading">
       <div class="loading-spinner"></div>
-      <p>加载中...</p>
+      <p>{{ t('insights.loading') }}</p>
     </div>
 
     <div v-else-if="insightsData" class="insights-content">
@@ -24,7 +24,7 @@
         <!-- 桑基图 -->
         <div class="analysis-card sankey-card">
           <div class="card-header">
-            <h2 class="card-title">资金流向全景</h2>
+            <h2 class="card-title">{{ t('insights.sankeyTitle') }}</h2>
           </div>
           <div class="card-content" ref="sankeyChartRef"></div>
         </div>
@@ -35,9 +35,9 @@
             <div class="story-icon">
               <Film :size="'1em'" />
             </div>
-            <div class="story-title">年度消费故事</div>
-            <div class="story-desc">点击开启您的时光之旅</div>
-            <div class="story-btn">立即播放</div>
+            <div class="story-title">{{ t('insights.storyTitle') }}</div>
+            <div class="story-desc">{{ t('insights.storyDesc') }}</div>
+            <div class="story-btn">{{ t('insights.storyPlay') }}</div>
           </div>
         </div>
       </div>
@@ -47,7 +47,7 @@
         <!-- 消费画像 -->
         <div class="analysis-card profile-card">
           <div class="card-header">
-            <h2 class="card-title">消费画像</h2>
+            <h2 class="card-title">{{ t('insights.profileTitle') }}</h2>
           </div>
           <div class="card-content profile-content" ref="profileContent">
             <!-- 动态内容 -->
@@ -57,7 +57,7 @@
         <!-- 最常光顾 -->
         <div class="analysis-card merchant-list-card">
           <div class="card-header">
-            <h2 class="card-title">最常光顾</h2>
+            <h2 class="card-title">{{ t('insights.merchantTitle') }}</h2>
           </div>
           <div class="card-content">
             <div class="merchant-list" ref="merchantList">
@@ -69,14 +69,14 @@
         <!-- 消费场景 -->
         <div class="analysis-card scenario-card">
           <div class="card-header">
-            <h2 class="card-title">消费场景</h2>
+            <h2 class="card-title">{{ t('insights.scenarioTitle') }}</h2>
           </div>
           <div class="card-content">
             <div class="scenario-tabs">
-              <button class="tab-btn" :class="{ active: currentScenario === 'channel' }" @click="setScenario('channel')">消费渠道</button>
-              <button class="tab-btn" :class="{ active: currentScenario === 'time' }" @click="setScenario('time')">时段分布</button>
-              <button class="tab-btn" :class="{ active: currentScenario === 'amount' }" @click="setScenario('amount')">金额层级</button>
-              <button class="tab-btn" :class="{ active: currentScenario === 'payment' }" @click="setScenario('payment')">支付方式</button>
+              <button class="tab-btn" :class="{ active: currentScenario === 'channel' }" @click="setScenario('channel')">{{ t('insights.scenarioTabs.channel') }}</button>
+              <button class="tab-btn" :class="{ active: currentScenario === 'time' }" @click="setScenario('time')">{{ t('insights.scenarioTabs.time') }}</button>
+              <button class="tab-btn" :class="{ active: currentScenario === 'amount' }" @click="setScenario('amount')">{{ t('insights.scenarioTabs.amount') }}</button>
+              <button class="tab-btn" :class="{ active: currentScenario === 'payment' }" @click="setScenario('payment')">{{ t('insights.scenarioTabs.payment') }}</button>
             </div>
             <div ref="scenarioChartRef" class="chart-container"></div>
           </div>
@@ -85,7 +85,7 @@
         <!-- 消费习惯 -->
         <div class="analysis-card habit-card">
           <div class="card-header">
-            <h2 class="card-title">消费习惯</h2>
+            <h2 class="card-title">{{ t('insights.habitsTitle') }}</h2>
           </div>
           <div class="card-content">
             <div class="habit-stats" ref="habitStats">
@@ -100,7 +100,7 @@
         <!-- 拿铁因子 -->
         <div class="analysis-card insight-card latte-card">
           <div class="card-header">
-            <h2 class="card-title">拿铁因子</h2>
+            <h2 class="card-title">{{ t('insights.latteTitle') }}</h2>
           </div>
           <div class="card-content" ref="latteContent"></div>
         </div>
@@ -108,7 +108,7 @@
         <!-- 隐形订阅 -->
         <div class="analysis-card insight-card sub-card">
           <div class="card-header">
-            <h2 class="card-title">隐形订阅</h2>
+            <h2 class="card-title">{{ t('insights.subscriptionTitle') }}</h2>
           </div>
           <div class="card-content" ref="subContent"></div>
         </div>
@@ -116,7 +116,7 @@
         <!-- 个人通胀 -->
         <div class="analysis-card insight-card inflation-card">
           <div class="card-header">
-            <h2 class="card-title">消费通胀</h2>
+            <h2 class="card-title">{{ t('insights.inflationTitle') }}</h2>
           </div>
           <div class="card-content" ref="inflationContent"></div>
         </div>
@@ -124,7 +124,7 @@
         <!-- 品牌忠诚度 -->
         <div class="analysis-card insight-card loyalty-card">
           <div class="card-header">
-            <h2 class="card-title">品牌忠诚</h2>
+            <h2 class="card-title">{{ t('insights.loyaltyTitle') }}</h2>
           </div>
           <div class="card-content" ref="loyaltyContent"></div>
         </div>
@@ -132,7 +132,7 @@
         <!-- 周末效应 -->
         <div class="analysis-card insight-card weekend-card">
           <div class="card-header">
-            <h2 class="card-title">周末效应</h2>
+            <h2 class="card-title">{{ t('insights.weekendTitle') }}</h2>
           </div>
           <div class="card-content" ref="weekendContent"></div>
         </div>
@@ -140,17 +140,17 @@
 
       <!-- 高级可视化图表区域 -->
       <div class="advanced-viz-section">
-        <h2 class="section-title">深度洞察</h2>
+        <h2 class="section-title">{{ t('insights.deepTitle') }}</h2>
 
         <!-- 时间密码 -->
         <div class="viz-section-header">
-          <div class="section-subtitle"><Clock :size="'1em'" /> 时间密码</div>
+          <div class="section-subtitle"><Clock :size="'1em'" /> {{ t('insights.timeSection') }}</div>
         </div>
 
         <!-- 河流图 -->
         <div class="analysis-card full-width-viz-card">
           <div class="card-header">
-            <h2 class="card-title">消费趋势河流</h2>
+            <h2 class="card-title">{{ t('insights.riverTitle') }}</h2>
           </div>
           <div class="card-content" ref="themeRiverChartRef"></div>
         </div>
@@ -159,14 +159,14 @@
         <div class="viz-row">
           <div class="analysis-card">
             <div class="card-header">
-              <h2 class="card-title">消费生物钟 (热力图)</h2>
+              <h2 class="card-title">{{ t('insights.heatmapTitle') }}</h2>
             </div>
             <div class="card-content" ref="heatmapChartRef"></div>
           </div>
 
           <div class="analysis-card">
             <div class="card-header">
-              <h2 class="card-title">季度消费结构</h2>
+              <h2 class="card-title">{{ t('insights.radarTitle') }}</h2>
             </div>
             <div class="card-content" ref="radarChartRef"></div>
           </div>
@@ -174,13 +174,13 @@
 
         <!-- 决策心理 -->
         <div class="viz-section-header">
-          <div class="section-subtitle"><Brain :size="'1em'" /> 决策心理</div>
+          <div class="section-subtitle"><Brain :size="'1em'" /> {{ t('insights.mindSection') }}</div>
         </div>
 
         <!-- 象限图 -->
         <div class="analysis-card full-width-viz-card" style="height: 600px;">
           <div class="card-header">
-            <h2 class="card-title">消费象限 (频次 vs 均价)</h2>
+            <h2 class="card-title">{{ t('insights.quadrantTitle') }}</h2>
           </div>
           <div class="card-content" ref="quadrantChartRef"></div>
         </div>
@@ -189,14 +189,14 @@
         <div class="viz-row">
           <div class="analysis-card">
             <div class="card-header">
-              <h2 class="card-title">消费关联和弦</h2>
+              <h2 class="card-title">{{ t('insights.chordTitle') }}</h2>
             </div>
             <div class="card-content" ref="chordChartRef"></div>
           </div>
 
           <div class="analysis-card">
             <div class="card-header">
-              <h2 class="card-title">消费金额漏斗</h2>
+              <h2 class="card-title">{{ t('insights.funnelTitle') }}</h2>
             </div>
             <div class="card-content" ref="funnelChartRef"></div>
           </div>
@@ -204,13 +204,13 @@
 
         <!-- 结构解析 -->
         <div class="viz-section-header">
-          <div class="section-subtitle"><ChartPie :size="'1em'" /> 结构解析</div>
+          <div class="section-subtitle"><ChartPie :size="'1em'" /> {{ t('insights.structureSection') }}</div>
         </div>
 
         <!-- 帕累托图 -->
         <div class="analysis-card full-width-viz-card">
           <div class="card-header">
-            <h2 class="card-title">核心支出来源 (帕累托图)</h2>
+            <h2 class="card-title">{{ t('insights.paretoTitle') }}</h2>
           </div>
           <div class="card-content" ref="paretoChartRef" style="height: 400px;"></div>
         </div>
@@ -219,14 +219,14 @@
         <div class="viz-row">
           <div class="analysis-card">
             <div class="card-header">
-              <h2 class="card-title">消费热词云</h2>
+              <h2 class="card-title">{{ t('insights.wordCloudTitle') }}</h2>
             </div>
             <div class="card-content" ref="wordCloudChartRef"></div>
           </div>
 
           <div class="analysis-card">
             <div class="card-header">
-              <h2 class="card-title">消费分布云图</h2>
+              <h2 class="card-title">{{ t('insights.boxPlotTitle') }}</h2>
             </div>
             <div class="card-content" ref="boxPlotChartRef"></div>
           </div>
@@ -236,9 +236,9 @@
 
     <div v-else class="empty-state">
       <ChartColumn class="empty-icon" :size="'1em'" />
-      <p>暂无数据</p>
+      <p>{{ t('insights.noData') }}</p>
       <button class="btn btn-primary" @click="$router.push('/settings')">
-        上传账单
+        {{ t('insights.upload') }}
       </button>
     </div>
 
@@ -288,6 +288,7 @@ const SVG = {
   minus: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>`,
 }
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useDataStore } from '@/stores/data'
 import { useUiStore } from '@/stores/ui'
 import { useSessionStore } from '@/stores/session'
@@ -296,6 +297,8 @@ import { formatMoney, getCategoryColor } from '@/utils/format'
 import * as echarts from 'echarts'
 import 'echarts-wordcloud'
 import api from '@/api/client'
+
+const { t, locale } = useI18n()
 
 const dataStore = useDataStore()
 const uiStore = useUiStore()
@@ -458,14 +461,21 @@ function generateStorySlides() {
   }
 
   // 生成幻灯片（与老前端保持一致的模板）
+  const seasonKey = {
+    '春': 'seasonSpring',
+    '夏': 'seasonSummer',
+    '秋': 'seasonAutumn',
+    '冬': 'seasonWinter'
+  }
+
   const slideTemplates = [
     // 1. 封面
     `
     <div class="slide active">
       <div class="slide-content">
-        <h1>您的年度消费故事</h1>
-        <p>这一年，您经历了 ${data.summary.total_days} 个日夜</p>
-        <p>完成了 ${data.summary.tx_count} 笔交易</p>
+        <h1>${t('insights.story.coverTitle')}</h1>
+        <p>${t('insights.story.coverDays', { days: data.summary.total_days })}</p>
+        <p>${t('insights.story.coverTxs', { count: data.summary.tx_count })}</p>
         <div class="slide-big-icon">${SVG.book}</div>
       </div>
     </div>
@@ -474,11 +484,11 @@ function generateStorySlides() {
     (data.features && data.features.first_tx) ? `
     <div class="slide">
       <div class="slide-content">
-        <h2>🎬 故事的开始</h2>
+        <h2>${t('insights.story.startTitle')}</h2>
         <div class="slide-date">${data.features.first_tx.date}</div>
-        <p>您在 <strong>${data.features.first_tx.merchant}</strong></p>
+        <p>${t('insights.story.startAt', { merchant: `<strong>${data.features.first_tx.merchant}</strong>` })}</p>
         <div class="slide-amount">¥${formatMoney(data.features.first_tx.amount)}</div>
-        <p>用这笔消费开启了全新的一年。</p>
+        <p>${t('insights.story.startLine')}</p>
         <div class="slide-big-icon">${SVG.play}</div>
       </div>
     </div>
@@ -487,10 +497,10 @@ function generateStorySlides() {
     (data.features && data.features.peak_hour !== undefined) ? `
     <div class="slide">
       <div class="slide-content">
-        <h2>⏰ 剁手黄金点</h2>
-        <p>每天的 <strong>${data.features.peak_hour}点</strong></p>
-        <div class="slide-keyword" style="font-size:32px">是您最活跃的时刻</div>
-        <p>${data.features.peak_hour < 12 ? '早起的鸟儿有虫吃？' : (data.features.peak_hour > 20 ? '月黑风高夜，正是剁手时。' : '工作日摸鱼下单？')}</p>
+        <h2>${t('insights.story.peakTitle')}</h2>
+        <p>${t('insights.story.peakAt', { hour: data.features.peak_hour })}</p>
+        <div class="slide-keyword" style="font-size:32px">${t('insights.story.peakActive')}</div>
+        <p>${data.features.peak_hour < 12 ? t('insights.story.peakEarly') : (data.features.peak_hour > 20 ? t('insights.story.peakLate') : t('insights.story.peakWork'))}</p>
         <div class="slide-big-icon">${SVG.clock}</div>
       </div>
     </div>
@@ -499,10 +509,10 @@ function generateStorySlides() {
     (data.features && data.features.takeout && data.features.takeout.count > 5) ? `
     <div class="slide">
       <div class="slide-content">
-        <h2>🥡 外卖品鉴家</h2>
-        <div class="slide-amount">${data.features.takeout.count} 单</div>
-        <p>贡献了 ${formatMoney(data.features.takeout.amount)} 元给外卖/快餐</p>
-        <p>世界那么大，还是外卖最懂你的胃。</p>
+        <h2>${t('insights.story.takeoutTitle')}</h2>
+        <div class="slide-amount">${t('insights.story.takeoutCount', { count: data.features.takeout.count })}</div>
+        <p>${t('insights.story.takeoutDesc', { amount: formatMoney(data.features.takeout.amount) })}</p>
+        <p>${t('insights.story.takeoutLine')}</p>
         <div class="slide-big-icon">${SVG.utensils}</div>
       </div>
     </div>
@@ -511,10 +521,10 @@ function generateStorySlides() {
     (data.features && data.features.top_season) ? `
     <div class="slide">
       <div class="slide-content">
-        <h2>🍂 季节限定记忆</h2>
-        <p>您在</p>
-        <div class="slide-keyword" style="color:#FF7950">${data.features.top_season}天</div>
-        <p>留下了最多的消费足迹。</p>
+        <h2>${t('insights.story.seasonTitle')}</h2>
+        <p>${t('insights.story.seasonAt')}</p>
+        <div class="slide-keyword" style="color:#FF7950">${t('insights.story.seasonDay', { season: t('insights.story.' + (seasonKey[data.features.top_season] || 'seasonSpring')) })}</div>
+        <p>${t('insights.story.seasonLine')}</p>
         <div class="slide-big-icon">${data.features.top_season === '冬' ? SVG.snow : (data.features.top_season === '夏' ? SVG.sun : SVG.leaf)}</div>
       </div>
     </div>
@@ -523,11 +533,11 @@ function generateStorySlides() {
     (data.features && data.features.coffee && data.features.coffee.count > 0) ? `
     <div class="slide">
       <div class="slide-content">
-        <h2>☕️ 续命指数</h2>
-        <div class="slide-amount">${data.features.coffee.count} 杯</div>
-        <p>您今年在咖啡/奶茶上投入了</p>
+        <h2>${t('insights.story.coffeeTitle')}</h2>
+        <div class="slide-amount">${t('insights.story.coffeeCount', { count: data.features.coffee.count })}</div>
+        <p>${t('insights.story.coffeeInvest')}</p>
         <div class="slide-keyword" style="font-size:24px">¥${formatMoney(data.features.coffee.amount)}</div>
-        <p>${data.features.coffee.count > 100 ? '相当于喝掉了一个浴缸的量！' : '您是理性的咖啡因摄入者。'}</p>
+        <p>${data.features.coffee.count > 100 ? t('insights.story.coffeeMany') : t('insights.story.coffeeCalm')}</p>
         <div class="slide-big-icon">${SVG.coffee}</div>
       </div>
     </div>
@@ -536,10 +546,10 @@ function generateStorySlides() {
     (data.features && data.features.night && data.features.night.count > 0) ? `
     <div class="slide">
       <div class="slide-content">
-        <h2>🌙 深夜哲学</h2>
-        <p>晚10点后，您平均消费</p>
+        <h2>${t('insights.story.nightTitle')}</h2>
+        <p>${t('insights.story.nightAvg')}</p>
         <div class="slide-amount">¥${formatMoney(data.features.night.avg)}</div>
-        <p>看来深夜不仅有灵感，还有食欲。</p>
+        <p>${t('insights.story.nightLine')}</p>
         <div class="slide-big-icon">${SVG.moon}</div>
       </div>
     </div>
@@ -548,10 +558,10 @@ function generateStorySlides() {
     (data.features && data.features.weekend) ? `
     <div class="slide">
       <div class="slide-content">
-        <h2>🎭 周末人格</h2>
-        <p>工作日均价 vs 周末均价</p>
+        <h2>${t('insights.story.weekendTitle')}</h2>
+        <p>${t('insights.story.weekendCompare')}</p>
         <div class="slide-amount" style="font-size:32px">¥${formatMoney(data.features.weekend.weekday_avg)} <span style="font-size:20px;color:#999">vs</span> ¥${formatMoney(data.features.weekend.weekend_avg)}</div>
-        <p>${data.features.weekend.weekend_avg > data.features.weekend.weekday_avg * 2 ? '平日沙县小吃，周末米其林大餐！' : '您的消费习惯非常稳定。'}</p>
+        <p>${data.features.weekend.weekend_avg > data.features.weekend.weekday_avg * 2 ? t('insights.story.weekendBig') : t('insights.story.weekendStable')}</p>
         <div class="slide-big-icon">${SVG.mask}</div>
       </div>
     </div>
@@ -560,10 +570,10 @@ function generateStorySlides() {
     (data.features && data.features.inflation && data.features.inflation.trend !== 'stable') ? `
     <div class="slide">
       <div class="slide-content">
-        <h2>📈 通胀感知</h2>
-        <p>您常去的 <strong>${data.features.inflation.merchant}</strong></p>
+        <h2>${t('insights.story.inflationTitle')}</h2>
+        <p>${t('insights.story.inflationAt', { merchant: `<strong>${data.features.inflation.merchant}</strong>` })}</p>
         <div class="slide-amount" style="font-size:32px">¥${formatMoney(data.features.inflation.start_price)} ➔ ¥${formatMoney(data.features.inflation.end_price)}</div>
-        <p>${data.features.inflation.trend === 'up' ? '悄悄涨价了，且喝且珍惜。' : '居然降价了？良心商家！'}</p>
+        <p>${data.features.inflation.trend === 'up' ? t('insights.story.inflationUp') : t('insights.story.inflationDown')}</p>
         <div class="slide-big-icon">${SVG.chart}</div>
       </div>
     </div>
@@ -572,10 +582,10 @@ function generateStorySlides() {
     `
     <div class="slide">
       <div class="slide-content">
-        <h2>💸 最"壕"的一天</h2>
+        <h2>${t('insights.story.maxTitle')}</h2>
         <div class="slide-date">${data.max_day.date}</div>
         <div class="slide-amount">${formatMoney(data.max_day.amount)}</div>
-        <p>那天发生了什么？是爱自己多一点吗？</p>
+        <p>${t('insights.story.maxLine')}</p>
         <div class="slide-big-icon">${SVG.bag}</div>
       </div>
     </div>
@@ -584,10 +594,10 @@ function generateStorySlides() {
     `
     <div class="slide">
       <div class="slide-content">
-        <h2>✨ 年度关键词</h2>
+        <h2>${t('insights.story.summaryTitle')}</h2>
         <div class="slide-keyword">${data.top_category.name}</div>
-        <p>这是您投入最多的领域 (${formatMoney(data.top_category.amount)})</p>
-        <p>新的一年，愿每一笔消费都物超所值！</p>
+        <p>${t('insights.story.summaryLine', { amount: formatMoney(data.top_category.amount) })}</p>
+        <p>${t('insights.story.summaryWish')}</p>
         <div class="slide-big-icon">${SVG.star}</div>
       </div>
     </div>
@@ -628,7 +638,7 @@ async function loadData(year) {
     updateAllContent()
   } catch (error) {
     console.error('[Insights] Failed to load data:', error)
-    uiStore.showError('加载数据失败: ' + error.message)
+    uiStore.showError(t('insights.loadFailed') + ': ' + error.message)
   } finally {
     uiStore.setGlobalLoading(false)
   }
@@ -715,28 +725,28 @@ function updateTags() {
       <div class="profile-feature">
         <div class="feature-icon">${SVG.clock}</div>
         <div class="feature-content">
-          <div class="feature-title">消费时间</div>
+          <div class="feature-title">${t('insights.profile.time')}</div>
           <div class="feature-description">${formatTimePattern(tagsData.time_pattern || '-')}</div>
         </div>
       </div>
       <div class="profile-feature">
         <div class="feature-icon">${SVG.bag}</div>
         <div class="feature-content">
-          <div class="feature-title">消费偏好</div>
+          <div class="feature-title">${t('insights.profile.preference')}</div>
           <div class="feature-description">${formatPreference(tagsData.spending_preference || '-')}</div>
         </div>
       </div>
       <div class="profile-feature">
         <div class="feature-icon">${SVG.chart}</div>
         <div class="feature-content">
-          <div class="feature-title">消费规律</div>
+          <div class="feature-title">${t('insights.profile.pattern')}</div>
           <div class="feature-description">${formatPattern(tagsData.spending_pattern || '-')}</div>
         </div>
       </div>
       <div class="profile-feature">
         <div class="feature-icon">${SVG.wallet}</div>
         <div class="feature-content">
-          <div class="feature-title">消费能力</div>
+          <div class="feature-title">${t('insights.profile.power')}</div>
           <div class="feature-description">${formatPower(tagsData.spending_power || '-')}</div>
         </div>
       </div>
@@ -786,17 +796,17 @@ function updateMerchants() {
         <div class="merchant-rank">${index + 1}</div>
         <div class="merchant-details">
           <div class="merchant-name">${merchant.name}</div>
-          <div class="merchant-meta">上次消费: ${merchant.last_visit || '-'}</div>
+          <div class="merchant-meta">${t('insights.merchant.lastVisit', { date: merchant.last_visit || '-' })}</div>
         </div>
       </div>
       <div class="merchant-stats">
         <div class="stat-group">
-          <div class="label">消费金额</div>
+          <div class="label">${t('insights.merchant.amount')}</div>
           <div class="value">${formatMoney(merchant.amount)}</div>
         </div>
         <div class="stat-group">
-          <div class="label">消费次数</div>
-          <div class="value">${merchant.count}次</div>
+          <div class="label">${t('insights.merchant.count')}</div>
+          <div class="value">${t('insights.merchant.countUnit', { count: merchant.count })}</div>
         </div>
       </div>
     </div>
@@ -834,11 +844,11 @@ function updateScenarioChart() {
       trigger: 'item',
       formatter: (params) => {
         const percentage = ((params.value / total) * 100).toFixed(2)
-        return `${params.name}<br/>金额：${formatMoney(params.value)}元<br/>占比：${percentage}%`
+        return t('insights.scene.tooltip', { name: params.name, amount: formatMoney(params.value), percent: percentage })
       }
     },
     series: [{
-      name: '金额分布',
+      name: t('insights.scene.seriesName'),
       type: 'pie',
       radius: ['25%', '60%'],
       center: ['50%', '50%'],
@@ -890,27 +900,27 @@ function updateHabitStats() {
   habitStats.value.innerHTML = `
     <div class="stat-item">
       <div class="stat-value">${habit.daily_avg?.toFixed(2) || 0}</div>
-      <div class="stat-label">日均消费(元)</div>
+      <div class="stat-label">${t('insights.habits.dailyAvg')}</div>
     </div>
     <div class="stat-item">
       <div class="stat-value">${habit.weekend_ratio || 0}%</div>
-      <div class="stat-label">周末消费占比</div>
+      <div class="stat-label">${t('insights.habits.weekendShare')}</div>
     </div>
     <div class="stat-item">
       <div class="stat-value">${habit.fixed_expenses || 0}%</div>
-      <div class="stat-label">固定支出占比</div>
+      <div class="stat-label">${t('insights.habits.fixedShare')}</div>
     </div>
     <div class="stat-item">
       <div class="stat-value">${habit.month_start_ratio || 0}%</div>
-      <div class="stat-label">月初消费占比</div>
+      <div class="stat-label">${t('insights.habits.monthStart')}</div>
     </div>
     <div class="stat-item">
       <div class="stat-value">${night.ratio?.toFixed(2) || 0}%</div>
-      <div class="stat-label">深夜剁手</div>
+      <div class="stat-label">${t('insights.habits.night')}</div>
     </div>
     <div class="stat-item">
       <div class="stat-value">${engel.ratio?.toFixed(2) || 0}%</div>
-      <div class="stat-label">恩格尔系数</div>
+      <div class="stat-label">${t('insights.habits.engel')}</div>
     </div>
   `
 }
@@ -924,8 +934,8 @@ function updateAdvancedInsights() {
   if (latteContent.value) {
     latteContent.value.innerHTML = `
       <div class="insight-stat-big">${formatMoney(latte.total_amount || 0)}</div>
-      <div class="insight-desc">累计在 <span class="highlight">${latte.top_merchant || '-'}</span> 等小额消费上花费</div>
-      <div class="insight-meta">相当于 ${Math.floor((latte.total_amount || 0) / 30)} 杯咖啡</div>
+      <div class="insight-desc">${t('insights.latte.descPrefix')}<span class="highlight">${latte.top_merchant || '-'}</span>${t('insights.latte.descSuffix')}</div>
+      <div class="insight-meta">${t('insights.latte.coffee', { count: Math.floor((latte.total_amount || 0) / 30) })}</div>
     `
   }
 
@@ -936,18 +946,18 @@ function updateAdvancedInsights() {
       const totalAnnual = subs.reduce((sum, item) => sum + (item.annual_amount || 0), 0)
       subContent.value.innerHTML = `
         <div class="insight-stat-big">${formatMoney(totalAnnual)}</div>
-        <div class="insight-desc">预估年化订阅总支出</div>
+        <div class="insight-desc">${t('insights.subscription.desc')}</div>
         <div class="insight-list">
           ${subs.slice(0, 2).map(s => `
             <div class="insight-item">
               <span>${s.name}</span>
-              <span>${formatMoney(s.monthly_amount)}/月</span>
+              <span>${t('insights.subscription.monthly', { amount: formatMoney(s.monthly_amount) })}</span>
             </div>
           `).join('')}
         </div>
       `
     } else {
-      subContent.value.innerHTML = `<div class="empty-state">未发现明显订阅支出</div>`
+      subContent.value.innerHTML = `<div class="empty-state">${t('insights.subscription.empty')}</div>`
     }
   }
 
@@ -959,8 +969,8 @@ function updateAdvancedInsights() {
       <div class="insight-stat-big" style="color: ${trendColor}">
         ${inf.trend === 'up' ? SVG.up : (inf.trend === 'down' ? SVG.down : SVG.minus)} ${Math.abs(inf.rate || 0).toFixed(2)}%
       </div>
-      <div class="insight-desc">季度客单价变化趋势</div>
-      <div class="insight-meta">从 ${formatMoney(inf.first_avg || 0)} 变动至 ${formatMoney(inf.last_avg || 0)}</div>
+      <div class="insight-desc">${t('insights.inflation.desc')}</div>
+      <div class="insight-meta">${t('insights.inflation.meta', { first: formatMoney(inf.first_avg || 0), last: formatMoney(inf.last_avg || 0) })}</div>
     `
   }
 
@@ -973,14 +983,14 @@ function updateAdvancedInsights() {
           <div class="loyalty-value">${loyalty.top_amount.name || '-'}</div>
           <div class="loyalty-details">
             <span class="loyalty-amount">${formatMoney(loyalty.top_amount.value || 0)}</span>
-            <span class="loyalty-tag">真金白银</span>
+            <span class="loyalty-tag">${t('insights.loyalty.cash')}</span>
           </div>
         </div>
         <div class="loyalty-item">
           <div class="loyalty-value">${loyalty.top_count?.name || '-'}</div>
           <div class="loyalty-details">
-            <span class="loyalty-amount">${loyalty.top_count.value || 0}次</span>
-            <span class="loyalty-tag">最为长情</span>
+            <span class="loyalty-amount">${t('insights.loyalty.count', { count: loyalty.top_count.value || 0 })}</span>
+            <span class="loyalty-tag">${t('insights.loyalty.longest')}</span>
           </div>
         </div>
       </div>
@@ -991,14 +1001,14 @@ function updateAdvancedInsights() {
   const wm = data.weekend_monday || {}
   if (weekendContent.value) {
     const wmRatio = wm.ratio || 0
-    let wmDesc = "平稳型"
-    if (wmRatio > 1.5) wmDesc = "周末狂欢型"
-    else if (wmRatio < 0.8) wmDesc = "周一补偿型"
+    let wmDesc = t('insights.weekend.stable')
+    if (wmRatio > 1.5) wmDesc = t('insights.weekend.revel')
+    else if (wmRatio < 0.8) wmDesc = t('insights.weekend.monday')
 
     weekendContent.value.innerHTML = `
       <div class="insight-stat-big">${wmRatio.toFixed(2)}x</div>
-      <div class="insight-desc">周末日均消费是周一的倍数</div>
-      <div class="insight-meta">类型: ${wmDesc}</div>
+      <div class="insight-desc">${t('insights.weekend.desc')}</div>
+      <div class="insight-meta">${t('insights.weekend.type', { type: wmDesc })}</div>
     `
   }
 }
@@ -1067,9 +1077,9 @@ function renderSankeyChart(data) {
       triggerOn: 'mousemove',
       formatter: function (params) {
         if (params.dataType === 'edge') {
-          return `${params.data.source} > ${params.data.target}<br/>金额: ${formatMoney(params.data.value)} 元`
+          return t('insights.charts.sankeyEdge', { source: params.data.source, target: params.data.target, amount: formatMoney(params.data.value) })
         } else {
-          return `${params.name}<br/>金额: ${formatMoney(params.data.value || params.value)} 元`
+          return t('insights.charts.sankeyNode', { name: params.name, amount: formatMoney(params.data.value || params.value) })
         }
       }
     },
@@ -1178,15 +1188,23 @@ function renderThemeRiver(data) {
 function renderHeatmap(data) {
   if (!heatmapChart || !data || data.length === 0) return
 
-  const hours = Array.from({ length: 24 }, (_, i) => i + '点')
-  const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+  const hours = Array.from({ length: 24 }, (_, i) => t('insights.charts.hourUnit', { hour: i }))
+  const days = [
+    t('insights.charts.weekdays.mon'),
+    t('insights.charts.weekdays.tue'),
+    t('insights.charts.weekdays.wed'),
+    t('insights.charts.weekdays.thu'),
+    t('insights.charts.weekdays.fri'),
+    t('insights.charts.weekdays.sat'),
+    t('insights.charts.weekdays.sun')
+  ]
   const maxValue = Math.max(...data.map(item => item[2]))
 
   const option = {
     tooltip: {
       position: 'top',
       formatter: (params) => {
-        return `${days[params.value[1]]} ${hours[params.value[0]]}<br />消费频次: ${params.value[2]}`
+        return t('insights.charts.heatmap', { day: days[params.value[1]], hour: hours[params.value[0]], count: params.value[2] })
       }
     },
     grid: {
@@ -1264,7 +1282,7 @@ function renderRadarChart(data) {
       radius: '65%'
     },
     series: [{
-      name: '季度消费结构',
+      name: t('insights.charts.radarName'),
       type: 'radar',
       data: data.series
     }]
@@ -1285,10 +1303,12 @@ function renderQuadrantChart(data) {
         const item = params.data
         return `
           <div style="font-weight:bold;margin-bottom:5px;">${item.name}</div>
-          分类：${item.category}<br/>
-          频次：${item.frequency} 次<br/>
-          均价：¥${formatMoney(item.avg_amount)}<br/>
-          总额：¥${formatMoney(item.total_amount)}
+          ${t('insights.charts.quadrantTooltip', {
+            category: item.category,
+            frequency: item.frequency,
+            avg: formatMoney(item.avg_amount),
+            total: formatMoney(item.total_amount)
+          })}
         `
       }
     },
@@ -1300,7 +1320,7 @@ function renderQuadrantChart(data) {
       containLabel: true
     },
     xAxis: {
-      name: '消费频次 (次)',
+      name: t('insights.charts.quadrantX'),
       type: 'log',
       logBase: 2,
       splitLine: {
@@ -1310,7 +1330,7 @@ function renderQuadrantChart(data) {
       }
     },
     yAxis: {
-      name: '单笔均价 (元)',
+      name: t('insights.charts.quadrantY'),
       type: 'log',
       logBase: 2,
       splitLine: {
@@ -1339,8 +1359,8 @@ function renderQuadrantChart(data) {
           width: 1
         },
         data: [
-          { xAxis: avgFreq, name: '平均频次' },
-          { yAxis: avgAmount, name: '平均均价' }
+          { xAxis: avgFreq, name: t('insights.charts.avgFreq') },
+          { yAxis: avgAmount, name: t('insights.charts.avgAmount') }
         ]
       }
     }]
@@ -1392,7 +1412,7 @@ function renderChordChart(data) {
     tooltip: {
       formatter: (params) => {
         if (params.dataType === 'edge') {
-          return params.data.source + ' -> ' + params.data.target + '<br/>消费金额: ¥' + formatMoney(params.data.value)
+          return t('insights.charts.chordEdge', { source: params.data.source, target: params.data.target, amount: formatMoney(params.data.value) })
         } else {
           return params.name
         }
@@ -1444,7 +1464,7 @@ function renderFunnelChart(data) {
       }
     },
     series: [{
-      name: '消费漏斗',
+      name: t('insights.charts.funnelName'),
       type: 'funnel',
       left: '10%',
       top: 60,
@@ -1491,7 +1511,7 @@ function renderParetoChart(data) {
       bottom: '10%'
     },
     legend: {
-      data: ['消费金额', '累积占比']
+      data: [t('insights.charts.paretoAmount'), t('insights.charts.paretoShare')]
     },
     xAxis: [{
       type: 'category',
@@ -1506,10 +1526,10 @@ function renderParetoChart(data) {
     }],
     yAxis: [{
       type: 'value',
-      name: '金额'
+      name: t('insights.charts.paretoYAmount')
     }, {
       type: 'value',
-      name: '累积占比',
+      name: t('insights.charts.paretoYShare'),
       min: 0,
       max: 100,
       interval: 20,
@@ -1518,14 +1538,14 @@ function renderParetoChart(data) {
       }
     }],
     series: [{
-      name: '消费金额',
+      name: t('insights.charts.paretoAmount'),
       type: 'bar',
       data: data.values,
       itemStyle: {
         color: (params) => getCategoryColor(params.name)
       }
     }, {
-      name: '累积占比',
+      name: t('insights.charts.paretoShare'),
       type: 'line',
       yAxisIndex: 1,
       data: data.percentages,
@@ -1533,7 +1553,7 @@ function renderParetoChart(data) {
         color: '#5470c6'
       },
       markLine: {
-        data: [{ yAxis: 80, name: '80%线' }],
+        data: [{ yAxis: 80, name: t('insights.charts.paretoMarkLine') }],
         lineStyle: {
           color: '#ee6666',
           type: 'dashed'
@@ -1625,11 +1645,11 @@ function renderBoxPlot(data) {
       formatter: (params) => {
         if (params.seriesType === 'boxplot') {
           return `${params.name}<br/>
-                  最大值: ${formatMoney(params.data[5])}<br/>
-                  Q3: ${formatMoney(params.data[4])}<br/>
-                  中位数: ${formatMoney(params.data[3])}<br/>
-                  Q1: ${formatMoney(params.data[2])}<br/>
-                  最小值: ${formatMoney(params.data[1])}`
+                  ${t('insights.charts.boxMax', { value: formatMoney(params.data[5]) })}<br/>
+                  ${t('insights.charts.boxQ3', { value: formatMoney(params.data[4]) })}<br/>
+                  ${t('insights.charts.boxMedian', { value: formatMoney(params.data[3]) })}<br/>
+                  ${t('insights.charts.boxQ1', { value: formatMoney(params.data[2]) })}<br/>
+                  ${t('insights.charts.boxMin', { value: formatMoney(params.data[1]) })}`
         } else {
           const d = params.data
           return `<strong>${d.categoryName}</strong><br/>
@@ -1665,7 +1685,7 @@ function renderBoxPlot(data) {
       type: 'log',
       logBase: 10,
       min: 1,
-      name: '金额 (元)',
+      name: t('insights.charts.boxAxis'),
       splitLine: {
         show: true,
         lineStyle: {
@@ -1701,6 +1721,15 @@ function renderBoxPlot(data) {
   boxPlotChart.setOption(option, true)
 }
 
+// 监听语言变化，重绘动态内容与图表
+watch(locale, () => {
+  if (insightsData.value) {
+    updateAllContent()
+    updateScenarioChart()
+    updateAdvancedCharts()
+  }
+})
+
 // 监听筛选器变化
 watch(() => filterStore.currentFilter, () => {
   if (currentYear.value) {
@@ -1726,7 +1755,7 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('Insights page init error:', error)
-    uiStore.showError('页面初始化失败: ' + error.message)
+    uiStore.showError(t('insights.initFailed') + ': ' + error.message)
   } finally {
     uiStore.setGlobalLoading(false)
   }

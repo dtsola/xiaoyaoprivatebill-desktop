@@ -2,30 +2,26 @@
   <div class="settings-page">
     <!-- 页面标题：设置页按「账单文件 / 数据管理 / 存储与审计 / 桌面」分组；/agent 复用本页只渲染 MCP 区块 -->
     <div class="page-header" :class="{ 'page-header-agent': agentOnly }">
-      <h1 class="page-title">{{ agentOnly ? 'AI Agent 接入' : '设置' }}</h1>
+      <h1 class="page-title">{{ agentOnly ? t('settings.agentTitle') : t('settings.title') }}</h1>
       <p v-if="agentOnly" class="page-subtitle">
-        通过 MCP 服务让 小遥Claw 读取本机账单数据，用自然语言完成账单分析。
+        {{ t('settings.agentSubtitle') }}
       </p>
     </div>
 
     <!-- 账单文件：导入与已上传列表 -->
-    <h2 v-if="!agentOnly" class="section-title">账单文件</h2>
+    <h2 v-if="!agentOnly" class="section-title">{{ t('settings.bills.title') }}</h2>
     <div v-if="!agentOnly" class="split-layout">
       <!-- 左侧：支付宝专区 -->
       <div class="provider-column alipay-column">
         <h2 class="column-header">
-          <i class="fab fa-alipay"></i> 支付宝账单
+          <i class="fab fa-alipay"></i> {{ t('settings.bills.alipayTitle') }}
         </h2>
 
         <!-- 支付宝指南 -->
         <div class="upload-guide">
-          <h3>如何获取支付宝账单？</h3>
+          <h3>{{ t('settings.bills.alipayGuideTitle') }}</h3>
           <ol>
-            <li>打开支付宝 App -> 我的 -> 账单</li>
-            <li>右上角 ... -> 开具交易流水证明 -> 用于个人对账 -> 申请</li>
-            <li>自定义时间范围（最长为一年） -> 填写邮箱 -> 下载账单</li>
-            <li>申请记录中找到解压密码 -> 解压下载的文件，获取 CSV 文件</li>
-            <li>按年份重命名为【alipay_record_2026.csv】格式</li>
+            <li v-for="(step, index) in alipaySteps" :key="index" v-html="step"></li>
           </ol>
         </div>
 
@@ -39,20 +35,20 @@
             <FileSpreadsheet :size="'1em'" />
           </div>
           <div class="upload-text">
-            点击选择或拖拽<br />支付宝 CSV 文件
-            <br /><span style="font-size: 12px; opacity: 0.7;">最大 16MB</span>
+            {{ t('settings.bills.pickAlipay') }}<br />{{ t('settings.bills.pickAlipaySub') }}
+            <br /><span style="font-size: 12px; opacity: 0.7;">{{ t('settings.bills.maxSize', { size: '16MB' }) }}</span>
           </div>
         </div>
 
         <!-- 支付宝文件列表 -->
         <div class="file-list-container">
-          <h4>已上传文件</h4>
+          <h4>{{ t('settings.bills.uploadedFiles') }}</h4>
           <div class="file-list">
             <div v-for="file in alipayFiles" :key="file.name" class="file-item">
               <FileSpreadsheet :size="'1em'" />
               <span class="file-name">{{ file.name }}</span>
               <div class="file-actions">
-                <span class="file-status status-success">已上传</span>
+                <span class="file-status status-success">{{ t('settings.bills.uploadedStatus') }}</span>
                 <button class="delete-btn" @click="deleteFile(file.name)">
                   <Trash2 :size="'1em'" />
                 </button>
@@ -65,18 +61,14 @@
       <!-- 右侧：微信专区 -->
       <div class="provider-column wechat-column">
         <h2 class="column-header">
-          <i class="fab fa-weixin"></i> 微信账单
+          <i class="fab fa-weixin"></i> {{ t('settings.bills.wechatTitle') }}
         </h2>
 
         <!-- 微信指南 -->
         <div class="upload-guide">
-          <h3>如何获取微信账单？</h3>
+          <h3>{{ t('settings.bills.wechatGuideTitle') }}</h3>
           <ol>
-            <li>打开微信 App -> 我 -> 服务 -> 钱包 -> 账单</li>
-            <li>点击右上角 [...] -> 账单下载 -> 用于个人对账</li>
-            <li>选择接收方式（微信/邮箱）、账单时间 -> 下一步</li>
-            <li><strong>方式一（推荐）：</strong>刷脸验证 -> 微信消息直接下载 XLSX 文件</li>
-            <li><strong>方式二：</strong>输入邮箱 -> 刷脸 -> 邮箱接收 (密码在微信消息中)</li>
+            <li v-for="(step, index) in wechatSteps" :key="index" v-html="step"></li>
           </ol>
         </div>
 
@@ -90,20 +82,20 @@
             <FileText :size="'1em'" />
           </div>
           <div class="upload-text">
-            点击或拖拽<br />微信 XLSX/CSV 文件
-            <br /><span style="font-size: 12px; opacity: 0.7;">最大 16MB</span>
+            {{ t('settings.bills.pickWechat') }}<br />{{ t('settings.bills.pickWechatSub') }}
+            <br /><span style="font-size: 12px; opacity: 0.7;">{{ t('settings.bills.maxSize', { size: '16MB' }) }}</span>
           </div>
         </div>
 
         <!-- 微信文件列表 -->
         <div class="file-list-container">
-          <h4>已上传文件</h4>
+          <h4>{{ t('settings.bills.uploadedFiles') }}</h4>
           <div class="file-list">
             <div v-for="file in wechatFiles" :key="file.name" class="file-item">
               <FileSpreadsheet :size="'1em'" />
               <span class="file-name">{{ file.name }}</span>
               <div class="file-actions">
-                <span class="file-status status-success">已上传</span>
+                <span class="file-status status-success">{{ t('settings.bills.uploadedStatus') }}</span>
                 <button class="delete-btn" @click="deleteFile(file.name)">
                   <Trash2 :size="'1em'" />
                 </button>
@@ -119,12 +111,12 @@
       <div class="action-bar-content">
         <div class="file-summary">
           <FileText :size="'1em'" />
-          <span>{{ totalFileCount > 0 ? `已就绪 ${totalFileCount} 个账单文件` : '请上传账单文件' }}</span>
+          <span>{{ totalFileCount > 0 ? t('settings.bills.ready', { count: totalFileCount }) : t('settings.bills.needUpload') }}</span>
         </div>
         <div class="action-buttons">
           <router-link to="/yearly" class="start-button" :class="{ disabled: totalFileCount === 0 }">
             <ChartLine :size="'1em'" />
-            开始分析
+            {{ t('settings.bills.start') }}
           </router-link>
         </div>
       </div>
@@ -132,37 +124,37 @@
 
     <!-- 删除区域 -->
     <div v-if="!agentOnly" class="delete-section">
-      <h2 class="section-title">数据管理</h2>
+      <h2 class="section-title">{{ t('settings.data.title') }}</h2>
       <div class="delete-area">
         <button class="delete-all-btn" @click="handleClearAllData">
           <Trash2 :size="'1em'" />
-          删除所有账单数据
+          {{ t('settings.data.deleteAll') }}
         </button>
-        <p class="delete-warning">删除后将清空所有已上传的账单文件和分析数据，此操作不可恢复。</p>
+        <p class="delete-warning">{{ t('settings.data.warning') }}</p>
       </div>
     </div>
 
     <!-- 存储与审计：数据目录与可恢复数据 -->
     <div v-if="!agentOnly" class="desktop-section">
-      <h2 class="section-title">存储与审计</h2>
+      <h2 class="section-title">{{ t('settings.storage.title') }}</h2>
       <div class="desktop-card">
         <div class="desktop-row">
-          <span class="mcp-label">数据目录</span>
+          <span class="mcp-label">{{ t('settings.storage.dataDir') }}</span>
           <code class="mcp-endpoint">{{ desktop.data_dir }}</code>
-          <button class="mcp-btn" @click="openDataDir">打开</button>
+          <button class="mcp-btn" @click="openDataDir">{{ t('settings.storage.open') }}</button>
         </div>
         <div class="desktop-row">
-          <span class="mcp-label">回收站</span>
-          <span class="storage-value">{{ storage.trash_count }} 个条目</span>
-          <button class="mcp-btn" @click="openStorageDir('trash')">打开</button>
+          <span class="mcp-label">{{ t('settings.storage.trash') }}</span>
+          <span class="storage-value">{{ t('settings.storage.trashCount', { count: storage.trash_count }) }}</span>
+          <button class="mcp-btn" @click="openStorageDir('trash')">{{ t('settings.storage.open') }}</button>
         </div>
         <div class="desktop-row">
-          <span class="mcp-label">快照</span>
-          <span class="storage-value">{{ storage.snapshot_count }} 个</span>
-          <button class="mcp-btn" @click="openStorageDir('snapshots')">打开</button>
+          <span class="mcp-label">{{ t('settings.storage.snapshots') }}</span>
+          <span class="storage-value">{{ t('settings.storage.snapshotCount', { count: storage.snapshot_count }) }}</span>
+          <button class="mcp-btn" @click="openStorageDir('snapshots')">{{ t('settings.storage.open') }}</button>
         </div>
         <div class="desktop-row">
-          <span class="mcp-label">审计日志</span>
+          <span class="mcp-label">{{ t('settings.storage.audit') }}</span>
           <span class="storage-value">{{ auditSizeText }}</span>
         </div>
       </div>
@@ -170,7 +162,7 @@
 
     <!-- 桌面行为 -->
     <div v-if="!agentOnly" class="desktop-section">
-      <h2 class="section-title">桌面</h2>
+      <h2 class="section-title">{{ t('settings.desktop.title') }}</h2>
       <div class="desktop-card">
         <div class="desktop-row">
           <span class="mcp-label">{{ t('settings.language.label') }}</span>
@@ -186,9 +178,9 @@
           </select>
         </div>
         <div class="desktop-row">
-          <span class="mcp-label">关闭行为</span>
+          <span class="mcp-label">{{ t('settings.desktop.closeBehavior') }}</span>
           <button class="mcp-btn" @click="toggleCloseToTray">
-            {{ desktop.close_to_tray ? '关闭窗口时最小化到托盘' : '关闭窗口时直接退出' }}
+            {{ desktop.close_to_tray ? t('settings.desktop.minimize') : t('settings.desktop.quit') }}
           </button>
         </div>
       </div>
@@ -198,81 +190,81 @@
     <div v-if="agentOnly" class="mcp-section">
       <div class="mcp-card">
         <div class="mcp-row">
-          <span class="mcp-label">状态</span>
+          <span class="mcp-label">{{ t('settings.mcp.status') }}</span>
           <span class="mcp-status" :class="{ running: mcp.running }">
-            {{ mcp.running ? '运行中' : '已停止' }}
+            {{ mcp.running ? t('settings.mcp.running') : t('settings.mcp.stopped') }}
           </span>
         </div>
         <div class="mcp-row">
-          <span class="mcp-label">端点</span>
+          <span class="mcp-label">{{ t('settings.mcp.endpoint') }}</span>
           <code class="mcp-endpoint">{{ mcp.endpoint }}</code>
         </div>
         <div v-if="mcp.running && mcp.token" class="mcp-row">
-          <span class="mcp-label">Token</span>
+          <span class="mcp-label">{{ t('settings.mcp.token') }}</span>
           <code class="mcp-token">{{ mcp.token }}</code>
-          <button class="mcp-btn" @click="copyToken">复制</button>
+          <button class="mcp-btn" @click="copyToken">{{ t('settings.mcp.copy') }}</button>
         </div>
         <div v-if="mcp.running && mcp.token" class="mcp-config">
           <div class="mcp-config-head">
-            <span class="mcp-label">小遥Claw 配置</span>
-            <button class="mcp-btn" @click="copyMcpConfig">复制配置</button>
+            <span class="mcp-label">{{ t('settings.mcp.config') }}</span>
+            <button class="mcp-btn" @click="copyMcpConfig">{{ t('settings.mcp.copyConfig') }}</button>
           </div>
           <pre class="mcp-config-code">{{ mcpConfigJson }}</pre>
           <p class="mcp-hint">
-            复制后在小遥Claw 中添加 MCP 服务（JSON 格式），保存后新开一个会话即可看到账单工具。
+            {{ t('settings.mcp.configHint') }}
           </p>
         </div>
         <p v-if="mcp.last_error" class="mcp-error">{{ mcp.last_error }}</p>
         <div class="mcp-actions">
           <button class="mcp-btn primary" @click="toggleMcp">
-            {{ mcp.enabled ? '关闭 MCP 服务' : '开启 MCP 服务' }}
+            {{ mcp.enabled ? t('settings.mcp.disable') : t('settings.mcp.enable') }}
           </button>
-          <button class="mcp-btn" @click="rotateToken">重新生成 Token</button>
+          <button class="mcp-btn" @click="rotateToken">{{ t('settings.mcp.rotate') }}</button>
         </div>
         <p class="mcp-hint">
-          仅监听 127.0.0.1，默认关闭；开启后请在客户端配置 Bearer Token。
+          {{ t('settings.mcp.securityHint') }}
         </p>
       </div>
 
       <div class="claw-guide">
         <div class="claw-guide-head">
           <div>
-            <h3>小遥Claw 接入方式</h3>
-            <p>小遥Claw 是把 AI 助手装进自己电脑的桌面 Personal Agent，连接后一句话就能分析账单。</p>
+            <h3>{{ t('settings.claw.title') }}</h3>
+            <p>{{ t('settings.claw.desc') }}</p>
           </div>
-          <span class="claw-badge">推荐</span>
+          <span class="claw-badge">{{ t('settings.claw.recommended') }}</span>
         </div>
         <ol class="claw-steps">
           <li class="claw-step">
             <span class="claw-step-num">1</span>
             <div class="claw-step-body">
-              <strong>打开「技能与 MCP」</strong>
-              <p>在小遥Claw 中进入 设置 → 技能与 MCP。</p>
+              <strong>{{ t('settings.claw.step1Title') }}</strong>
+              <p>{{ t('settings.claw.step1Desc') }}</p>
             </div>
           </li>
           <li class="claw-step">
             <span class="claw-step-num">2</span>
             <div class="claw-step-body">
-              <strong>添加服务器</strong>
-              <p>点击「添加服务器」，名称填写 <code>xiaoyaobill-mcp</code>。</p>
+              <strong>{{ t('settings.claw.step2Title') }}</strong>
+              <p v-html="t('settings.claw.step2Desc')"></p>
             </div>
           </li>
           <li class="claw-step">
             <span class="claw-step-num">3</span>
             <div class="claw-step-body">
-              <strong>粘贴配置并保存</strong>
-              <p>切换到「JSON」，粘贴上方复制的配置，点击「保存」。</p>
+              <strong>{{ t('settings.claw.step3Title') }}</strong>
+              <p>{{ t('settings.claw.step3Desc') }}</p>
             </div>
           </li>
           <li class="claw-step">
             <span class="claw-step-num">4</span>
             <div class="claw-step-body">
-              <strong>测试并开始分析</strong>
-              <p>测试显示「连接正常 · 14 个工具」即成功；新开会话问「帮我分析一下我的小遥账单」。</p>
+              <strong>{{ t('settings.claw.step4Title') }}</strong>
+              <p>{{ t('settings.claw.step4Desc') }}</p>
             </div>
           </li>
         </ol>
-        <p class="claw-shots-title">接入实操截图</p>
+        <p class="claw-shots-title">{{ t('settings.claw.shotsTitle') }}</p>
         <div class="claw-shots">
           <button
             v-for="shot in clawShots"
@@ -286,8 +278,8 @@
           </button>
         </div>
         <div class="claw-guide-foot">
-          <button class="mcp-btn" @click="openClawSite">打开小遥Claw 官网</button>
-          <span>MCP 服务需保持「运行中」，账单数据才会被读取。</span>
+          <button class="mcp-btn" @click="openClawSite">{{ t('settings.claw.site') }}</button>
+          <span>{{ t('settings.claw.runningHint') }}</span>
         </div>
       </div>
 
@@ -299,7 +291,7 @@
         :aria-label="previewShot.caption"
         @click.self="previewShot = null"
       >
-        <button class="claw-preview-close" aria-label="关闭预览" @click="previewShot = null">×</button>
+        <button class="claw-preview-close" :aria-label="t('settings.claw.closePreview')" @click="previewShot = null">×</button>
         <img :src="previewShot.src" :alt="previewShot.alt">
       </div>
     </div>
@@ -326,7 +318,7 @@ const props = defineProps({
 
 const sessionStore = useSessionStore()
 const uiStore = useUiStore()
-const { t } = useI18n()
+const { t, tm } = useI18n()
 
 // 文件列表
 const alipayFiles = ref([])
@@ -359,28 +351,31 @@ const mcp = ref({
 })
 
 // 小遥Claw 接入实操截图（点击放大）
-const clawShots = [
+const alipaySteps = computed(() => tm('settings.bills.alipaySteps'))
+const wechatSteps = computed(() => tm('settings.bills.wechatSteps'))
+
+const clawShots = computed(() => [
   {
     src: '/images/claw/01-add-mcp.png',
-    alt: '在小遥Claw 中添加 MCP 服务',
-    caption: '添加 MCP 服务'
+    alt: t('settings.claw.shotAddAlt'),
+    caption: t('settings.claw.shotAddCaption')
   },
   {
     src: '/images/claw/02-connected.png',
-    alt: '小遥Claw 显示连接正常与 14 个工具',
-    caption: '连接正常 · 14 个工具'
+    alt: t('settings.claw.shotConnectedAlt'),
+    caption: t('settings.claw.shotConnectedCaption')
   },
   {
     src: '/images/claw/03-ask.png',
-    alt: '在小遥Claw 中用自然语言发起账单分析',
-    caption: '用自然语言发起分析'
+    alt: t('settings.claw.shotAskAlt'),
+    caption: t('settings.claw.shotAskCaption')
   },
   {
     src: '/images/claw/04-analysis.png',
-    alt: '小遥Claw 生成结构化账单分析结果',
-    caption: '生成结构化账单分析'
+    alt: t('settings.claw.shotAnalysisAlt'),
+    caption: t('settings.claw.shotAnalysisCaption')
   }
-]
+])
 const previewShot = ref(null)
 
 let unlistenDragDrop = null
@@ -460,9 +455,9 @@ async function toggleCloseToTray() {
   try {
     const result = await api.setCloseToTray(!desktop.value.close_to_tray)
     desktop.value = { ...desktop.value, ...result }
-    uiStore.showSuccess(result.close_to_tray ? '关闭窗口将最小化到托盘' : '关闭窗口将直接退出')
+    uiStore.showSuccess(result.close_to_tray ? t('settings.desktop.minimizedToast') : t('settings.desktop.quitToast'))
   } catch (error) {
-    uiStore.showError('设置失败: ' + error.message)
+    uiStore.showError(t('settings.desktop.saveFailed') + ': ' + error.message)
   }
 }
 
@@ -470,7 +465,7 @@ async function openStorageDir(kind) {
   try {
     await api.openStorageDir(kind)
   } catch (error) {
-    uiStore.showError('打开目录失败: ' + error.message)
+    uiStore.showError(t('settings.errors.openDirFailed') + ': ' + error.message)
   }
 }
 
@@ -478,7 +473,7 @@ async function openDataDir() {
   try {
     await api.openDataDir()
   } catch (error) {
-    uiStore.showError('打开数据目录失败: ' + error.message)
+    uiStore.showError(t('settings.errors.openDataDirFailed') + ': ' + error.message)
   }
 }
 
@@ -505,14 +500,14 @@ async function toggleMcp() {
     if (status.running) {
       const config = await api.mcpConfig()
       mcp.value = { ...mcp.value, ...config }
-      uiStore.showSuccess('MCP 服务已开启')
+      uiStore.showSuccess(t('settings.mcp.enabledToast'))
     } else if (status.last_error) {
       uiStore.showError(status.last_error)
     } else {
-      uiStore.showSuccess('MCP 服务已关闭')
+      uiStore.showSuccess(t('settings.mcp.disabledToast'))
     }
   } catch (error) {
-    uiStore.showError('MCP 操作失败: ' + error.message)
+    uiStore.showError(t('settings.mcp.opFailed') + ': ' + error.message)
   }
 }
 
@@ -520,18 +515,18 @@ async function rotateToken() {
   try {
     const config = await api.mcpRotateToken()
     mcp.value = { ...mcp.value, ...config }
-    uiStore.showSuccess('Token 已重新生成')
+    uiStore.showSuccess(t('settings.mcp.tokenRotated'))
   } catch (error) {
-    uiStore.showError('Token 轮换失败: ' + error.message)
+    uiStore.showError(t('settings.mcp.rotateFailed') + ': ' + error.message)
   }
 }
 
 async function copyToken() {
   try {
     await navigator.clipboard.writeText(mcp.value.token)
-    uiStore.showSuccess('Token 已复制')
+    uiStore.showSuccess(t('settings.mcp.tokenCopied'))
   } catch (error) {
-    uiStore.showError('复制失败: ' + error.message)
+    uiStore.showError(t('settings.mcp.copyFailed') + ': ' + error.message)
   }
 }
 
@@ -553,9 +548,9 @@ const mcpConfigJson = computed(() =>
 async function copyMcpConfig() {
   try {
     await navigator.clipboard.writeText(mcpConfigJson.value)
-    uiStore.showSuccess('MCP 配置已复制')
+    uiStore.showSuccess(t('settings.mcp.configCopied'))
   } catch (error) {
-    uiStore.showError('复制失败: ' + error.message)
+    uiStore.showError(t('settings.mcp.copyFailed') + ': ' + error.message)
   }
 }
 
@@ -563,7 +558,7 @@ async function openClawSite() {
   try {
     await openUrl('https://www.xiaoyaosai.com/xiaoyaoclaw/')
   } catch (error) {
-    uiStore.showError('打开小遥Claw 官网失败: ' + error.message)
+    uiStore.showError(t('settings.claw.openSiteFailed') + ': ' + error.message)
   }
 }
 
@@ -595,15 +590,15 @@ async function pickFiles(provider) {
   if (!checkDemoMode()) return
 
   const filters = provider === 'wechat'
-    ? [{ name: '微信账单', extensions: ['xlsx', 'csv'] }]
-    : [{ name: '支付宝账单', extensions: ['csv'] }]
+    ? [{ name: t('settings.bills.wechatTitle'), extensions: ['xlsx', 'csv'] }]
+    : [{ name: t('settings.bills.alipayTitle'), extensions: ['csv'] }]
 
   try {
     const selected = await open({ multiple: true, filters })
     if (!selected) return
     await handlePaths(Array.isArray(selected) ? selected : [selected], provider)
   } catch (error) {
-    uiStore.showError('打开文件选择器失败: ' + error.message)
+    uiStore.showError(t('settings.errors.pickerFailed') + ': ' + error.message)
   }
 }
 
@@ -652,7 +647,7 @@ function sortFileList(fileList) {
 // 检查是否在演示模式
 function checkDemoMode() {
   if (sessionStore.isDemo) {
-    uiStore.showError('演示模式下无法上传文件，请先退出演示模式')
+    uiStore.showError(t('settings.errors.demoUpload'))
     return false
   }
   return true
@@ -667,17 +662,17 @@ async function handlePaths(paths, provider = 'alipay') {
     return lower.endsWith('.csv') || lower.endsWith('.xlsx')
   })
   if (allowed.length === 0) {
-    uiStore.showError('请上传 .csv 或 .xlsx 格式的账单文件')
+    uiStore.showError(t('settings.errors.invalidFile'))
     return
   }
 
   try {
     uiStore.setGlobalLoading(true)
     await api.uploadPaths(allowed, provider)
-    uiStore.showSuccess('文件上传成功')
+    uiStore.showSuccess(t('settings.errors.uploadSuccess'))
     await loadFiles()
   } catch (error) {
-    uiStore.showError('上传失败: ' + error.message)
+    uiStore.showError(t('settings.errors.uploadFailed') + ': ' + error.message)
   } finally {
     uiStore.setGlobalLoading(false)
   }
@@ -686,7 +681,7 @@ async function handlePaths(paths, provider = 'alipay') {
 
 // 删除文件
 async function deleteFile(filename) {
-  if (confirm(`确定要删除文件 "${filename}" 吗？`)) {
+  if (confirm(t('settings.errors.deleteConfirm', { name: filename }))) {
     try {
       await api.deleteFile(filename)
 
@@ -694,16 +689,16 @@ async function deleteFile(filename) {
       alipayFiles.value = alipayFiles.value.filter(f => f.name !== filename)
       wechatFiles.value = wechatFiles.value.filter(f => f.name !== filename)
 
-      uiStore.showSuccess('文件已删除')
+      uiStore.showSuccess(t('settings.errors.deleted'))
     } catch (error) {
-      uiStore.showError('删除失败: ' + error.message)
+      uiStore.showError(t('settings.errors.deleteFailed') + ': ' + error.message)
     }
   }
 }
 
 // 清除所有数据
 async function handleClearAllData() {
-  if (confirm('确定要删除所有账单数据吗？此操作不可恢复！')) {
+  if (confirm(t('settings.errors.clearConfirm'))) {
     try {
       await api.clearData()
 
@@ -711,9 +706,9 @@ async function handleClearAllData() {
       alipayFiles.value = []
       wechatFiles.value = []
 
-      uiStore.showSuccess('所有数据已清除')
+      uiStore.showSuccess(t('settings.errors.cleared'))
     } catch (error) {
-      uiStore.showError('清除失败: ' + error.message)
+      uiStore.showError(t('settings.errors.clearFailed') + ': ' + error.message)
     }
   }
 }

@@ -1,12 +1,12 @@
 <template>
   <div class="time-page">
     <div class="page-header">
-      <h1 class="page-title">时间分析</h1>
+      <h1 class="page-title">{{ t('time.title') }}</h1>
       <div class="control-group">
         <button @click="prevYear" class="control-button" :disabled="!canGoPrev">
           <ChevronLeft :size="'1em'" />
         </button>
-        <span class="control-display">{{ currentYear }}年</span>
+        <span class="control-display">{{ t('common.yearLabel', { year: currentYear }) }}</span>
         <button @click="nextYear" class="control-button" :disabled="!canGoNext">
           <ChevronRight :size="'1em'" />
         </button>
@@ -15,35 +15,35 @@
 
     <div v-if="uiStore.globalLoading && !timeData" class="page-loading">
       <div class="loading-spinner"></div>
-      <p>加载中...</p>
+      <p>{{ t('common.loading') }}</p>
     </div>
 
     <div v-else-if="timeData" class="time-content">
       <!-- 每日消费热力图 -->
       <div class="analysis-card">
         <div class="chart-header">
-          <h2 class="card-title">每日消费热力图</h2>
+          <h2 class="card-title">{{ t('time.heatmapTitle') }}</h2>
           <div class="chart-controls">
             <button
               class="chart-control-btn"
               :class="{ active: currentDataType === 'expense' }"
               @click="setDataType('expense')"
             >
-              支出金额
+              {{ t('time.dailyExpense') }}
             </button>
             <button
               class="chart-control-btn"
               :class="{ active: currentDataType === 'income' }"
               @click="setDataType('income')"
             >
-              收入金额
+              {{ t('time.dailyIncome') }}
             </button>
             <button
               class="chart-control-btn"
               :class="{ active: currentDataType === 'transaction' }"
               @click="setDataType('transaction')"
             >
-              交易笔数
+              {{ t('time.txnCount') }}
             </button>
           </div>
         </div>
@@ -53,7 +53,7 @@
       <!-- 日内时段分布 -->
       <div class="analysis-card">
         <div class="card-header">
-          <h2 class="card-title">日内时段分布</h2>
+          <h2 class="card-title">{{ t('time.hourTitle') }}</h2>
         </div>
         <div class="chart-container" ref="hourlyChartRef"></div>
       </div>
@@ -61,7 +61,7 @@
       <!-- 工作日/周末分布 -->
       <div class="analysis-card">
         <div class="card-header">
-          <h2 class="card-title">工作日/周末分布</h2>
+          <h2 class="card-title">{{ t('time.weekdayTitle') }}</h2>
         </div>
         <div class="chart-container" ref="weekdayChartRef"></div>
       </div>
@@ -69,9 +69,9 @@
 
     <div v-else class="empty-state">
       <ChartColumn class="empty-icon" :size="'1em'" />
-      <p>暂无数据</p>
+      <p>{{ t('time.noData') }}</p>
       <button class="btn btn-primary" @click="$router.push('/settings')">
-        上传账单
+        {{ t('time.uploadBill') }}
       </button>
     </div>
   </div>
@@ -82,6 +82,7 @@ import { ChartColumn, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useDataStore } from '@/stores/data'
 import { useUiStore } from '@/stores/ui'
+import { useI18n } from 'vue-i18n'
 import { useSessionStore } from '@/stores/session'
 import { useFilterStore } from '@/stores/filter'
 import { formatMoney } from '@/utils/format'
@@ -90,6 +91,12 @@ import api from '@/api/client'
 
 const dataStore = useDataStore()
 const uiStore = useUiStore()
+const { t, locale } = useI18n()
+const dayNames = computed(() =>
+  locale.value === 'en-US'
+    ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    : ['日', '一', '二', '三', '四', '五', '六']
+)
 const sessionStore = useSessionStore()
 const filterStore = useFilterStore()
 
@@ -185,7 +192,7 @@ async function loadData(year) {
     updateHeatmap()
   } catch (error) {
     console.error('[Time] Failed to load data:', error)
-    uiStore.showError('加载数据失败: ' + error.message)
+    uiStore.showError(`${t('time.loadFailed')}: ${error.message}`)
   } finally {
     uiStore.setGlobalLoading(false)
   }
@@ -263,17 +270,21 @@ function updateHeatmap() {
     title: {
       top: 25,
       left: 'center',
-      text: currentDataType.value === 'expense' ? '日支出金额分布' :
-            currentDataType.value === 'income' ? '日收入金额分布' : '日交易笔数分布'
+      text:
+        currentDataType.value === 'expense'
+          ? t('time.heatmapExpense')
+          : currentDataType.value === 'income'
+            ? t('time.heatmapIncome')
+            : t('time.heatmapCount')
     },
     tooltip: {
       position: 'top',
       formatter: (params) => {
         const value = params.data[1]
         if (currentDataType.value === 'transaction') {
-          return `${params.data[0]}<br>${value} 笔交易`
+          return t('time.tooltipCount', { date: params.data[0], count: value })
         } else {
-          return `${params.data[0]}<br>${formatMoney(value)} 元`
+          return t('time.tooltipAmount', { date: params.data[0], amount: formatMoney(value) })
         }
       }
     },
@@ -295,7 +306,7 @@ function updateHeatmap() {
     },
     calendar: {
       top: 140,
-      left: 30,
+      left: locale.value === 'en-US' ? 48 : 30,
       right: 30,
       cellSize: cellSize,
       range: [`${currentYear.value}/01/01`, `${currentYear.value}/12/31`],
@@ -307,11 +318,11 @@ function updateHeatmap() {
       yearLabel: { show: false },
       dayLabel: {
         firstDay: 1,
-        nameMap: ['日', '一', '二', '三', '四', '五', '六'],
+        nameMap: dayNames.value,
         color: '#999'
       },
       monthLabel: {
-        nameMap: 'cn',
+        nameMap: locale.value === 'en-US' ? 'en' : 'cn',
         color: '#999'
       },
       splitLine: {
@@ -346,7 +357,7 @@ function updateHourlyChart() {
 
   const option = {
     title: {
-      text: '日内消费时段分布',
+      text: t('time.hourChartTitle'),
       left: 'center'
     },
     tooltip: {
@@ -357,17 +368,17 @@ function updateHourlyChart() {
       formatter: (params) => {
         let result = params[0].name + '<br/>'
         params.forEach(param => {
-          if (param.seriesName === '消费金额') {
-            result += param.marker + param.seriesName + ': ' + formatMoney(param.value) + ' 元<br/>'
+          if (param.seriesIndex === 0) {
+            result += param.marker + t('time.tooltipSeriesAmount', { name: param.seriesName, amount: formatMoney(param.value) }) + '<br/>'
           } else {
-            result += param.marker + param.seriesName + ': ' + param.value + ' 笔<br/>'
+            result += param.marker + t('time.tooltipSeriesCount', { name: param.seriesName, count: param.value }) + '<br/>'
           }
         })
         return result
       }
     },
     legend: {
-      data: ['消费金额', '交易笔数'],
+      data: [t('time.dailyExpense'), t('time.txnCount')],
       top: 30
     },
     grid: {
@@ -378,7 +389,7 @@ function updateHourlyChart() {
     },
     xAxis: {
       type: 'category',
-      data: Array.from({ length: 24 }, (_, i) => `${i}时`),
+      data: Array.from({ length: 24 }, (_, i) => t('time.hourLabel', { hour: i })),
       axisLabel: {
         interval: 0
       }
@@ -386,17 +397,17 @@ function updateHourlyChart() {
     yAxis: [
       {
         type: 'value',
-        name: '金额（元）'
+        name: t('time.amountAxis')
       },
       {
         type: 'value',
-        name: '笔数',
+        name: t('time.countAxis'),
         position: 'right'
       }
     ],
     series: [
       {
-        name: '消费金额',
+        name: t('time.dailyExpense'),
         type: 'bar',
         data: hourly.amounts,
         itemStyle: {
@@ -405,7 +416,7 @@ function updateHourlyChart() {
         }
       },
       {
-        name: '交易笔数',
+        name: t('time.txnCount'),
         type: 'line',
         yAxisIndex: 1,
         data: hourly.counts,
@@ -460,7 +471,7 @@ function updateWeekdayChart() {
 
   const option = {
     title: {
-      text: '工作日/周末消费分布',
+      text: t('time.weekdayChartTitle'),
       left: 'center',
       top: 10,
       textStyle: {
@@ -483,7 +494,7 @@ function updateWeekdayChart() {
       }
     },
     legend: {
-      data: ['工作日', '周末'],
+      data: [t('time.workday'), t('time.weekend')],
       top: 40,
       itemWidth: 12,
       itemHeight: 12,
@@ -525,7 +536,7 @@ function updateWeekdayChart() {
     },
     series: [
       {
-        name: '工作日',
+        name: t('time.workday'),
         type: 'bar',
         stack: 'total',
         barWidth: 24,
@@ -546,7 +557,7 @@ function updateWeekdayChart() {
         data: weekdayData
       },
       {
-        name: '周末',
+        name: t('time.weekend'),
         type: 'bar',
         stack: 'total',
         barWidth: 24,
@@ -573,6 +584,13 @@ function updateWeekdayChart() {
 }
 
 // 监听筛选器变化
+watch(locale, () => {
+  if (!timeData.value) return
+  updateHeatmap()
+  updateHourlyChart()
+  updateWeekdayChart()
+})
+
 watch(() => filterStore.currentFilter, () => {
   if (currentYear.value) {
     loadData(currentYear.value)
@@ -599,7 +617,7 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('Time page init error:', error)
-    uiStore.showError('页面初始化失败: ' + error.message)
+    uiStore.showError(`${t('time.initFailed')}: ${error.message}`)
   } finally {
     uiStore.setGlobalLoading(false)
   }

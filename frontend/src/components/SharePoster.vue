@@ -25,7 +25,7 @@
               type="button"
               class="theme-card"
               :class="{ active: selectedTheme === theme.id }"
-              :title="theme.description"
+              :title="t(`poster.themeDescriptions.${theme.id}`)"
               @click="selectTheme(theme.id)"
             >
               <span
