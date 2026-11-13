@@ -163,7 +163,8 @@ mod tests {
         assert!(validate_poster_path("").is_err());
         assert!(validate_poster_path("   ").is_err());
         assert!(validate_poster_path("C:\\Users\\me\\poster.jpg").is_err());
-        assert!(validate_poster_path("C:\\Users\\me\\..\\poster.png").is_err());
+        // 路径穿越：用「..」段构造，Windows 与 Unix 都能被 Path::components 解析出来
+        assert!(validate_poster_path("../poster.png").is_err());
         assert!(validate_poster_path("C:\\Users\\me\\poster\0.png").is_err());
         assert!(validate_poster_path("C:\\Users\\me\\").is_err());
     }
@@ -216,9 +217,18 @@ mod tests {
 
     #[test]
     fn path_with_parent_dir_component_is_rejected() {
-        let path = Path::new("C:\\Users\\me\\..\\poster.png");
+        // 平台无关的相对路径：Windows 与 Unix 都会把它解析出 ParentDir 段
+        let path = Path::new("../poster.png");
         assert!(path
             .components()
             .any(|component| matches!(component, Component::ParentDir)));
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn windows_style_path_is_plain_filename_on_unix() {
+        // Unix 下反斜杠不是路径分隔符，整串只是一个普通文件名，不构成路径穿越；
+        // 真正的穿越尝试（../poster.png）已在 validate_rejects_invalid_paths 中覆盖。
+        assert!(validate_poster_path("C:\\Users\\me\\..\\poster.png").is_ok());
     }
 }

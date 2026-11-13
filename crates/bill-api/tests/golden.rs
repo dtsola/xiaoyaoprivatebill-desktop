@@ -235,10 +235,7 @@ fn metadata_endpoints_match_python_golden() {
     // 分类页按分类取数（/category_analysis?category=...）走的是另一条分支
     compare_demo(
         "/category_analysis",
-        &[
-            ("year", "2024"),
-            ("category", "餐饮美食"),
-        ],
+        &[("year", "2024"), ("category", "餐饮美食")],
         include_str!("../../../fixtures/expected/category_analysis_2024_food.json"),
     );
 }

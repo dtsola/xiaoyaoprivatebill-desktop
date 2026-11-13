@@ -227,9 +227,9 @@ impl ServerHandler for BillMcp {
         _request: Option<rmcp::model::PaginatedRequestParams>,
         context: rmcp::service::RequestContext<rmcp::RoleServer>,
     ) -> Result<rmcp::model::ListToolsResult, ErrorData> {
-        let supports_cache_hints = context.protocol_version().is_some_and(|version| {
-            version >= rmcp::model::ProtocolVersion::V_2026_07_28
-        });
+        let supports_cache_hints = context
+            .protocol_version()
+            .is_some_and(|version| version >= rmcp::model::ProtocolVersion::V_2026_07_28);
         Ok(rmcp::model::ListToolsResult {
             result_type: Some(rmcp::model::ResultType::COMPLETE),
             tools: Self::tool_router()
