@@ -1,5 +1,11 @@
 <template>
   <div class="app-shell" :class="{ 'platform-mac': isMac, 'sidebar-collapsed': collapsed }">
+    <!-- macOS 统一标题栏：原生红绿灯浮在窗口左上角，标题栏整条留出 38px 安全区。
+         侧边栏与内容区都从这条带下方开始，折叠成 64px 时也不会被红绿灯压住。 -->
+    <div v-if="isMac" class="mac-titlebar" data-tauri-drag-region @dblclick="toggleMaximize">
+      <div class="mac-titlebar-side" data-tauri-drag-region></div>
+    </div>
+
     <!-- 顶部拖拽条：给没有页面标题区的页面（首页）提供拖拽与双击最大化；
          有标题区的页面，标题区本身固定在更上层并自带拖拽标记 -->
     <div class="drag-strip" data-tauri-drag-region @dblclick="toggleMaximize"></div>
@@ -114,6 +120,34 @@
             <span>{{ t('nav.author') }}</span>
           </router-link>
         </nav>
+
+        <!-- 筛选菜单：占住侧边栏底部，不再悬浮覆盖导航项 -->
+        <div class="floating-menu" :class="{ collapsed }">
+          <button
+            class="filter-btn"
+            :class="{ active: filterStore.currentFilter === 'all' }"
+            @click="setFilter('all')"
+          >
+            <List :size="16" />
+            <span>{{ t('layout.filters.all') }}</span>
+          </button>
+          <button
+            class="filter-btn"
+            :class="{ active: filterStore.currentFilter === 'large' }"
+            @click="setFilter('large')"
+          >
+            <Coins :size="16" />
+            <span>{{ t('layout.filters.large') }}</span>
+          </button>
+          <button
+            class="filter-btn"
+            :class="{ active: filterStore.currentFilter === 'small' }"
+            @click="setFilter('small')"
+          >
+            <Coffee :size="16" />
+            <span>{{ t('layout.filters.small') }}</span>
+          </button>
+        </div>
       </aside>
 
       <!-- 主内容区域 -->
@@ -121,34 +155,6 @@
         <router-view />
       </main>
     </div>
-  </div>
-
-  <!-- 筛选菜单 (独立于侧边栏) -->
-  <div class="floating-menu" :class="{ collapsed }">
-    <button
-      class="filter-btn"
-      :class="{ active: filterStore.currentFilter === 'all' }"
-      @click="setFilter('all')"
-    >
-      <List :size="16" />
-      <span>{{ t('layout.filters.all') }}</span>
-    </button>
-    <button
-      class="filter-btn"
-      :class="{ active: filterStore.currentFilter === 'large' }"
-      @click="setFilter('large')"
-    >
-      <Coins :size="16" />
-      <span>{{ t('layout.filters.large') }}</span>
-    </button>
-    <button
-      class="filter-btn"
-      :class="{ active: filterStore.currentFilter === 'small' }"
-      @click="setFilter('small')"
-    >
-      <Coffee :size="16" />
-      <span>{{ t('layout.filters.small') }}</span>
-    </button>
   </div>
 
   <!-- Toast 组件 -->
@@ -393,6 +399,29 @@ watch(
   --sb-current-width: 64px;
 }
 
+/* macOS 统一标题栏：原生红绿灯浮在窗口左上角，标题栏整条留出 38px 安全区。
+   左侧一段用侧栏灰底并与侧边栏同宽，右侧沿用内容区底色，
+   折叠/展开时分色边界跟随 --sb-current-width 一起过渡。 */
+.mac-titlebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 38px;
+  z-index: 2700;
+  background: var(--bg-color);
+}
+
+.mac-titlebar-side {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--sb-current-width);
+  background: #F2F2F4;
+  transition: width 0.22s ease;
+}
+
 .app-shell {
   position: relative;
   height: 100vh;
@@ -401,6 +430,11 @@ watch(
   overflow: hidden;
   /* 顶部 56px 为统一标题区：页面标题与筛选控件都在这里 */
   padding-top: 56px;
+}
+
+/* macOS：顶部还要让出 38px 标题栏安全区（红绿灯所在行） */
+.platform-mac .app-shell {
+  padding-top: 94px;
 }
 
 /* 拖拽条只覆盖内容区：侧边栏占满窗口高度，LOGO 区也可拖拽 */
@@ -413,6 +447,12 @@ watch(
   height: 56px;
   z-index: 2000;
   user-select: none;
+}
+
+/* macOS：拖拽条下移，避开标题栏安全区；右侧无自绘窗口按钮，无需留空 */
+.platform-mac .drag-strip {
+  top: 38px;
+  right: 0;
 }
 
 /* 窗口按钮：与 xiaoyaotime 对齐（26px、右上角、圆角悬停） */
@@ -470,7 +510,8 @@ watch(
   left: 0;
   bottom: 0;
   width: var(--sb-current-width);
-  height: 100%;
+  /* 上下都定位，交给 auto 计算高度，避免与 macOS 下的 top: 38px 冲突 */
+  height: auto;
   display: flex;
   flex-direction: column;
   transition: width 0.22s ease;
@@ -478,14 +519,13 @@ watch(
   background: #F2F2F4;
   border-right: 1px solid var(--border-color);
   z-index: 2500;
-  overflow-y: auto;
+  /* 侧边栏本体不滚动：LOGO 固定在顶部，只有导航列表独立滚动 */
+  overflow: hidden;
 }
 
-/* macOS：给左上角红绿灯留出空间 */
-.platform-mac .logo {
-  padding-top: 26px;
-  height: calc(var(--header-height) + 26px);
-  box-sizing: content-box;
+/* macOS：侧边栏从统一标题栏下方开始，红绿灯不再压在侧边栏内容上 */
+.platform-mac .sidebar {
+  top: 38px;
 }
 
 .logo {
@@ -493,6 +533,7 @@ watch(
   white-space: nowrap;
   font-family: var(--font-family-display);
   height: var(--header-height);
+  flex: none;
   display: flex;
   align-items: center;
   padding: 0 20px;
@@ -573,7 +614,7 @@ watch(
 }
 
 .floating-menu.collapsed {
-  padding: 0 8px;
+  padding: 8px 8px 12px;
 }
 
 .floating-menu.collapsed .filter-btn {
@@ -585,15 +626,25 @@ watch(
   display: none;
 }
 
-/* macOS 收起态仍要给左上角红绿灯留位置 */
-.platform-mac.sidebar-collapsed .logo {
-  padding-top: 30px;
-  height: 108px;
-}
-
 .nav-menu {
   padding: 8px 0;
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* 导航列表溢出时才出现的滚动条：细且半透明，避免在浅灰侧栏上抢视觉 */
+.nav-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.nav-menu::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.16);
+  border-radius: 3px;
+}
+
+.nav-menu::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .nav-item {
@@ -682,6 +733,12 @@ watch(
 .content :deep(.category-page-header .page-title) {
   font-size: var(--font-size-xl);
   pointer-events: none;
+}
+
+/* macOS：页面标题区下移到统一标题栏下方，避免与红绿灯行重叠 */
+.platform-mac .content :deep(.page-header),
+.platform-mac .content :deep(.category-page-header) {
+  top: 38px;
 }
 
 /* 设置页 / AI Agent 页：标题与说明同一行，避免超出 56px */
@@ -820,19 +877,23 @@ watch(
   }
 }
 
-/* 浮动筛选菜单 */
+/* 筛选菜单：侧边栏底部的固定区块。
+   桌面版导航项比 Web 版多，悬浮式菜单会压住末尾的「关于作者」，
+   因此改为占位布局——导航列表在上方独立滚动，筛选固定在底部。
+   注意：全局 main.css 里 .floating-menu 是 position: fixed，
+   这里必须显式覆盖定位相关属性，否则会按视口宽度铺满窗口底部。 */
 .floating-menu {
-  position: fixed;
-  left: 0;
-  bottom: 24px;
-  width: var(--sb-current-width);
-  padding: 0 12px;
-  transition: width 0.22s ease;
+  position: static;
+  left: auto;
+  bottom: auto;
+  z-index: auto;
+  flex: none;
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px 12px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  /* 高于侧边栏，否则会被全高侧栏盖住 */
-  z-index: 2600;
 }
 
 .filter-btn {

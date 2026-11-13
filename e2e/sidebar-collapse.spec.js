@@ -23,7 +23,8 @@ test('侧边栏可收起为图标栏，并记住状态', async ({ page }) => {
   await expect(page.locator('.nav-item span').first()).toBeHidden()
   await expect(page.locator('.logo span')).toBeHidden()
   // 底部筛选菜单同步收成图标按钮
-  expect(await widthOf(page, '.floating-menu')).toBe(64)
+  // 筛选菜单已改为侧边栏内的占位区块，宽度是侧栏内容区宽度（扣掉 1px 右边框）
+  expect(await widthOf(page, '.floating-menu')).toBe(63)
 
   // 图标在 64px 栏内水平居中
   const centers = await page.evaluate(() => {
