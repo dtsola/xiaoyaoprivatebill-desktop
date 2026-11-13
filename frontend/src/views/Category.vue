@@ -8,7 +8,7 @@
           <div class="selected-category" @click="toggleCategoryExpanded">
             <div class="category-pill active">
               <span class="icon" :style="{ backgroundColor: getCategoryColor(currentCategory) }"></span>
-              <span>{{ currentCategory }}</span>
+              <span>{{ localizeCategory(currentCategory, locale) }}</span>
               <ChevronDown class="dropdown-icon" :size="'1em'" />
             </div>
           </div>
@@ -28,7 +28,7 @@
                   @click.stop="selectCategory(cat)"
                 >
                   <span class="icon" :style="{ backgroundColor: getCategoryColor(cat) }"></span>
-                  <span>{{ cat }}</span>
+                  <span>{{ localizeCategory(cat, locale) }}</span>
                 </div>
               </template>
 
@@ -46,7 +46,7 @@
                   @click.stop="selectCategory(cat)"
                 >
                   <span class="icon" :style="{ backgroundColor: getCategoryColor(cat) }"></span>
-                  <span>{{ cat }}</span>
+                  <span>{{ localizeCategory(cat, locale) }}</span>
                 </div>
               </template>
             </div>
@@ -153,6 +153,7 @@ import { useI18n } from 'vue-i18n'
 import { useSessionStore } from '@/stores/session'
 import { useFilterStore } from '@/stores/filter'
 import { formatMoney, getCategoryColor } from '@/utils/format'
+import { localizeCategory } from '@/i18n/categories'
 import * as echarts from 'echarts'
 import api from '@/api/client'
 

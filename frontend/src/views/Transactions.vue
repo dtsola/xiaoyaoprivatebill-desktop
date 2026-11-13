@@ -20,7 +20,7 @@
           <select v-model="filters.category" @change="onFilterChange" class="filter-select">
             <option value="">{{ t('transactions.allCategories') }}</option>
             <option v-for="cat in categories" :key="cat" :value="cat">
-              {{ cat }}
+              {{ localizeCategory(cat, locale) }}
             </option>
           </select>
           <select v-model="filters.type" @change="onFilterChange" class="filter-select">
@@ -85,7 +85,7 @@
               <td>{{ tx.time }}</td>
               <td :title="tx.description">{{ tx.description }}</td>
               <td :title="tx.counterparty || ''">{{ tx.counterparty || '-' }}</td>
-              <td>{{ tx.category }}</td>
+              <td>{{ localizeCategory(tx.category, locale) }}</td>
               <td>{{ tx.type === '收入' ? t('common.income') : t('common.expense') }}</td>
               <td :class="['amount', tx.type === '收入' ? 'income' : 'expense']">
                 {{ parseFloat(tx.amount).toFixed(2) }}
@@ -132,11 +132,12 @@ import { useUiStore } from '@/stores/ui'
 import { useI18n } from 'vue-i18n'
 import { useSessionStore } from '@/stores/session'
 import { useFilterStore } from '@/stores/filter'
+import { localizeCategory } from '@/i18n/categories'
 import api from '@/api/client'
 
 const dataStore = useDataStore()
 const uiStore = useUiStore()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 // 支付宝为「交易成功」，微信为「支付成功」；退款/关闭/撤销统一显示为退款
 function isRefundStatus(status) {

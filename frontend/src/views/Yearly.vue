@@ -133,6 +133,7 @@ import { useI18n } from 'vue-i18n'
 import { useSessionStore } from '@/stores/session'
 import { useFilterStore } from '@/stores/filter'
 import { formatMoney, getCategoryColor } from '@/utils/format'
+import { localizeCategory } from '@/i18n/categories'
 import * as echarts from 'echarts'
 
 const dataStore = useDataStore()
@@ -495,7 +496,7 @@ function initCategoryChart() {
       formatter: (params) => {
         const percent = ((params.value / total) * 100).toFixed(2)
         const source = params.data.source === '支付宝' ? t('common.alipay') : t('common.wechat')
-        return `${params.data.originalName} (${source})<br/>${t('common.amountLine', { label: t('common.amount'), value: formatMoney(params.value) })}<br/>${t('common.shareLine', { percent })}`
+        return `${localizeCategory(params.data.originalName, locale.value)} (${source})<br/>${t('common.amountLine', { label: t('common.amount'), value: formatMoney(params.value) })}<br/>${t('common.shareLine', { percent })}`
       }
     },
     legend: {
@@ -517,7 +518,7 @@ function initCategoryChart() {
         position: 'outside',
         formatter: (params) => {
           const percent = ((params.value / total) * 100).toFixed(2)
-          return `${params.data.originalName}\n${percent}%`
+          return `${localizeCategory(params.data.originalName, locale.value)}\n${percent}%`
         },
         fontSize: 12,
         color: '#666',
@@ -653,7 +654,7 @@ function renderCustomLegend(categorySourceData, totalAmount) {
       text.style.whiteSpace = 'nowrap'
 
       const nameSpan = document.createElement('span')
-      nameSpan.textContent = item['交易分类']
+      nameSpan.textContent = localizeCategory(item['交易分类'], locale.value)
       nameSpan.style.fontWeight = '500'
       nameSpan.style.marginRight = '4px'
 

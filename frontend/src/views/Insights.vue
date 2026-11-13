@@ -294,6 +294,7 @@ import { useUiStore } from '@/stores/ui'
 import { useSessionStore } from '@/stores/session'
 import { useFilterStore } from '@/stores/filter'
 import { formatMoney, getCategoryColor } from '@/utils/format'
+import { localizeCategory } from '@/i18n/categories'
 import * as echarts from 'echarts'
 import 'echarts-wordcloud'
 import api from '@/api/client'
@@ -595,7 +596,7 @@ function generateStorySlides() {
     <div class="slide">
       <div class="slide-content">
         <h2>${t('insights.story.summaryTitle')}</h2>
-        <div class="slide-keyword">${data.top_category.name}</div>
+        <div class="slide-keyword">${localizeCategory(data.top_category.name, locale.value)}</div>
         <p>${t('insights.story.summaryLine', { amount: formatMoney(data.top_category.amount) })}</p>
         <p>${t('insights.story.summaryWish')}</p>
         <div class="slide-big-icon">${SVG.star}</div>
@@ -1071,6 +1072,11 @@ function updateAdvancedCharts() {
 function renderSankeyChart(data) {
   if (!sankeyChart || !data.nodes || data.nodes.length === 0) return
 
+  const nodes = data.nodes.map(node => ({
+    ...node,
+    name: localizeCategory(node.name, locale.value)
+  }))
+
   const option = {
     tooltip: {
       trigger: 'item',
@@ -1087,7 +1093,7 @@ function renderSankeyChart(data) {
       type: 'sankey',
       layoutIterations: 0,  // 禁止自动优化布局，严格按照数据顺序排列，避免连线交叉
       nodeGap: 12,          // 增加节点间距
-      data: data.nodes,
+      data: nodes,
       links: data.links,
       emphasis: {
         focus: 'adjacency'
@@ -1109,7 +1115,12 @@ function renderSankeyChart(data) {
 function renderThemeRiver(data) {
   if (!themeRiverChart || !data.data || data.data.length === 0) return
 
-  const themeRiverData = data.data.map(item => [item[0], item[2], item[1]])
+  const themeRiverData = data.data.map(item => [
+    item[0],
+    item[2],
+    localizeCategory(item[1], locale.value)
+  ])
+  const categories = data.categories.map(cat => localizeCategory(cat, locale.value))
   const colors = data.categories.map(cat => getCategoryColor(cat))
 
   const option = {
@@ -1144,7 +1155,7 @@ function renderThemeRiver(data) {
       }
     },
     legend: {
-      data: data.categories,
+      data: categories,
       top: 10,
       textStyle: {
         fontSize: 12
@@ -1268,7 +1279,7 @@ function renderRadarChart(data) {
       formatter: (params) => {
         let res = params.name + '<br/>'
         data.indicator.forEach((item, index) => {
-          res += item.name + ': ¥' + formatMoney(params.value[index]) + '<br/>'
+          res += localizeCategory(item.name, locale.value) + ': ¥' + formatMoney(params.value[index]) + '<br/>'
         })
         return res
       }
@@ -1278,7 +1289,10 @@ function renderRadarChart(data) {
       top: 10
     },
     radar: {
-      indicator: data.indicator,
+      indicator: data.indicator.map(item => ({
+        ...item,
+        name: localizeCategory(item.name, locale.value)
+      })),
       radius: '65%'
     },
     series: [{
@@ -1304,7 +1318,7 @@ function renderQuadrantChart(data) {
         return `
           <div style="font-weight:bold;margin-bottom:5px;">${item.name}</div>
           ${t('insights.charts.quadrantTooltip', {
-            category: item.category,
+            category: localizeCategory(item.category, locale.value),
             frequency: item.frequency,
             avg: formatMoney(item.avg_amount),
             total: formatMoney(item.total_amount)
@@ -1381,6 +1395,7 @@ function renderChordChart(data) {
 
   const coloredNodes = data.nodes.map(node => ({
     ...node,
+    name: localizeCategory(node.name, locale.value),
     itemStyle: {
       color: getCategoryColor(node.name)
     }
@@ -1393,6 +1408,8 @@ function renderChordChart(data) {
     }
     return {
       ...link,
+      source: localizeCategory(link.source, locale.value),
+      target: localizeCategory(link.target, locale.value),
       lineStyle: {
         width: width,
         color: getCategoryColor(link.target),
@@ -1521,7 +1538,8 @@ function renderParetoChart(data) {
       },
       axisLabel: {
         interval: 0,
-        rotate: 0
+        rotate: 0,
+        formatter: (value) => localizeCategory(value, locale.value)
       }
     }],
     yAxis: [{
@@ -1615,7 +1633,7 @@ function renderWordCloud(data) {
 function renderBoxPlot(data) {
   if (!boxPlotChart || !data.data || data.data.length === 0) return
 
-  const alignedCategories = ['', ...data.categories]
+  const alignedCategories = ['', ...data.categories.map((name) => localizeCategory(name, locale.value))]
   const alignedBoxData = [[], ...data.box_data]
 
   const getSeriesConfig = (isDetailMode) => {

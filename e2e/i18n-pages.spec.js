@@ -29,19 +29,19 @@ const PAGES = [
     hash: '#/yearly',
     name: 'yearly',
     title: 'Yearly Overview',
-    checks: ['Yearly spending', 'Spending trend', 'Spending by category']
+    checks: ['Yearly spending', 'Spending trend', 'Spending by category', 'Housing']
   },
   {
     hash: '#/monthly',
     name: 'monthly',
     title: 'Monthly',
-    checks: ['Monthly spending', 'Income & spending trend', 'Spending by category']
+    checks: ['Monthly spending', 'Income & spending trend', 'Spending by category', 'Housing']
   },
   {
     hash: '#/category',
     name: 'category',
     title: 'Categories',
-    checks: ['Spending share', 'Spending trend', 'Amount distribution']
+    checks: ['Spending share', 'Spending trend', 'Amount distribution', 'Housing']
   },
   {
     hash: '#/time',
@@ -59,7 +59,7 @@ const PAGES = [
     hash: '#/transactions',
     name: 'transactions',
     title: 'Transactions',
-    checks: ['Transaction details', 'Description', 'Counterparty', 'Status']
+    checks: ['Transaction details', 'Description', 'Counterparty', 'Status', 'Transport']
   },
   {
     hash: '#/settings',
